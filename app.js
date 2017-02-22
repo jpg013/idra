@@ -34,7 +34,7 @@ app.use(loginController);
  */
 
 const apiRouter = express.Router();
-apiRouter.use(authMiddleware.isAuthenticated);
+//apiRouter.use(authMiddleware.isAuthenticated);
 apiRouter.use('/team', teamController);
 apiRouter.use('/user', userController);
 apiRouter.use('/subject', subjectController);

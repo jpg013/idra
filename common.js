@@ -1,21 +1,21 @@
-const crypto   = require('crypto');
-const config   = require('./config');
-const mongoose = require('mongoose');
+const Crypto   = require('crypto');
+const Config   = require('./config');
+const Mongoose = require('mongoose');
 
-const decrypt = (string) => {
-  const decipher = crypto.createDecipher(config.cryptoAlgorithm, config.authTokenSecret);
-  let dec = decipher.update(string, 'hex', 'utf8');
-  dec += decipher.final('utf8');
-  return dec;
-}
-
-const encrypt = (string) => {
-  var cipher = crypto.createCipher(config.cryptoAlgorithm, config.authTokenSecret);
-  var crypted = cipher.update(string, 'utf8', 'hex');
+function encrypt(text) {
+  var cipher = Crypto.createCipher(Config.cryptoAlgorithm, Config.cryptoSecret);
+  var crypted = cipher.update(text,'utf8','hex')
   crypted += cipher.final('hex');
   return crypted;
 }
 
-const generateObjectId = () => mongoose.Types.ObjectId();
+function decrypt(text) {
+  var decipher = Crypto.createDecipher(Config.cryptoAlgorithm, Config.cryptoSecret);
+  var dec = decipher.update(text,'hex','utf8')
+  dec += decipher.final('utf8');
+  return dec;
+}
+
+const generateObjectId = id => id ? Mongoose.Types.ObjectId(id) : Mongoose.Types.ObjectId();
 
 module.exports = {decrypt, encrypt, generateObjectId};

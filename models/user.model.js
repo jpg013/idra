@@ -7,7 +7,7 @@ module.exports = mongoose.model('User', new Schema({
   firstName: String,
   lastName: String,
   password: String,
-  created: Date,
+  createdDate: Date,
   role: {
     type: String,
     enum: ['sys-admin', 'team-admin', 'user'],

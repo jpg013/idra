@@ -17,6 +17,7 @@ UserRouter.get('/', function(req, res) {
 
 UserRouter.post('/', function (req, res) {
   Team.findOne({name: 'Innosol Test Team'}, (err, resp) => {
+    console.log(resp);
     // TODO: error handling
     const userModel = new User({
       firstName: 'justin',
@@ -24,8 +25,8 @@ UserRouter.post('/', function (req, res) {
       password: Common.encrypt('password'),
       email: 'jpg013@gmail.com',
       role: 'sys-admin',
-      id: Common.generateObjectId(),
-      team: resp.id
+      createdDate: new Date(),
+      team: Common.generateObjectId(resp._id)
     });
 
     userModel.save(function(err) {
