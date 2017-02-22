@@ -1,10 +1,11 @@
-const Express = require('express')
-const UserRouter  = Express.Router();
-const User    = require('../models/user.model');
+const Express    = require('express')
+const UserRouter = Express.Router();
+const User       = require('../models/user.model');
+const Team       = require('../models/team.model');
+const Common     = require('../common');
 
 // define the about route
 UserRouter.put('/', function(req, res) {
-  console.log('user router put getting called');
   res.json({ success: true });
 });
 
@@ -14,20 +15,25 @@ UserRouter.get('/', function(req, res) {
   });
 });
 
-UserRouter.get('/setup', function (req, res) {
-  // create a sample user
- const user = new userModel({
-   name: 'justin graber',
-   password: 'password',
-   admin: true
- });
+UserRouter.post('/', function (req, res) {
+  Team.findOne({name: 'Innosol Test Team'}, (err, resp) => {
+    // TODO: error handling
+    const userModel = new User({
+      firstName: 'justin',
+      lastName: 'Graber',
+      password: Common.encrypt('password'),
+      email: 'jpg013@gmail.com',
+      role: 'sys-admin',
+      id: Common.generateObjectId(),
+      team: resp.id
+    });
 
- // save the sample user
-  user.save(function(err) {
-   if (err) throw err;
-   console.log('User saved successfully');
-   res.json({ success: true });
- });
+    userModel.save(function(err) {
+      if (err) throw err;
+      console.log('User saved successfully');
+      res.json({ success: true });
+    });
+  })
 });
 
 module.exports = UserRouter;

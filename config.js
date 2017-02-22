@@ -1,4 +1,5 @@
 module.exports = {
-  'tokenSecret': 'innosolsolution',
-  'database': 'mongodb://localhost/innosolapp'
+  authTokenSecret: 'innosolsolution',
+  cryptoAlgorithm: 'aes-256-ctr',
+  database: 'mongodb://localhost/innosolapp'
 };
