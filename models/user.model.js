@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 module.exports = mongoose.model('User', new Schema({
-  id: mongoose.Schema.Types.ObjectId,
   email: String,
   firstName: String,
   lastName: String,

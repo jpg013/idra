@@ -26,6 +26,7 @@ const userController    = require('./controllers/user.controller');
 const subjectController = require('./controllers/subject.controller');
 const loginController   = require('./controllers/login.controller');
 const teamController    = require('./controllers/team.controller');
+const setupController   = require('./controllers/setup.controller');
 
 app.use(loginController);
 
@@ -38,6 +39,7 @@ const apiRouter = express.Router();
 apiRouter.use('/team', teamController);
 apiRouter.use('/user', userController);
 apiRouter.use('/subject', subjectController);
+apiRouter.use('/setup', setupController);
 
 app.use('/api', apiRouter);
 

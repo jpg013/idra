@@ -1,6 +1,11 @@
-const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
+const mongoose       = require('mongoose');
+const Schema         = mongoose.Schema;
+const reportSetModel = require('./report-set.model');
 
-module.exports = mongoose.model('Team', new Schema({
-  name: String
-}));
+const TeamSchema = new Schema({
+  name        : String,
+  reportSets  : [reportSetModel.schema],
+  createdDate : Date
+});
+
+module.exports = mongoose.model('Team', TeamSchema);

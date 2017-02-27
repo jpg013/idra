@@ -6,20 +6,22 @@ const Config         = require('../config');
 const loginFailedMsg = "Login failed. Invalid username / password.";
 const Common         = require('../common');
 
+loginRouter.post('/logout', function (req, res) {
+  
+});
+
 loginRouter.post('/login', function(req, res) {
   // Query the user
   user
     .findOne({email: req.body.email})
     .populate('team')
     .exec(function(err, user) {
-      console.log(user);
       if (err) throw err;
       if (!user) {
         return res.json({success: false, message: loginFailedMsg});
       }
-
       if (req.body.password !== Common.decrypt(user.password)) {
-        return res.json({ success: false, message: loginFailedMsg })
+        return res.json({ success: false, message: loginFailedMsg });
       }
 
       // Remove the user password property
