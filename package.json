@@ -26,7 +26,7 @@
     "neo4j": "^2.0.0-RC2"
   },
   "scripts": {
-    "start": "concurrently \"npm run server\" \"npm run client\"",
+    "start": "nodemon app.js",
     "server": "babel-node server.js",
     "client": "cd innosol-client && npm start",
     "dev": "echo \"This command has been deprecated. Use 'npm start'\" && exit 1"
