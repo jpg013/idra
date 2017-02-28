@@ -9,4 +9,8 @@ const ReportSetSchema = new Schema({
   reports: [reportModel.schema]
 });
 
+ReportSetSchema.virtual('id').get(function() {
+  return this._id.toString();
+});
+
 module.exports = mongoose.model('ReportSet', ReportSetSchema);

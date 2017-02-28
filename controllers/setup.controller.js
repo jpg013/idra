@@ -8,14 +8,14 @@ const common         = require('../common');
 const async          = require('async');
 
 const reportData = [
-  new reportModel({ name: 'test report 1',  createdDate: new Date(),  description: 'this is a description for a the report 1',  query: 'here is the cypher query for this !!!' }),
-  new reportModel({ name: 'test report 2',  createdDate: new Date(),  description: 'this is a description for a the report 2',  query: 'here is the cypher query for this !!!' }),
-  new reportModel({ name: 'test report 3',  createdDate: new Date(),  description: 'this is a description for a the report 3',  query: 'here is the cypher query for this !!!' }),
-  new reportModel({ name: 'test report 4',  createdDate: new Date(),  description: 'this is a description for a the report 4',  query: 'here is the cypher query for this !!!' }),
-  new reportModel({ name: 'test report 5',  createdDate: new Date(),  description: 'this is a description for a the report 5',  query: 'here is the cypher query for this !!!' }),
-  new reportModel({ name: 'test report 6',  createdDate: new Date(),  description: 'this is a description for a the report 6',  query: 'here is the cypher query for this !!!' }),
-  new reportModel({ name: 'test report 7',  createdDate: new Date(),  description: 'this is a description for a the report 7',  query: 'here is the cypher query for this !!!' }),
-  new reportModel({ name: 'test report 8',  createdDate: new Date(),  description: 'this is a description for a the report 8',  query: 'here is the cypher query for this !!!' })
+  new reportModel({ name: 'test report 1',  createdDate: new Date(),  description: 'this is a description for a the report 1',  query: 'MATCH (n:Greeklife) RETURN n LIMIT 25' }),
+  new reportModel({ name: 'test report 2',  createdDate: new Date(),  description: 'this is a description for a the report 2',  query: 'MATCH (n:Greeklife) RETURN n LIMIT 25' }),
+  new reportModel({ name: 'test report 3',  createdDate: new Date(),  description: 'this is a description for a the report 3',  query: 'MATCH (n:Greeklife) RETURN n LIMIT 25' }),
+  new reportModel({ name: 'test report 4',  createdDate: new Date(),  description: 'this is a description for a the report 4',  query: 'MATCH (n:Greeklife) RETURN n LIMIT 25' }),
+  new reportModel({ name: 'test report 5',  createdDate: new Date(),  description: 'this is a description for a the report 5',  query: 'MATCH (n:Greeklife) RETURN n LIMIT 25' }),
+  new reportModel({ name: 'test report 6',  createdDate: new Date(),  description: 'this is a description for a the report 6',  query: 'MATCH (n:Greeklife) RETURN n LIMIT 25' }),
+  new reportModel({ name: 'test report 7',  createdDate: new Date(),  description: 'this is a description for a the report 7',  query: 'MATCH (n:Greeklife) RETURN n LIMIT 25' }),
+  new reportModel({ name: 'test report 8',  createdDate: new Date(),  description: 'this is a description for a the report 8',  query: 'MATCH (n:Greeklife) RETURN n LIMIT 25' })
 ];
 
 const removeTeams = cb => teamModel.collection.drop(cb);
