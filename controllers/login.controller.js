@@ -6,10 +6,6 @@ const Config         = require('../config');
 const loginFailedMsg = "Login failed. Invalid username / password.";
 const Common         = require('../common');
 
-loginRouter.post('/logout', function (req, res) {
-  
-});
-
 loginRouter.post('/login', function(req, res) {
   // Query the user
   user
