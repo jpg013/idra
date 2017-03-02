@@ -1,10 +1,11 @@
 const express        = require('express')
 const setupRouter    = express.Router();
-const teamModel      = require('../models/team.model');
-const userModel      = require('../models/user.model');
-const reportSetModel = require('../models/report-set.model');
-const reportModel    = require('../models/report.model');
-const common         = require('../common');
+const teamModel      = require('../../models/team.model');
+const userModel      = require('../../models/user.model');
+const reportSetModel = require('../../models/report-set.model');
+const reportModel    = require('../../models/report.model');
+const cryptoCommon   = require('../../common/crypto');
+const mongoCommon    = require('../../common/mongo');
 const async          = require('async');
 
 const reportData = [
@@ -39,11 +40,11 @@ setupRouter.post('/', function(req, res) {
   const user = new userModel({
     firstName: 'Justin',
     lastName: 'Graber',
-    password: common.encrypt('password'),
+    password: cryptoCommon.encrypt('password'),
     email: 'jpg013@gmail.com',
     role: 'sys-admin',
     createdDate: new Date(),
-    team: common.generateObjectId(team._id)
+    team: mongoCommon.generateObjectId(team._id)
   });
 
   const addTeam = cb => team.save(cb);

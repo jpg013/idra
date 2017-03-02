@@ -3,61 +3,64 @@
 /**
  * Module dependencies.
  */
-const express = require('express');
-const app = express();
-const bodyParser = require('body-parser');
-const morgan = require('morgan');
-const mongoose = require('mongoose');
-const config = require('./config');
-const chalk = require('chalk');
-
-/*
- * Middleware
- */
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(bodyParser.json());
+const http           = require('http')
+const express        = require('express');
+const bodyParser     = require('body-parser');
+const logger         = require('morgan');
+const mongoose       = require('mongoose');
+const chalk          = require('chalk');
+const dotenv         = require('dotenv');
+const io             = require('./config/socket.io');
+const apiRouter      = require('./api/index');
+const publicRouter   = require('./public/index');
 const authMiddleware = require('./middleware/auth');
 
-/**
- * Controllers
+/*
+ * Read environment config
  */
-
-const userController    = require('./controllers/user.controller');
-const subjectController = require('./controllers/subject.controller');
-const loginController   = require('./controllers/login.controller');
-const teamController    = require('./controllers/team.controller');
-const setupController   = require('./controllers/setup.controller');
-const reportController  = require('./controllers/report.controller');
-
-app.use(loginController);
+dotenv.config();
 
 /**
- * Api Router
+ * Connect to MongoDB
  */
+require('./config/mongo').config();
 
-const apiRouter = express.Router();
-apiRouter.use(authMiddleware.isAuthenticated);
-apiRouter.use('/team', teamController);
-apiRouter.use('/user', userController);
-apiRouter.use('/subject', subjectController);
-apiRouter.use('/setup', setupController);
-apiRouter.use('/report', reportController);
-
-app.use('/api', apiRouter);
+/*
+ * Create our express app and server
+ */
+const app     = express();
+const server  = http.createServer(app);
 
 /**
- * Configuration
+ * App Configuration
  */
-var port = process.env.PORT || 9001;
-mongoose.connect(config.database);
-mongoose.connection.on('error', () => {
-  console.log('%s MongoDB connection error. Please make sure MongoDB is running.', chalk.red('✗'));
-  process.exit();
-});
+app.use(logger('dev'));
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
 
-app.get('/', function(req, res) {
-  res.send('Hello! The API is at http://localhost:' + port + '/api');
-});
+/*
+ * Configure Middleware
+ */
+app.use(authMiddleware.isAuthenticated);
 
-app.listen(port);
-console.log('Magic happens at http://localhost:' + port);
+/**
+ * Configure Public Routes
+ */
+publicRouter.config(app);
+
+/**
+ * Configure Api Routes
+ */
+apiRouter.config(app);
+
+/**
+ * Config Socket.io
+ */
+io.config(server);
+
+/**
+ * Listen on Port
+ */
+
+server.listen(process.env.PORT);
+console.log('Magic happens at http://localhost:' + process.env.PORT );

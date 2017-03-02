@@ -1,8 +1,9 @@
-const Express    = require('express')
-const UserRouter = Express.Router();
-const User       = require('../models/user.model');
-const Team       = require('../models/team.model');
-const Common     = require('../common');
+const Express      = require('express')
+const UserRouter   = Express.Router();
+const User         = require('../../models/user.model');
+const Team         = require('../../models/team.model');
+const mongoCommon  = require('../../common/mongo');
+const cryptoCommon = require('../../common/crypto');
 
 // define the about route
 UserRouter.put('/', function(req, res) {
@@ -22,16 +23,15 @@ UserRouter.post('/', function (req, res) {
     const userModel = new User({
       firstName: 'justin',
       lastName: 'Graber',
-      password: Common.encrypt('password'),
+      password: cryptoCommon.encrypt('password'),
       email: 'jpg013@gmail.com',
       role: 'sys-admin',
       createdDate: new Date(),
-      team: Common.generateObjectId(resp._id)
+      team: mongoCommon.generateObjectId(resp._id)
     });
 
     userModel.save(function(err) {
       if (err) throw err;
-      console.log('User saved successfully');
       res.json({ success: true });
     });
   })

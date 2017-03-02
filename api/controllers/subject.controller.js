@@ -1,6 +1,6 @@
 const express = require('express')
 const subjectRouter = express.Router();
-const subjectModel = require('../models/subject.model');
+const subjectModel = require('../../models/subject.model');
 const neo4j = require('neo4j');
 
 const db = new neo4j.GraphDatabase({
