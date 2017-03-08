@@ -29,12 +29,30 @@ setupRouter.post('/', function(req, res) {
     reports: reportData
   });
 
+  const dummyReportSet = new reportSetModel({
+    name: 'dummy report set 1',
+    createdDate: new Date(),
+    reports: reportData
+  })
+
+  const dummyReportSet2 = new reportSetModel({
+    name: 'dummy report set 2',
+    createdDate: new Date(),
+    reports: reportData
+  })
+
+  const dummyReportSet3 = new reportSetModel({
+    name: 'dummy report set 3',
+    createdDate: new Date(),
+    reports: reportData
+  })
+
   //const removeUsers = mongoose.connection.db.collection('users').drop;
 
   const team = new teamModel({
     name: 'Innosol Test Team',
     createdDate: new Date(),
-    reportSets: [defaultReportSet]
+    reportSets: [defaultReportSet, dummyReportSet, dummyReportSet2, dummyReportSet3]
   });
 
   const user = new userModel({

@@ -21,8 +21,9 @@ loginRouter.post('/login', function(req, res) {
       }
 
       // Remove the user password property
-      const {email, firstName, lastName, createdDate, role, _id, team} = user;
-      const data = {email, firstName, lastName, createdDate, role, _id, team};
+      const {email, firstName, lastName, createdDate, role, id, team} = user;
+      const data = {email, firstName, lastName, createdDate, role, id, team};
+
       const expiresIn = req.body.rememberMe ? (30 * 24 * 60 * 60) : (24 * 60 * 60)
       const token = jwt.sign(user, process.env.AUTH_TOKEN_SECRET, { expiresIn: expiresIn });
 

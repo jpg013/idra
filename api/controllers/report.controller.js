@@ -36,10 +36,12 @@ reportRouter.post('/download', function(req, res) {
     /* Query Neo4j with the report query */
     const stream = db.cypher({query: report.query}, function(err, results) {
       if (err) throw err;
-      res.json({
-        success: true,
-        results: results
-      })
+      setTimeout(function() {
+        res.json({
+          success: true,
+          results: results
+        })
+      }, 3000);
     })
   })
 });

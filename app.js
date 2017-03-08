@@ -8,12 +8,11 @@ const express        = require('express');
 const bodyParser     = require('body-parser');
 const logger         = require('morgan');
 const mongoose       = require('mongoose');
-const chalk          = require('chalk');
 const dotenv         = require('dotenv');
-const io             = require('./config/socket.io');
 const apiRouter      = require('./api/index');
 const publicRouter   = require('./public/index');
 const authMiddleware = require('./middleware/auth');
+const socket         = require('./socket/index');
 
 /*
  * Read environment config
@@ -41,7 +40,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 /*
  * Configure Middleware
  */
-app.use(authMiddleware.isAuthenticated);
+app.use('/api', authMiddleware.isAuthenticated);
 
 /**
  * Configure Public Routes
@@ -54,9 +53,9 @@ publicRouter.config(app);
 apiRouter.config(app);
 
 /**
- * Config Socket.io
+ * Config Sockets
  */
-io.config(server);
+socket.config(server);
 
 /**
  * Listen on Port

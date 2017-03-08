@@ -21,11 +21,12 @@
     "dotenv": "^4.0.0",
     "express": "^4.14.0",
     "fs": "0.0.2",
+    "immutable": "^3.8.1",
     "jsonwebtoken": "^7.2.1",
     "mongoose": "^4.7.7",
     "morgan": "^1.7.0",
     "neo4j": "^2.0.0-RC2",
-    "socket.io": "^1.7.3"
+    "sockjs": "^0.3.18"
   },
   "scripts": {
     "start": "nodemon app.js",
