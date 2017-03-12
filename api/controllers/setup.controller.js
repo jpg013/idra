@@ -47,12 +47,13 @@ setupRouter.post('/', function(req, res) {
     reports: reportData
   })
 
-  //const removeUsers = mongoose.connection.db.collection('users').drop;
-
   const team = new teamModel({
-    name: 'Innosol Test Team',
-    createdDate: new Date(),
-    reportSets: [defaultReportSet, dummyReportSet, dummyReportSet2, dummyReportSet3]
+    name: 'Innosol Pro',
+    neo4jAuth: 'neo4j Auth string',
+    neo4jConnection: 'neo4j Connection String',
+    reportSets  : [defaultReportSet, dummyReportSet, dummyReportSet2, dummyReportSet3],
+    createdDate : new Date(),
+    userCount: 1
   });
 
   const user = new userModel({
