@@ -25,8 +25,8 @@ userSchema.virtual('isSysAdmin').get(function() {
 });
 
 userSchema.virtual('clientProps').get(function() {
-  const {email, firstName, lastName, createdDate, role, id, team} = this;
-  return {email, firstName, lastName, createdDate, role, id, team};
+  const {lastLoginDate, email, firstName, lastName, createdDate, role, id, team} = this;
+  return {lastLoginDate, email, firstName, lastName, createdDate, role, id, team};
 })
 
 

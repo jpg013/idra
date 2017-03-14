@@ -1,4 +1,4 @@
-const crypto       = require('crypto');
+const crypto = require('crypto');
 
 function encrypt(text) {
   let cipher = crypto.createCipher(process.env.CRYPTO_ALGORITHM, process.env.CRYPTO_SECRET);
