@@ -1,20 +1,21 @@
-const reportController  = require('./controllers/report.controller');
-const setupController   = require('./controllers/setup.controller');
-const subjectController = require('./controllers/subject.controller');
-const teamController    = require('./controllers/team.controller');
-const usersController    = require('./controllers/users.controller');
 const express           = require('express');
+const reportsController = require('../controllers/reports.controller');
+const teamsController   = require('../controllers/teams.controller');
+const usersController   = require('../controllers/users.controller');
 
 const config = app => {
   const apiRouter = express.Router();
-  apiRouter.use('/team', teamController);
+
+  /**
+   * Mount the controllers to routes
+   */
+  apiRouter.use('/teams', teamsController);
   apiRouter.use('/users', usersController);
-  apiRouter.use('/subject', subjectController);
-  apiRouter.use('/setup', setupController);
-  apiRouter.use('/report', reportController);
+  apiRouter.use('/reports', reportsController);
+
   app.use('/api', apiRouter);
 }
 
 module.exports = {
   config
-}
+};

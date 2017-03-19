@@ -1,33 +1,33 @@
-const mongoose       = require('mongoose');
-const Schema         = mongoose.Schema;
-const reportSetModel = require('./report-set.model');
+const mongoose         = require('mongoose');
+const Schema           = mongoose.Schema;
+const reportCollection = require('./report-collection.model');
 
-const TeamSchema = new Schema({
-  name        : String,
-  reportSets  : [reportSetModel.schema],
-  createdDate : Date,
-  userCount   : Number,
-  neo4jConnection: String,
-  neo4jAuth: String
+const teamSchema = new Schema({
+  name              : String,
+  reportCollections : [reportCollection.schema],
+  createdDate       : Date,
+  userCount         : Number,
+  neo4jConnection   : String,
+  neo4jAuth         : String
 });
 
-TeamSchema.virtual('reportSetCount').get(function() {
-  return this.reportSets.length;
+teamSchema.virtual('reportCollectionCount').get(function() {
+  return this.reportCollections.length;
 });
 
-TeamSchema.virtual('reportCount').get(function() {
-  return this.reportSets.reduce((acc, cur) => {
+teamSchema.virtual('reportCount').get(function() {
+  return this.reportCollections.reduce((acc, cur) => {
     return acc + cur.reports.length;
   }, 0);
 });
 
-TeamSchema.virtual('id').get(function() {
+teamSchema.virtual('id').get(function() {
   return this._id.toString();
 });
 
-TeamSchema.virtual('clientProps').get(function() {
-  const { name, reportsSets, createdDate, userCount, neo4jConnection, neo4jAuth, reportSetCount, reportCount, id } = this;
-  return { name, reportsSets, createdDate, userCount, neo4jConnection, neo4jAuth, reportSetCount, reportCount, id};
+teamSchema.virtual('clientProps').get(function() {
+  const { name, reportCollections, createdDate, userCount, neo4jConnection, neo4jAuth, reportSetCount, reportCount, id } = this;
+  return { name, reportCollections, createdDate, userCount, neo4jConnection, neo4jAuth, reportSetCount, reportCount, id};
 })
 
-module.exports = mongoose.model('Team', TeamSchema);
+module.exports = mongoose.model('Team', teamSchema);

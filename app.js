@@ -37,18 +37,19 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
+/**
+ * Public Router
+ */
+publicRouter.config(app);
+
+
 /*
  * Configure Middleware
  */
 app.use('/api', authMiddleware.isAuthenticated);
 
 /**
- * Configure Public Routes
- */
-publicRouter.config(app);
-
-/**
- * Configure Api Routes
+ * Api Router
  */
 apiRouter.config(app);
 

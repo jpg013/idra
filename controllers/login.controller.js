@@ -1,8 +1,8 @@
 const express        = require('express')
 const loginRouter    = express.Router();
-const user           = require('../../models/user.model');
+const user           = require('../models/user.model');
 const jwt            = require('jsonwebtoken');
-const cryptoCommon   = require('../../common/crypto');
+const cryptoCommon   = require('../common/crypto');
 
 const loginFailedMsg = "Login failed. Invalid username / password.";
 

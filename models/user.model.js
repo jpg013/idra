@@ -10,7 +10,7 @@ const userSchema = new schema({
   lastLoginDate: Date,
   role: {
     type: String,
-    enum: ['sys-admin', 'team-admin', 'user'],
+    enum: ['admin', 'user'],
     default: 'user'
   },
   team: {type: mongoose.Schema.Types.ObjectId, ref: 'Team'}
@@ -20,8 +20,8 @@ userSchema.virtual('id').get(function() {
   return this._id.toString();
 });
 
-userSchema.virtual('isSysAdmin').get(function() {
-  return this.role === "sys-admin";
+userSchema.virtual('isAdmin').get(function() {
+  return this.role === "admin";
 });
 
 userSchema.virtual('clientProps').get(function() {
