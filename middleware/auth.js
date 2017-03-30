@@ -8,7 +8,7 @@ const getRequestBearerToken = headers => {
 }
 
 const isAdmin = (req, res, next) => {
-  User.findOne({_id: req.authTokenData._id}, function(err, userModel) {
+  User.findOne({_id: req.authTokenData.id}, function(err, userModel) {
     if (err) throw err;
     
     if (!userModel) {
@@ -46,7 +46,7 @@ const isAuthenticated = (req, res, next) => {
         message: 'Bad token'
       });
     }
-    req.authTokenData = authToken._doc;
+    req.authTokenData = authToken;
     next();
   });
 }

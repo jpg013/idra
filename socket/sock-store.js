@@ -8,7 +8,14 @@ const buildConnectionStore = () => {
   let userConnectionMap = immutable.Map();
   let rooms = immutable.Map();
 
-  const roomRestrctions = immutable.Map({"admin": [user => user.isSysAdmin]});
+  const roomRestrictions = immutable.Map({"admin": [user => user.isAdmin]});
+
+  const canUserJoinRoom = (room, userModel) => {
+    const restrictions = roomRestrictions.get(room);
+    if (!restrictions) return true;
+    const failed = restrictions.filter(fn => !fn(userModel));
+    return failed.length === 0;
+  }
 
   const addConnection = conn => {
     if (!conn) { return; }
@@ -37,11 +44,24 @@ const buildConnectionStore = () => {
 
   const joinRoom = (roomName, user) => {
     if (!roomName || !user) { return; }
+    if (!canUserJoinRoom(roomName, user)) { return; }
     if (!rooms.get(roomName)) {
       rooms = rooms.set(roomName, immutable.Set.of(user.id));
     } else {
       rooms = rooms.update(roomName, val => val.contains(user.id) ? val : val.add(user.id));
     }
+  }
+
+  const getConnectedRoomSockets = (roomName) => {
+    if (!roomName) return;
+    const roomUserIds = rooms.get(roomName);
+    if (!roomUserIds) return;
+
+    // Map the user ids to connected clients
+    return roomUserIds
+      .toList()
+      .map(cur => getClientSocket(cur))
+      .filter(cur => !!cur);
   }
 
   const leaveRoom = (roomName, user) => {
@@ -54,7 +74,8 @@ const buildConnectionStore = () => {
     removeConnection,
     joinRoom,
     getClientSocket,
-    getConnectedClientList
+    getConnectedClientList,
+    getConnectedRoomSockets
   }
 }
 

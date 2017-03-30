@@ -3,6 +3,7 @@ const Team            = require('../models/team.model');
 const authMiddleware  = require('../middleware/auth');
 const teamsController = express.Router();
 const teamsService    = require('../services/teams.service');
+const sockEvents      = require('../socket/sock-events');
 
 /**
  * Constants
@@ -12,9 +13,9 @@ const editTeamErrMsg = 'There was an error updating the team';
 const deleteTeamErrorMsg = 'There was an error deleting the team';
 
 const getTeams = (req, res) => {
-  teamsService.queryTeams({}, (err, teams) => {
+  teamsService.queryTeams({}, (err, teamCollection) => {
     if (err) throw err;
-    const data = teams.map(cur => cur.clientProps);
+    const data = teamCollection.map(cur => cur.clientProps);
     res.json({data}); 
   })
 }
@@ -47,9 +48,9 @@ const deleteTeam = (req, res) => {
 }
 
 const addTeam = (req, res) => {
-  const {name, neo4jConnection, neo4jAuth} = req.body;
+  const {name, neo4jConnection, neo4jAuth, imageURL} = req.body;
   const formData = {name, neo4jConnection, neo4jAuth};
-  
+
   if (!teamsService.validateTeamForm(formData)) {
     return res.status(401).send({success: false, msg: 'Invalid team data'});
   }
@@ -63,6 +64,13 @@ const addTeam = (req, res) => {
       res.json({success: false, msg: addTeamErrorMsg});
     }
 
+    const socketData = {
+      room: 'admin',
+      action: 'SOCKET_ADD_TEAM',
+      data: createdTeam
+    }
+
+    sockEvents.emit(sockEvents.e.notifyRoom, socketData);
     res.json({success: true, data: createdTeam.clientProps});
   });
 }

@@ -25,9 +25,14 @@ const removeEventListener = (event, cb) => {
   socketEmitter.removeListener(event, cb);
 };
 
-const emit = (event, data) => {
-  socketEmitter.emit(event, data);
+const emit = (event, payload) => {
+  socketEmitter.emit(event, payload);
 };
+
+const alertAddTeam = teamModel => {
+  if (!teamModel) return;
+
+}
 
 module.exports = {
   emit,

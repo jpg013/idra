@@ -16,7 +16,7 @@ const queryUsers = (query, cb) => {
 
 const findUser = (id, cb) => User.findOne({_id: id}).populate('team').exec(cb);  
 
-const findUserByUsername = (email, cb) => User.findOne({email}, cb);
+const findUserByUsername = (email, cb) => User.findOne({email}).populate('team').exec(cb);
 
 const validateUserForm = formData => {
   const { firstName, lastName, email, password } = formData;
@@ -83,5 +83,7 @@ module.exports = {
   createUser,
   deleteUser,
   isValidUserPassword,
-  editUser
+  editUser,
+  findUserByUsername,
+  findUser
 };

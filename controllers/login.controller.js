@@ -1,38 +1,43 @@
-const express        = require('express')
-const loginRouter    = express.Router();
-const user           = require('../models/user.model');
-const jwt            = require('jsonwebtoken');
-const cryptoCommon   = require('../common/crypto');
+const express         = require('express')
+const loginController = express.Router();
+const jwt             = require('jsonwebtoken');
+const cryptoClient    = require('../common/crypto');
+const usersService    = require('../services/users.service');
 
 const loginFailedMsg = "Login failed. Invalid username / password.";
+const loginErrMsg = "An error occurred while logging in";
 
-loginRouter.post('/login', function(req, res) {
-  // Query the user
-  user
-    .findOne({email: req.body.email})
-    .populate('team')
-    .exec(function(err, user) {
-      if (err) throw err;
-      if (!user) {
-        return res.json({success: false, message: loginFailedMsg});
-      }
-      if (req.body.password !== cryptoCommon.decrypt(user.password)) {
-        return res.json({ success: false, message: loginFailedMsg });
-      }
+const loginUser = (req, res) => {
+  const {email, password, rememberMe} = req.body;
+  
+  if (!email || !password) {
+    return res.status(400).send({msg: loginFailedMsg});
+  }
 
-      // Remove the user password property
-      const {email, firstName, lastName, createdDate, role, id, team} = user;
-      const data = {email, firstName, lastName, createdDate, role, id, team};
+  usersService.findUserByUsername(email, function(err, userModel) {
+    if (err) return res.json({success: false, msg: loginErrMsg});
+    if (!userModel) return res.json({success: false, message: loginFailedMsg});
 
-      const expiresIn = req.body.rememberMe ? (30 * 24 * 60 * 60) : (24 * 60 * 60)
-      const token = jwt.sign(user, process.env.AUTH_TOKEN_SECRET, { expiresIn: expiresIn });
+    if (req.body.password !== cryptoClient.decrypt(userModel.password)) {
+      return res.json({ success: false, message: loginFailedMsg });
+    }
 
-      res.json({
-        success: true,
-        token: token,
-        user: data
-      })
-   });
-});
+    const tokenData = userModel.clientProps;
 
-module.exports = loginRouter;
+    const expiresIn = req.body.rememberMe ? (30 * 24 * 60 * 60) : (24 * 60 * 60)
+    const token = jwt.sign(tokenData, process.env.AUTH_TOKEN_SECRET, { expiresIn: expiresIn });
+
+    res.json({
+      success: true,
+      token: token,
+      user: userModel
+    });
+  });
+};
+
+/**
+ * Controller Routes
+ */
+loginController.post('/login', loginUser);
+
+module.exports = loginController;

@@ -25,9 +25,14 @@ function Idra() {
   const runReport = (reportModel) => {
     // Do Some stuff and run the report
   }
+
+  const testNeo4jCredentials = (connection, auth) => {
+    
+  }
   
   return {
-    runReport
+    runReport,
+    testNeo4jCredentials
   }
 }
 

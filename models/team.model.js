@@ -8,7 +8,10 @@ const teamSchema = new Schema({
   createdDate       : Date,
   userCount         : Number,
   neo4jConnection   : String,
-  neo4jAuth         : String
+  neo4jAuth         : String,
+  lastActivityDate  : Date,
+  imageURL          : String,
+  downloadCount     : Number
 });
 
 teamSchema.virtual('reportCollectionCount').get(function() {
@@ -26,8 +29,8 @@ teamSchema.virtual('id').get(function() {
 });
 
 teamSchema.virtual('clientProps').get(function() {
-  const { name, reportCollections, createdDate, userCount, neo4jConnection, neo4jAuth, reportSetCount, reportCount, id } = this;
-  return { name, reportCollections, createdDate, userCount, neo4jConnection, neo4jAuth, reportSetCount, reportCount, id};
+  const { name, reportCollections, createdDate, userCount, neo4jConnection, neo4jAuth, reportCollectionCount, reportCount, id, downloadCount } = this;
+  return { name, reportCollections, createdDate, userCount, neo4jConnection, neo4jAuth, reportCollectionCount, reportCount, id, downloadCount};
 })
 
 module.exports = mongoose.model('Team', teamSchema);

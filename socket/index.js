@@ -17,10 +17,7 @@ const config = server => {
     const onSocketMsg = msg => {
       if (!msg) { return; }
       msg = JSON.parse(msg);
-      sockEvents.emit(msg.event, {
-        payload: msg.payload,
-        socket: socket
-      });
+      sockEvents.emit(msg.event, Object.assign({}, msg.payload, {socket}));
     };
 
     const onSocketClose = () => store.removeConnection(socket.id);

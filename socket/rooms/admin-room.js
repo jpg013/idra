@@ -7,11 +7,18 @@ const user       = require('../../models/user.model');
 const onJoinRoom = (data) => {
   const tokenString = data.payload;
   const socket = data.socket;
+  
+  console.log('we are attempting to join this room');
+
   if (!tokenString || !socket) { return; }
   authToken.verifyTokenAndReturnUser(tokenString, function(err, userModel) {
-    if (!userModel || !userModel.isSysAdmin) { return; }
+    if (!userModel || !userModel.isAdmin) { return; }
+
+    console.log('we have been authenticated');
+
     sockStore.joinRoom('admin', userModel);
     const connectedSockets = sockStore.getConnectedClientList();
+    
     const users = user.find({_id: {$in: connectedSockets}}, function(err, users) {
       if (err) { return; }
       const payload = {

@@ -19,17 +19,17 @@ const validateTeamForm = (data) => {
 }
 
 const doesTeamNameExists = (name, cb) => {
-  queryTeams({name}, (teams) => cb(teams.length > 0))
+  queryTeams({name}, (teams) => cb(teams.length > 0));
 }
 
 const queryTeams = (query, cb) => {
-  Team.find(query).exec(function(err, teams) {
-    return cb(err, data)
+  Team.find(query).exec(function(err, teamCollection) {
+    return cb(err, teamCollection);
   });
 }
 
 const findTeam = (id, cb) => {
-  Team.find({_id: id}, function(err, teamModel) {
+  Team.findOne({_id: id}, function(err, teamModel) {
     return cb(err, teamModel);
   });
 }
