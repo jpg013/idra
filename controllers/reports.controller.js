@@ -1,37 +1,31 @@
 const express           = require('express')
 const reportsService    = require('../services/reports.service');
 const usersService      = require('../services/users.service');
+const idra              = require('../services/idra');
 const reportsController = express.Router();
 
 const downloadReportErrMsg = 'An error occurred while downloading the report';
+const downloadReportBadRequestMsg = 'Missing required report id or collection id';
 
 const downloadReport = (req, res) => {
   const { reportId, reportCollectionId } = req.body;
-  if (!reportId || !reportCollectionId) return res.sendStatus(400);
+  if (!reportId || !reportCollectionId) return res.status(400).send({sucess: false, msg: downloadReportBadRequestMsg});
   
-}
-
-reportsController.post('/download', function(req, res) {
-  const {collectionId, reportId} = req.body;
-  if (!collectionId || !reportId) {
-    return res.sendStatus(400);
-  }
-  
-  usersService.findUser(req.authTokenData._id, function(err, userModel) {
-    if (err) return res.json({success: false, msg: downloadReportErrMsg});
-    if (!userModel) {
-      return res.json({success: false, msg: downloadReportErrMsg});
-    }
-    const report = reportsService.lookupTeamReport(userModel.team, collectionId, reportId);
+  usersService.findUser(req.authTokenData.id, function(err, userModel) {
+    if (err || !userModel) return res.json({success: false, msg: downloadReportErrMsg});
+    const report = reportsService.lookupReport(userModel.team, reportCollectionId, reportId);
     if (!report) {
       res.json({success: false, msg: downloadReportErrMsg});
     }
-    //TODO - Talk to Idra here
-    setTimeout(function() {
-      return res.json({success: true});
-    }, 2500);
+    
+    idra.runReport(userModel.team, report, function(err, reportCsv) {
+      if (err || !reportCsv) {
+        return res.json({success: false, msg: downloadReportErrMsg});
+      }
+      res.status(200).send({success: true, data: reportCsv});
+    });
   });
-});
+}
 
 /**
  * Reports Controller Routes

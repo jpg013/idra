@@ -59,7 +59,7 @@ const createTeam = (data, cb) => {
     const newTeamModel = new Team(teamData);
     newTeamModel.save(function(err) {
       if (err) return cb(addTeamErrorMsg);
-      findTeam(teamModel.id, function(err, teamModel) {
+      findTeam(newTeamModel.id, function(err, teamModel) {
         return err ? cb(addTeamErrorMsg) : cb(undefined, teamModel);
       })
     });

@@ -13,6 +13,7 @@ const apiRouter      = require('./api/index');
 const publicRouter   = require('./public/index');
 const authMiddleware = require('./middleware/auth');
 const socket         = require('./socket/index');
+const idra           = require('./services/idra');
 
 /*
  * Read environment config

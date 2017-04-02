@@ -1,69 +1,54 @@
-const express        = require('express')
-const setupRouter    = express.Router();
-const teamModel      = require('../../models/team.model');
-const userModel      = require('../../models/user.model');
-const reportSetModel = require('../../models/report-set.model');
-const reportModel    = require('../../models/report.model');
-const cryptoCommon   = require('../../common/crypto');
-const mongoCommon    = require('../../common/mongo');
-const async          = require('async');
+const express               = require('express')
+const setupRouter           = express.Router();
+const teamModel             = require('../models/team.model');
+const userModel             = require('../models/user.model');
+const reportCollectionModel = require('../models/report-collection.model');
+const reportModel           = require('../models/report.model');
+const cryptoClient          = require('../common/crypto');
+const async                 = require('async');
+
+const reportQuery = `// DEMO 6 Alumni Athelete Giving by Sport - Fund, Amount, Date
+      MATCH (a:Sports {name:'BASEBALL'})-[]-(n:Alumni)-[]-(b:Fund)
+      WITH a, n, b
+      ORDER BY b.date DESC
+      WITH a, n, HEAD(COLLECT(b)) as b
+      RETURN n.name as name, n.BBid as id, n.rtg1category as Rating1Cat, n.rtg1description as 
+      Rating1Desc, n.rtg2category as Rating2Cat, n.rtg2description as Rating2Desc, 
+      n.rtg3category as Rating3Cat, n.rtg3description as Rating3Desc, n.rtg4category as Rating4Cat, 
+      n.rtg4description as Rating4Desc, n.rtg5category as Rating5Cat, n.rtg5description as Rating5Desc,
+      n.totalgiving as totalgifts, a.name as Sport, b.name as Fund, b.date as date, b.amount as amount`;
 
 const reportData = [
-  new reportModel({ name: 'test report 1',  createdDate: new Date(),  description: 'this is a description for a the report 1',  query: 'MATCH (n:Greeklife) RETURN n LIMIT 25' }),
-  new reportModel({ name: 'test report 2',  createdDate: new Date(),  description: 'this is a description for a the report 2',  query: 'MATCH (n:Greeklife) RETURN n LIMIT 25' }),
-  new reportModel({ name: 'test report 3',  createdDate: new Date(),  description: 'this is a description for a the report 3',  query: 'MATCH (n:Greeklife) RETURN n LIMIT 25' }),
-  new reportModel({ name: 'test report 4',  createdDate: new Date(),  description: 'this is a description for a the report 4',  query: 'MATCH (n:Greeklife) RETURN n LIMIT 25' }),
-  new reportModel({ name: 'test report 5',  createdDate: new Date(),  description: 'this is a description for a the report 5',  query: 'MATCH (n:Greeklife) RETURN n LIMIT 25' }),
-  new reportModel({ name: 'test report 6',  createdDate: new Date(),  description: 'this is a description for a the report 6',  query: 'MATCH (n:Greeklife) RETURN n LIMIT 25' }),
-  new reportModel({ name: 'test report 7',  createdDate: new Date(),  description: 'this is a description for a the report 7',  query: 'MATCH (n:Greeklife) RETURN n LIMIT 25' }),
-  new reportModel({ name: 'test report 8',  createdDate: new Date(),  description: 'this is a description for a the report 8',  query: 'MATCH (n:Greeklife) RETURN n LIMIT 25' })
+  new reportModel({ name: 'DEMO 6',  createdDate: new Date(),  description: 'Alumni Athelete Giving by Sport - Fund, Amount, Date',  query: reportQuery })
 ];
 
 const removeTeams = cb => teamModel.collection.drop(cb);
 const removeUsers = cb => userModel.collection.drop(cb);
 
 setupRouter.post('/', function(req, res) {
-  const defaultReportSet = new reportSetModel({
-    name: 'default report set',
+  const defaultReportCollection = new reportCollectionModel({
+    name: 'default report collection',
     createdDate: new Date(),
     reports: reportData
   });
 
-  const dummyReportSet = new reportSetModel({
-    name: 'dummy report set 1',
-    createdDate: new Date(),
-    reports: reportData
-  })
-
-  const dummyReportSet2 = new reportSetModel({
-    name: 'dummy report set 2',
-    createdDate: new Date(),
-    reports: reportData
-  })
-
-  const dummyReportSet3 = new reportSetModel({
-    name: 'dummy report set 3',
-    createdDate: new Date(),
-    reports: reportData
-  })
-
   const team = new teamModel({
-    name: 'Innosol Pro',
-    neo4jAuth: 'neo4j Auth string',
-    neo4jConnection: 'neo4j Connection String',
-    reportSets  : [defaultReportSet, dummyReportSet, dummyReportSet2, dummyReportSet3],
+    name: 'Innosol Pro Admin',
+    neo4jAuth: 'neo4j:Innosolpro2016**',
+    neo4jConnection: 'http://neo4j:neo4j@localhost:7474',
+    reportCollections  : [defaultReportCollection],
     createdDate : new Date(),
     userCount: 1
   });
 
   const user = new userModel({
-    firstName: 'Justin',
-    lastName: 'Graber',
-    password: cryptoCommon.encrypt('password'),
-    email: 'jpg013@gmail.com',
-    role: 'sys-admin',
+    firstName: 'Jim',
+    lastName: 'Morgan',
+    password: cryptoClient.encrypt('Innosolpro2016**'),
+    email: 'jim.morgan@innosolpro.com',
+    role: 'admin',
     createdDate: new Date(),
-    team: mongoCommon.generateObjectId(team._id)
+    team: team._id
   });
 
   const addTeam = cb => team.save(cb);

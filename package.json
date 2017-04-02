@@ -23,6 +23,7 @@
     "fetch": "^1.1.0",
     "fs": "0.0.2",
     "immutable": "^3.8.1",
+    "json2csv": "^3.7.3",
     "jsonwebtoken": "^7.2.1",
     "mongoose": "^4.7.7",
     "morgan": "^1.7.0",
