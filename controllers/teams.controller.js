@@ -57,21 +57,16 @@ const addTeam = (req, res) => {
 
   teamsService.createTeam(formData, (err, createdTeam) => {
     if (err) {
-      return res.json({ success: false, msg: addTeamErrorMsg }); 
+      return res.json({ success: false, msg: err }); 
     }
-
-    if (!createdTeam) {
-      res.json({success: false, msg: addTeamErrorMsg});
-    }
+    res.json({success: true, data: createdTeam.clientProps});
 
     const socketData = {
       room: 'admin',
       action: 'SOCKET_ADD_TEAM',
       data: createdTeam
     }
-
     sockEvents.emit(sockEvents.e.notifyRoom, socketData);
-    res.json({success: true, data: createdTeam.clientProps});
   });
 }
 

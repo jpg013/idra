@@ -1,5 +1,11 @@
 const Team = require('../models/team.model');
 
+/**
+ * Constants
+ */
+const addTeamErrorMsg = 'There was an error creating the team';
+const teamExistsErrorMsg = 'Team name already exists.'
+
 const canDeleteTeam = teamModel => {
   return teamModel.userCount === 0;
 }
@@ -18,8 +24,10 @@ const validateTeamForm = (data) => {
   return true;
 }
 
-const doesTeamNameExists = (name, cb) => {
-  queryTeams({name}, (teams) => cb(teams.length > 0));
+const doesTeamNameExist = (name, cb) => {
+  queryTeams({name}, (err, teams) => {
+    return cb(err, teams.length > 0);
+  });
 }
 
 const queryTeams = (query, cb) => {
@@ -39,17 +47,22 @@ const deleteTeam = (id, cb) => {
 }
 
 const createTeam = (data, cb) => {
-  const teamData = Object.assign({}, data, {
-    reportCollections: [],
-    createdDate: new Date(),
-    userCount: 0
-  });
-  
-  const team = new Team(teamData);
-
-  team.save(function(err) {
-    if (err) return cb(err);
-    findTeam(team.id, cb);
+  doesTeamNameExist(data.name, function(err, exists) {
+    if (err) return cb(addTeamErrorMsg);
+    if (exists) return cb(teamExistsErrorMsg);
+    
+    const teamData = Object.assign({}, data, {
+      reportCollections: [],
+      createdDate: new Date(),
+      userCount: 0
+    });  
+    const newTeamModel = new Team(teamData);
+    newTeamModel.save(function(err) {
+      if (err) return cb(addTeamErrorMsg);
+      findTeam(teamModel.id, function(err, teamModel) {
+        return err ? cb(addTeamErrorMsg) : cb(undefined, teamModel);
+      })
+    });
   });
 }
 
@@ -65,5 +78,6 @@ module.exports = {
   queryTeams,
   deleteTeam,
   createTeam,
-  updateTeam
+  updateTeam,
+  doesTeamNameExist
 };

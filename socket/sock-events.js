@@ -29,11 +29,6 @@ const emit = (event, payload) => {
   socketEmitter.emit(event, payload);
 };
 
-const alertAddTeam = teamModel => {
-  if (!teamModel) return;
-
-}
-
 module.exports = {
   emit,
   attachEventListener,
