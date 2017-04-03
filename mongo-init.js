@@ -42,7 +42,7 @@ const team = new teamModel({
   userCount: 1
 });
 
-const user = new userModel({
+const user1 = new userModel({
   firstName: 'Jim',
   lastName: 'Morgan',
   password: cryptoClient.encrypt('Innosolpro2016**'),
@@ -52,14 +52,28 @@ const user = new userModel({
   team: team._id
 });
 
-const addTeam = cb => team.save(cb);
-const addUser = cb => user.save(cb);
+const user2 = new userModel({
+  firstName: 'Justin ',
+  lastName: 'Graber',
+  password: cryptoClient.encrypt('password'),
+  email: 'justin.graber@innosolpro.com',
+  role: 'admin',
+  createdDate: new Date(),
+  team: team._id
+});
 
-async.series([removeTeams, removeUsers, addTeam, addUser], function(err) {
+const usersPipeline = [user1, user2];
+
+const addTeam = cb => team.save(cb);
+const addUser1 = cb => user1.save(cb);
+const addUser2 = cb => user2.save(cb);
+
+async.series([removeTeams, removeUsers, addTeam, addUser1, addUser2], function(err) {
   if (err) {
     console.log('there was an error running the script!');
   } else {
     console.log('success!')
+    process.exit();
   }
 });
 

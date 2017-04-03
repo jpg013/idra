@@ -10,10 +10,9 @@ const logger         = require('morgan');
 const mongoose       = require('mongoose');
 const dotenv         = require('dotenv');
 const apiRouter      = require('./api/index');
-const publicRouter   = require('./public/index');
-const authMiddleware = require('./middleware/auth');
 const socket         = require('./socket/index');
 const idra           = require('./services/idra');
+const path           = require('path');
 
 /*
  * Read environment config
@@ -38,22 +37,25 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static('public'));
-
-/**
- * Public Router
- */
-publicRouter.config(app);
-
+app.use(express.static(path.join(__dirname, 'public')));
 
 /*
  * Configure Middleware
  */
-app.use('/api', authMiddleware.isAuthenticated);
+
+/**
+ * 
+ */
 
 /**
  * Api Router
  */
 apiRouter.config(app);
+
+// Handles all routes so you do not get a not found error
+app.get('*', function (request, response){
+  response.sendFile(path.resolve(__dirname, 'public', 'index.html'))
+});
 
 /**
  * Config Sockets

@@ -12,7 +12,7 @@ const onIdentifyConnection = (payload) => {
   const pipeline = [
     cb => authTokenClient.verifyTokenAndReturnUser(tokenString, cb),
     (userModel, cb) => {
-      if (!userModel) { return cb(); }
+      if (!userModel) { return cb(userModel); }
       sockStore.identifyConnection(userModel.id, socket.id);
       // update the last login date
       user.findOneAndUpdate({_id: userModel._id}, {$set: {'lastLogin': new Date()}}, {new: true})

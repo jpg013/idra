@@ -3,6 +3,8 @@ const reportsController = require('../controllers/reports.controller');
 const teamsController   = require('../controllers/teams.controller');
 const usersController   = require('../controllers/users.controller');
 const setupController   = require('../controllers/setup.controller');
+const loginController   = require('../controllers/login.controller');
+const authMiddleware    = require('../middleware/auth');
 
 const config = app => {
   const apiRouter = express.Router();
@@ -10,11 +12,15 @@ const config = app => {
   /**
    * Mount the controllers to routes
    */
-  apiRouter.use('/teams', teamsController);
-  apiRouter.use('/users', usersController);
-  apiRouter.use('/reports', reportsController);
-  apiRouter.use('/setup', setupController);
+  apiRouter.use('/teams', authMiddleware.isAuthenticated, teamsController);
+  apiRouter.use('/users', authMiddleware.isAuthenticated, usersController);
+  apiRouter.use('/reports', authMiddleware.isAuthenticated, reportsController);
+  apiRouter.use('/setup', authMiddleware.isAuthenticated, setupController);
+  apiRouter.use('/', loginController);
 
+  /**
+   *  Mount the router to the app
+   */
   app.use('/api', apiRouter);
 }
 
