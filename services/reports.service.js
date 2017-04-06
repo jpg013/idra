@@ -1,10 +1,16 @@
-const lookupReport = (team, collectionId, reportId) => {
-  if (!team || !collectionId || !reportId) return;
-  const reportCollection = team.reportCollections.find(cur => cur.id === collectionId);
-  if (!reportCollection) return;
-  return reportCollection.reports.find(cur => cur.id === reportId);
+const Report = require('../models/report.model');
+
+function buildReportModel(reportData) {
+  const {name, description, query, collectionName} = reportData;
+  return Report({
+    name,
+    description,
+    query,
+    collectionName,
+    createdDate: new Date()
+  })
 }
 
 module.exports = {
-  lookupReport
+  buildReportModel
 }

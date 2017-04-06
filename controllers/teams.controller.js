@@ -47,15 +47,8 @@ const deleteTeam = (req, res) => {
   });
 }
 
-const addTeam = (req, res) => {
-  const {name, neo4jConnection, neo4jAuth, imageURL} = req.body;
-  const formData = {name, neo4jConnection, neo4jAuth};
-
-  if (!teamsService.validateTeamForm(formData)) {
-    return res.status(401).send({success: false, msg: 'Invalid team data'});
-  }
-
-  teamsService.createTeam(formData, (err, createdTeam) => {
+const createTeam = (req, res) => {
+  teamsService.createTeam(req.body, (err, createdTeam) => {
     if (err) {
       return res.json({ success: false, msg: err }); 
     }
@@ -106,7 +99,7 @@ const editTeam = (req, res) => {
  */
 teamsController.get('/', authMiddleware.isAdmin, getTeams);
 teamsController.delete('/', authMiddleware.isAdmin, deleteTeam);
-teamsController.post('/', authMiddleware.isAdmin, addTeam);
+teamsController.post('/', authMiddleware.isAdmin, createTeam);
 teamsController.put('/', authMiddleware.isAdmin, editTeam);
 
 module.exports = teamsController;

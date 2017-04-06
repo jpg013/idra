@@ -1,27 +1,40 @@
-const Team = require('../models/team.model');
+const Team           = require('../models/team.model');
+const cryptoClient   = require('../common/crypto');
+const reportsService = require('./reports.service');
 
 /**
  * Constants
  */
-const addTeamErrorMsg = 'There was an error creating the team';
-const teamExistsErrorMsg = 'Team name already exists.'
+const addTeamErrMsg = 'There was an error creating the team';
+const invalidTeamDataErrMsg = 'Invalid team data';
+const invalidReportDataErrMsg = 'Invalid report data';
+const teamDoesNotExistErrMsg = 'Team does not exists';
+const teamExistsErrMsg = 'Team name already exists.'
+const addReportErrMsg = 'There was an error creating the report';
 
 const canDeleteTeam = teamModel => {
   return teamModel.userCount === 0;
 }
 
-const validateTeamForm = (data) => {
-  const {name, neo4jConnection, neo4jAuth} = data;
+const sanitizeTeamData = (data) => {
+  const { name, neo4jConnection, neo4jAuth, imageURL } = data;
 
   if (!name || name.trim().length < 3) {
     return false;
   }
 
   if (!neo4jConnection || !neo4jAuth) {
-    return false
+    return false;
   }
+  return {name, neo4jConnection, neo4jAuth, imageURL};
+}
 
-  return true;
+function sanitizeReportData(data) {
+  const {name, description, query, teamId, collectionName} = data;
+  if (!name || !description || !query || !teamId || !collectionName) {
+    return;
+  }
+  return {name, description, query, teamId, collectionName};
 }
 
 const doesTeamNameExist = (name, cb) => {
@@ -46,22 +59,38 @@ const deleteTeam = (id, cb) => {
   Team.findByIdAndRemove(id, cb);
 }
 
-const createTeam = (data, cb) => {
-  doesTeamNameExist(data.name, function(err, exists) {
-    if (err) return cb(addTeamErrorMsg);
-    if (exists) return cb(teamExistsErrorMsg);
+function buildTeamModel(data) {
+  const {name, neo4jConnection, neo4jAuth, imageURL} = data;
+  const teamData = Object.assign({}, {
+    name,
+    neo4jConnection: cryptoClient.encrypt(neo4jConnection),
+    neo4jAuth: cryptoClient.encrypt(neo4jAuth),
+    imageURL,
+    reports: [],
+    createdDate: new Date(),
+    userCount: 0,
+    downloadCount: 0
+  });  
+  return new Team(teamData);
+}
+
+const createTeam = (formData, cb) => {
+  const sanitizedTeamData = sanitizeTeamData(formData);
+  if (!sanitizedTeamData) {
+    return cb(invalidTeamDataMsg);
+  } 
+
+  doesTeamNameExist(sanitizedTeamData.name, function(err, exists) {
+    if (err) return cb(addTeamErrMsg);
+    if (exists) return cb(teamExistsErrMsg);
     
-    const teamData = Object.assign({}, data, {
-      reportCollections: [],
-      createdDate: new Date(),
-      userCount: 0
-    });  
-    const newTeamModel = new Team(teamData);
+    const newTeamModel = buildTeamModel(sanitizedTeamData);
+    
     newTeamModel.save(function(err) {
-      if (err) return cb(addTeamErrorMsg);
+      if (err) return cb(addTeamErrMsg);
       findTeam(newTeamModel.id, function(err, teamModel) {
         return err ? cb(addTeamErrorMsg) : cb(undefined, teamModel);
-      })
+      });
     });
   });
 }
@@ -72,12 +101,38 @@ const updateTeam = (teamId, data, cb) => {
   Team.findOneAndUpdate({_id: teamId}, {$set}, {new: true}, cb);
 }
 
+function createTeamReport(reportData, cb) {
+  const sanitizedReportData = sanitizeReportData(reportData);
+  if (!sanitizedReportData) {
+    return cb(invalidReportDataErrMsg);
+  } 
+  const reportModel = reportsService.buildReportModel(sanitizedReportData);
+  findTeam(sanitizedReportData.teamId, function(err, teamModel) {
+    if(err) return cb(err);
+    if (!teamModel) return cb(teamDoesNotExistErrMsg);
+    
+    const $push = {
+      $push: {'reports': reportModel}
+    };
+
+    const opts = {
+      upsert: true,
+      new: true
+    };
+
+    Team.findByIdAndUpdate(teamModel.id, $push, opts, function(err, teamModel) {
+      return err ? cb(addReportErrMsg) : cb(undefined, teamModel);
+    });   
+  });
+}
+
 module.exports = {
   canDeleteTeam,
-  validateTeamForm,
   queryTeams,
   deleteTeam,
   createTeam,
   updateTeam,
-  doesTeamNameExist
+  doesTeamNameExist,
+  findTeam,
+  createTeamReport
 };

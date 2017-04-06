@@ -13,22 +13,13 @@ const getUsers = (req, res) => {
   })
 }
 
-const addUser = (req, res) => {
-  const { email, firstName, lastName, teamId, role, password } = req.body;
-  const userData = { email, firstName, lastName, teamId, role, password };
-
-  if (!users.service.validateUserForm(userData)) {
-    return res.json({success: false, msg: 'Invalid form data'});
-  }
-  
+const createUser = (req, res) => {
   const onUserCreated = (err, createdUser) => {
-    if (err) {
-      return res.json({success: false, msg: err});
-    }
-    return res.json({success: true, data: createdUser });
+    return err ? 
+      res.status(200).send({success: false, msg: err}) : 
+      res.status(200).send({success: true, data: createdUser});
   }
-  
-  usersService.createUser(userData, onUserCreated);
+  usersService.createUser(req.body, onUserCreated);
 }
 
 const deleteUser = (req, res) => {
@@ -63,7 +54,7 @@ const updateUser = (req, res) => {
  * Controller Routes
  */
 usersController.get('/', authMiddleware.isAdmin, getUsers);
-usersController.post('/', authMiddleware.isAdmin, addUser);
+usersController.post('/', authMiddleware.isAdmin, createUser);
 usersController.delete('/', authMiddleware.isAdmin, deleteUser);
 usersController.put('/', authMiddleware.isAdmin, updateUser);
 

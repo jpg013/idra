@@ -25,7 +25,8 @@ userSchema.virtual('isAdmin').get(function() {
 });
 
 userSchema.virtual('clientProps').get(function() {
-  const {lastLoginDate, email, firstName, lastName, createdDate, role, id, team} = this;
+  const {lastLoginDate, email, firstName, lastName, createdDate, role, id} = this;
+  const team = this.team.clientProps;
   return {lastLoginDate, email, firstName, lastName, createdDate, role, id, team};
 })
 

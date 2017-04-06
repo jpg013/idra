@@ -1,10 +1,11 @@
 const mongoose         = require('mongoose');
 const Schema           = mongoose.Schema;
-const reportCollection = require('./report-collection.model');
+const Report           = require('./report.model');
+const immutable        = require('immutable');
 
 const teamSchema = new Schema({
   name              : String,
-  reportCollections : [reportCollection.schema],
+  reports           : [Report.schema],
   createdDate       : Date,
   userCount         : Number,
   neo4jConnection   : String,
@@ -14,14 +15,28 @@ const teamSchema = new Schema({
   downloadCount     : Number
 });
 
+/**
+ * Methods
+ */
+teamSchema.methods.findReport = function(reportId) {
+  return this.reports.find(cur => cur.id === reportId);
+}
+
+/**
+ * Schema
+ */
+
+teamSchema.virtual('reportCollections').get(function() {
+  const collectionNames = this.reports.map(cur => cur.get('collectionName'));
+  return immutable.List(collectionNames).toSet().toArray(); // Get unique values
+});
+
 teamSchema.virtual('reportCollectionCount').get(function() {
   return this.reportCollections.length;
 });
 
 teamSchema.virtual('reportCount').get(function() {
-  return this.reportCollections.reduce((acc, cur) => {
-    return acc + cur.reports.length;
-  }, 0);
+  this.reports.length;
 });
 
 teamSchema.virtual('id').get(function() {

@@ -31,7 +31,7 @@ function Idra() {
       agent: null,    // optional http.Agent instance, for custom socket pooling
     });
     
-    const stream = db.cypher({query: query}, function(err, data) {
+    db.cypher({query: query}, function(err, data) {
       if (err || !data) { return cb('error') }
       if (!data.length) {
         return cb(undefined, []);
