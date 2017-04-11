@@ -36,13 +36,13 @@ function loadTeam(seed, cb) {
   });
 }
 
-function loadReports(seed, teamModel, cb) {
-  if (!seed || !teamModel) {
+function loadReports(seed, teamModel, userModel, cb) {
+  if (!seed || !teamModel || !userModel) {
    return cb('missing required data'); 
   }
-  
-  async.each(seed.reports, function(reportData, reportCb) {
-    const args = Object.assign({}, reportData, {teamId: teamModel.id});
+
+  async.eachSeries(seed.reports, function(reportData, reportCb) {
+    const args = Object.assign({}, reportData, {teamId: teamModel.id, createdBy: userModel.email});
     teamsService.createTeamReport(args, reportCb);
   }, function(err) {
     if (err) return cb(err);
@@ -55,10 +55,17 @@ function loadUsers(seed, teamModel, cb) {
    return cb('missing required data'); 
   }
 
-  async.each(seed.users, function(userData, userCb) {
+  async.eachSeries(seed.users, function(userData, userCb) {
     userData = Object.assign(userData, {team: teamModel.id});
     usersService.createUser(userData, userCb);
-  }, cb); 
+  }, function(err) {
+    if (err) return cb(err);
+    usersService.queryUsers({email: 'jim.morgan@innosolpro.com'}, function(err, userModels) {
+      return (userModels && userModels.length ) ? 
+        cb(err, seed, teamModel, userModels[0]) : 
+        cb('missing required user jim.morgan@innosolpro.com');
+    });
+  }); 
 }
 
 function loadSeedData(cb) {
@@ -67,8 +74,8 @@ function loadSeedData(cb) {
     async.waterfall([
       waterfallInit, 
       loadTeam, 
-      loadReports,
-      loadUsers
+      loadUsers,
+      loadReports
     ], seedLoadedCb);
   }, cb);
 }

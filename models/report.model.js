@@ -5,9 +5,11 @@ const Schema = mongoose.Schema;
 const ReportSchema = new Schema({
   name: String,
   createdDate: Date,
+  createdBy: String,
   description: String,
   query: String,
-  collectionName: String
+  groupName: String,
+  teamId: mongoose.Schema.Types.ObjectId
 });
 
 ReportSchema.virtual('id').get(function() {
@@ -15,8 +17,8 @@ ReportSchema.virtual('id').get(function() {
 });
 
 ReportSchema.virtual('clientProps').get(function() {
-  const {name, createdDate, description, query, collectionName, id} = this;
-  return {name, createdDate, description, query, collectionName, id};
+  const {name, createdDate, description, query, groupName, id, createdBy} = this;
+  return {name, createdDate, description, query, groupName, id, createdBy};
 });
 
 // set up a mongoose model and pass it using module.exports

@@ -34,7 +34,6 @@ const sanitizeUserData = userData => {
   if (!team) {
     return;
   }
-  team = mongoClient.generateObjectId(team);
   
   let role = (userData.role === 'admin') ? 'admin' : 'user';
   return { email, firstName, lastName, team, role, password };
@@ -58,7 +57,14 @@ const doesUserTeamExist = (userModel, cb) => {
   });
 }
 
-const persistNewUser = (userModel, cb) => userModel.save(err => cb(err, userModel));
+const persistNewUser = (dirtyUserModel, cb) => {
+  dirtyUserModel.save(function(err) {
+    if (err) return cb(err);
+    findUser(dirtyUserModel.id, function(err, newUserModel) {
+      return cb(err, newUserModel);
+    });
+  })
+}
   
 const buildUserModel = userData => {
   const { email, firstName, lastName, team, role, password } = userData;
@@ -83,6 +89,14 @@ const createUser = (userData, cb) => {
     const newUserModel = buildUserModel(sanitizedUserData);
     callback(undefined, newUserModel); 
   };
+  
+  const updateTeamUserCount = (userModel, cb) => {
+    if (!userModel) return cb(createUserErrorMsg);
+    teamsService.incrementUserCount(userModel.team.id, function(err) {
+      return cb(err, userModel);
+    });
+  }
+
   const onUserSaved = (userModel, cb) => {
     if (!userModel) {
       return cb(createUserErrorMsg);
@@ -90,7 +104,14 @@ const createUser = (userData, cb) => {
     findUser(userModel.id, cb);
   };
 
-  const waterfallPipeline = [buildUser, checkIfUserIsUnique, doesUserTeamExist, persistNewUser, onUserSaved];  
+  const waterfallPipeline = [
+    buildUser, 
+    checkIfUserIsUnique, 
+    doesUserTeamExist, 
+    persistNewUser, 
+    updateTeamUserCount, 
+    onUserSaved
+    ];  
   async.waterfall(waterfallPipeline, cb);
 }
 

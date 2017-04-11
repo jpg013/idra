@@ -3,7 +3,9 @@
 /**
  * Module dependencies.
  */
-const http           = require('http')
+const http           = require('http');
+const https          = require('https');
+const fs             = require('fs');
 const express        = require('express');
 const bodyParser     = require('body-parser');
 const logger         = require('morgan');
@@ -19,6 +21,16 @@ const path           = require('path');
  */
 dotenv.config();
 
+/** 
+ * SSL Certificate/Key
+ */
+const sslPrivateKey = fs.readFileSync('ssl/innosol.pem', 'utf8');
+const sslCertificate = fs.readFileSync('ssl/STAR_innosolpro_com.crt', 'utf8');
+const sslCreds = {
+  key: sslPrivateKey,
+  cert: sslCertificate
+};
+
 /**
  * Connect to MongoDB
  */
@@ -28,7 +40,8 @@ require('./config/mongo').config();
  * Create our express app and server
  */
 const app     = express();
-const server  = http.createServer(app);
+//const httpServer  = http.createServer(app);
+const httpsServer = https.createServer(sslCreds, app);
 
 /**
  * App Configuration
@@ -60,11 +73,12 @@ app.get('*', function (request, response){
 /**
  * Config Sockets
  */
-socket.config(server);
+socket.config(httpsServer);
 
 /**
  * Listen on Port
  */
 
-server.listen(process.env.PORT);
+//httpsServer.listen(8080);
+httpsServer.listen(process.env.PORT);
 console.log('Magic happens at http://localhost:' + process.env.PORT );
