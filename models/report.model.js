@@ -9,6 +9,7 @@ const ReportSchema = new Schema({
   description: String,
   query: String,
   groupName: String,
+  downloadCount: Number,
   teamId: mongoose.Schema.Types.ObjectId
 });
 
@@ -17,8 +18,8 @@ ReportSchema.virtual('id').get(function() {
 });
 
 ReportSchema.virtual('clientProps').get(function() {
-  const {name, createdDate, description, query, groupName, id, createdBy} = this;
-  return {name, createdDate, description, query, groupName, id, createdBy};
+  const {name, createdDate, description, query, groupName, id, createdBy, teamId} = this;
+  return {name, createdDate, description, query, groupName, id, createdBy, teamId};
 });
 
 // set up a mongoose model and pass it using module.exports

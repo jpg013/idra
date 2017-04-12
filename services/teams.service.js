@@ -76,8 +76,7 @@ function buildTeamModel(data) {
     imageURL,
     reports: [],
     createdDate: new Date(),
-    userCount: 0,
-    downloadCount: 0
+    userCount: 0
   });  
   return new Team(teamData);
 }
@@ -186,6 +185,14 @@ function incrementUserCount(teamId, cb) {
   Team.findByIdAndUpdate(teamId, $inc, cb);
 }
 
+function incrementReportDownloadCount(data, cb) {
+  const { reportId, teamId } = data;
+  if (!reportId || !teamId) return cb('missing required data');
+
+  const $inc = { '$inc': { 'reports.$.downloadCount': 1  } }
+  Team.update({'_id': teamId, 'reports._id': reportId}, $inc, cb);  
+}
+
 module.exports = {
   canDeleteTeam,
   queryTeams,
@@ -197,4 +204,5 @@ module.exports = {
   createTeamReport,
   createTeamReportGroup,
   incrementUserCount,
+  incrementReportDownloadCount
 };

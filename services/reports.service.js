@@ -1,5 +1,6 @@
 const Report = require('../models/report.model');
 const ReportGroup = require('../models/report-group.model');
+const ReportLog = require('../models/report-log.model');
 
 function buildReportModel(reportData) {
   const {name, description, query, groupName, createdBy, teamId} = reportData;
@@ -10,6 +11,7 @@ function buildReportModel(reportData) {
     groupName,
     createdBy,
     teamId,
+    downloadCount: 0,
     createdDate: new Date()
   })
 }
@@ -24,7 +26,20 @@ function buildReportGroupModel(reportGroupData) {
   });
 }
 
+function createReportLog(data, cb) {
+  const { userId, reportId } = data;
+  if (!userId || !reportId) return cb('missing required data');
+  
+  const reportLogModel = ReportLog({
+    date: new Date(),
+    userId,
+    reportId
+  });
+  reportLogModel.save(err => cb(err));
+}
+
 module.exports = {
   buildReportModel,
-  buildReportGroupModel
+  buildReportGroupModel,
+  createReportLog
 }

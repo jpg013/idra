@@ -13,8 +13,7 @@ const teamSchema = new Schema({
   neo4jConnection   : String,
   neo4jAuth         : String,
   lastActivityDate  : Date,
-  imageURL          : String,
-  downloadCount     : Number
+  imageURL          : String
 });
 
 /**
@@ -27,9 +26,14 @@ teamSchema.methods.findReport = function(reportId) {
 /**
  * Schema
  */
-
 teamSchema.virtual('id').get(function() {
   return this._id.toString();
+});
+
+teamSchema.virtual('downloadCount').get(function() {
+  return this.reports.reduce((acc, cur) => {
+    return acc + cur.downloadCount;
+  }, 0);
 });
 
 teamSchema.virtual('clientProps').get(function() {

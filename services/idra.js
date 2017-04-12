@@ -1,6 +1,5 @@
 const express  = require('express')
 const neo4j    = require('neo4j');
-const json2csv = require('json2csv');
 
 function Idra() {
   const convertToCsv = (data) => {
@@ -8,25 +7,24 @@ function Idra() {
     return json2csv({ data, fields });
   }
   
-  const runReport = (teamModel, reportModel, cb) => {
-    if (!reportModel || !teamModel) return cb('missing required data');
-    // Do Some stuff and run the report
+  const queryNeo4j = (query, creds, cb) => {
+    if (!query || !creds) return cb('missing required data');
+    
+    /**
+     *  dev only
+     * url : 'http://localhost:7474/',
+     * auth : 'neo4j:Innosolpro2016**'
+     */
     
     const db = new neo4j.GraphDatabase({
-      url: teamModel.neo4jConnection,
-      auth: teamModel.neo4jAuth,
+      url: creds.connection,
+      auth: creds.auth,
       headers: {},    // optional defaults, e.g. User-Agent
       proxy: null,    // optional URL
       agent: null,    // optional http.Agent instance, for custom socket pooling
     });
     
-    db.cypher({query: reportModel.query}, function(err, data) {
-      if (err || !data) { return cb('error') }
-      if (!data.length) {
-        return cb(undefined, []);
-      }
-      return cb(undefined, convertToCsv(data));
-    });
+    db.cypher({query}, (err, data) => cb(err, data));
   }
 
   const testNeo4jCredentials = () => {
@@ -34,7 +32,7 @@ function Idra() {
   }
   
   return {
-    runReport,
+    queryNeo4j,
     testNeo4jCredentials,
   }
 }
