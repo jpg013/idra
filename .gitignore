@@ -59,5 +59,8 @@ jspm_packages
 # .DS_Store
 .DS_Store
 
+# .env
+*.env
+
 
 # End of https://www.gitignore.io/api/node

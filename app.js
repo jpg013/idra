@@ -40,7 +40,7 @@ require('./config/mongo').config();
  * Create our express app and server
  */
 const app     = express();
-//const httpServer  = http.createServer(app);
+const httpServer  = http.createServer(app);
 const httpsServer = https.createServer(sslCreds, app);
 
 /**
@@ -73,12 +73,11 @@ app.get('*', function (request, response){
 /**
  * Config Sockets
  */
-socket.config(httpsServer);
+socket.config(httpServer);
 
 /**
- * Listen on Port
+ * Listen on ports
  */
 
-//httpsServer.listen(8080);
-httpsServer.listen(process.env.PORT);
-console.log('Magic happens at http://localhost:' + process.env.PORT );
+httpServer.listen(process.env.HTTP_PORT);
+httpsServer.listen(process.env.HTTPS_PORT);
