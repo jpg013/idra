@@ -3,7 +3,7 @@ const data = [
     team: {
       name: 'Innosol Pro Admin',
       neo4jAuth: 'neo4j:Innosolpro2017',
-      neo4jConnection: 'http://neo4j:neo4j@localhost:7474',
+      neo4jConnection: 'http://neo4j:neo4j@172.31.28.30:7474',
       imageURL: ''
     },
     reports: [
@@ -144,7 +144,7 @@ const data = [
     team: {
       name: 'University of Central Missouri',
       neo4jAuth: 'neo4j:Innosolpro2017',
-      neo4jConnection: 'http://neo4j:neo4j@localhost:7474',
+      neo4jConnection: 'http://neo4j:neo4j@172.31.28.30:7474',
       imageURL: ''
     },
     reports: [
