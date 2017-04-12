@@ -74,6 +74,7 @@ app.get('*', function (request, response){
  * Config Sockets
  */
 socket.config(httpServer);
+socket.config(httpsServer);
 
 /**
  * Listen on ports
