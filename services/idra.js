@@ -7,14 +7,16 @@ function Idra() {
     return json2csv({ data, fields });
   }
   
+  const getDevCreds = () => {
+    return {
+      connection : 'http://localhost:7474/',
+      auth : 'neo4j:Innosolpro2016**'
+    }
+  }
+  
   const queryNeo4j = (query, creds, cb) => {
     if (!query || !creds) return cb('missing required data');
-    
-    /**
-     *  dev only
-     * url : 'http://localhost:7474/',
-     * auth : 'neo4j:Innosolpro2016**'
-     */
+    creds = (process.env.ENV_NAME === 'PRODUCTION') ? creds : getDevCreds();
     
     const db = new neo4j.GraphDatabase({
       url: creds.connection,
