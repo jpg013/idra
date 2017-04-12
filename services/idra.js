@@ -1,5 +1,6 @@
-const express  = require('express')
-const neo4j    = require('neo4j');
+const express      = require('express')
+const neo4j        = require('neo4j');
+const cryptoClient = require('../common/crypto');
 
 function Idra() {
   const convertToCsv = (data) => {
@@ -11,6 +12,13 @@ function Idra() {
     return {
       connection : 'http://localhost:7474/',
       auth : 'neo4j:Innosolpro2016**'
+    }
+  }
+
+  const decryptNeo4jCreds = creds => {
+    return {
+      connection: cryptoClient.decrypt(userModel.team.neo4jConnection),
+      auth: cryptoClient.decrypt(userModel.team.neo4jAuth)   
     }
   }
   
