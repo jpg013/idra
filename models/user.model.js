@@ -8,6 +8,7 @@ const userSchema = new schema({
   password: String,
   createdDate: Date,
   lastLoginDate: Date,
+  passwordChangeRequired: false,
   role: {
     type: String,
     enum: ['admin', 'user'],

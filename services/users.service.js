@@ -71,11 +71,12 @@ const buildUserModel = userData => {
   const modelProps = Object.assign({}, {
     password: cryptoClient.encrypt(password),
     createdDate: new Date(),
+    passwordChangeRequired: true,
     email,
     firstName,
     lastName,
     team,
-    role,
+    role
   });
   return new User(modelProps);
 }
@@ -125,6 +126,36 @@ const editUser = (userData, cb) => {
   }
 }
 
+function buildUserUpdateObject(update) {
+  return Object.keys(update)
+    .reduce((acc, cur) => {
+      if (cur === 'password') {
+        if (!acc.$set) {
+          acc.$set = {};
+        }
+        acc.$set.password = cur;
+      }
+      return acc;
+    }, {});
+}
+
+function updateUserModel(userId, updateObject, cb) {
+  if (!userId || !updateObject) {
+    return cb('missing user id or update');
+  }
+  
+  findUser(userId, function(err, userModel) {
+    if (err) return cb(err);
+    if (!userModel) return cb('could not find user');
+    const $update = buildUserUpdateObject(updateObject);
+    const opts = {
+      upsert: true,
+      new: true
+    };
+    User.update({_id: userId}, $update, opts, cb);
+  });
+}
+
 module.exports = {
   queryUsers,
   createUser,
@@ -132,5 +163,6 @@ module.exports = {
   isValidUserPassword,
   editUser,
   findUserByUsername,
-  findUser
+  findUser,
+  updateUserModel
 };
