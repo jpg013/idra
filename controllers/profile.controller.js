@@ -24,19 +24,25 @@ function updatePassword(req, res) {
 
   usersService.findUser(userId, function(err, userModel) {
     if (err || !userModel) {
-      return res.status(401).send({success: false, msg: passwordChangeErrMsg});
+      return res.status(403).send({success: false, msg: passwordChangeErrMsg});
     }
     if (userModel.password !== oldPassword) {
-      return res.status(401).send({success: false, msg: 'Current password is incorrect'});
+      return res.status(400).send({success: false, msg: 'Current password is incorrect'});
     }
     if (userModel.password === newPassword) {
-      return res.status(401).send({success: false, msg: 'New password cannot be the same'});
+      return res.status(4010).send({success: false, msg: 'New password cannot be the same'});
     }
-    usersService.updateUserModel(userModel.id, {password: newPassword}, function(err, userModel) {
+
+    const update = {
+      password: newPassword,
+      passwordChangeRequired: false
+    };
+
+    usersService.updateUserModel(userModel.id, update, function(err, updatedUserModel) {
       if (err) {
         return res.status(401).send({success: false, msg: passwordChangeErrMsg});
       }
-      return res.status(200).send({success: true, data: userModel});
+      return res.status(200).send({success: true, data: updatedUserModel});
     });
   });
 }

@@ -5,27 +5,26 @@ const async           = require("async");
 const sockStore       = require('./sock-store');
 const sockEvents      = require('./sock-events');
 const rooms           = require('./rooms/index');
+const usersService    = require('../services/users.service');
 
 const onIdentifyConnection = (payload) => {
-  const tokenString = payload.authToken;
-  const socket = payload.socket;
+  const { authToken, socket } = payload;
+  if (!authToken || !socket) return;
   const pipeline = [
-    cb => authTokenClient.verifyTokenAndReturnUser(tokenString, cb),
-    (userModel, cb) => {
-      if (!userModel) { return cb(userModel); }
-      sockStore.identifyConnection(userModel.id, socket.id);
-      // update the last login date
-      user.findOneAndUpdate({_id: userModel._id}, {$set: {'lastLogin': new Date()}}, {new: true})
-        .populate('team')
-        .exec(cb);
+    cb => authTokenClient.verifyToken(authToken, cb),
+    (token, cb) => {
+      usersService.findUser(token.id, cb);
     },
     (userModel, cb) => {
-      sockEvents.emit(sockEvents.e.syncUser, userModel);
-      cb();
+      if (!userModel) return cb('missing required user model');
+      sockStore.identifyConnection(userModel.id, socket.id);
+      usersService.updateUserModel(userModel.id, {'lastLoginDate': new Date()}, cb);
     }
   ];
-  async.waterfall(pipeline, (err) => {
-    if (err) { return; }
+  
+  async.waterfall(pipeline, (err, userModel) => {
+    if (err || !userModel) { return; }
+    sockEvents.emit(sockEvents.e.syncUser, userModel);
   });
 };
 

@@ -127,16 +127,19 @@ const editUser = (userData, cb) => {
 }
 
 function buildUserUpdateObject(update) {
+  const val = {
+    $set: {}
+  };
+
   return Object.keys(update)
     .reduce((acc, cur) => {
       if (cur === 'password') {
-        if (!acc.$set) {
-          acc.$set = {};
-        }
-        acc.$set.password = cur;
+        acc.$set.password = update[cur];
+      } else if (cur === 'passwordChangeRequired') {
+        acc.$set.passwordChangeRequired = update[cur];
       }
       return acc;
-    }, {});
+    }, val);
 }
 
 function updateUserModel(userId, updateObject, cb) {
@@ -152,7 +155,13 @@ function updateUserModel(userId, updateObject, cb) {
       upsert: true,
       new: true
     };
-    User.update({_id: userId}, $update, opts, cb);
+    const pipeline = [
+      callback => User.update({_id: userId}, $update, opts, callback),
+      (update, callback) => {
+        findUser(userId, callback) 
+      }
+    ];
+    async.waterfall(pipeline, cb);
   });
 }
 
