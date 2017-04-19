@@ -132,7 +132,7 @@ const data = [
         role: 'admin',
       },
       {
-        firstName: 'Justin ',
+        firstName: 'Justin',
         lastName: 'Graber',
         password: 'password',
         email: 'jpg013@gmail.com',

@@ -193,6 +193,22 @@ function incrementReportDownloadCount(data, cb) {
   Team.update({'_id': teamId, 'reports._id': reportId}, $inc, cb);  
 }
 
+function setLastActivityDate(teamId, cb) {
+  if (!teamId) {
+    return cb('missing required team id');
+  }
+  const opts = {
+    upsert: true,
+    new: true
+  };
+  const $set = {
+    '$set': {
+      'lastActivityDate': new Date()
+    }
+  };
+  Team.update({'_id': teamId}, $set, opts, cb);
+}
+
 module.exports = {
   canDeleteTeam,
   queryTeams,
