@@ -10,7 +10,7 @@ const getUsers = (req, res) => {
   usersService.queryUsers({}, function(err, users) {
     if (err) throw err;
     res.json({data: users.map(cur => cur.clientProps)});
-  })
+  });
 }
 
 const createUser = (req, res) => {

@@ -5,7 +5,9 @@ const Schema = mongoose.Schema;
 const ReportLogSchema = new Schema({
   date: Date,
   userId: mongoose.Schema.Types.ObjectId,
-  reportId: mongoose.Schema.Types.ObjectId
+  reportId: mongoose.Schema.Types.ObjectId,
+  teamId: mongoose.Schema.Types.ObjectId,
+  groupId:  mongoose.Schema.Types.ObjectId
 });
 
 ReportLogSchema.virtual('id').get(function() {

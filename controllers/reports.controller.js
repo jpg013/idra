@@ -5,6 +5,7 @@ const usersService   = require('../services/users.service');
 const idra           = require('../services/idra');
 const json2csv       = require('json2csv');
 const async          = require('async');
+const authMiddleware = require('../middleware/auth');
 
 const reportsController = express.Router();
 
@@ -34,6 +35,7 @@ const downloadReport = (req, res) => {
     const pipeline = [
       cb => reportsService.createReportLog({userId: userModel.id, reportId}, cb),
       cb => teamsService.incrementReportDownloadCount({teamId, reportId}, cb),
+      (teamModel, cb) => teamsService.setLastActivityDate(teamModel.id, cb),
       (teamModel, cb) => idra.queryNeo4j(report.query, idraCreds, cb)
     ];
 
@@ -47,10 +49,20 @@ const downloadReport = (req, res) => {
   });
 }
 
+function getReports(req, res) {
+  reportsService.getAllReports((err, data) => {
+    if (err) {
+      return res.status(500).send({msg: 'There was an error getting the reports'});
+    }
+    return res.status(200).send({data});
+  });
+}
+
 /**
  * Reports Controller Routes
  */
 
 reportsController.post('/download', downloadReport);
+reportsController.get('/', authMiddleware.isAdmin, getReports);
 
 module.exports = reportsController;

@@ -1,6 +1,7 @@
 const Team           = require('../models/team.model');
 const cryptoClient   = require('../common/crypto');
 const reportsService = require('./reports.service');
+const async          = require('async');
 
 /**
  * Constants
@@ -19,17 +20,17 @@ const canDeleteTeam = teamModel => {
 }
 
 function getSanitizedReportGroupData(data) {
-  const {name, createdBy, teamId} = data;
-  if (!name || name.trim().length < 3 || !createdBy || !teamId) {
+  const {name, createdBy, createdById, teamId, teamName} = data;
+  if (!name || name.trim().length < 3 || !createdBy || !createdById || !teamId || !teamName) {
     return false;
   }
-  return {name, createdBy, teamId};
+  return {name, createdBy, createdById, teamId, teamName};
 }
 
 const getSanitizedReportData = data => {
-  const {name, description, query, groupName, createdBy, teamId } = data;
-  if (!name || !description || !query || !groupName || !createdBy || !teamId) { return; }
-  return {name, description, query, groupName, createdBy, teamId};
+  const { name, description, query, groupId, teamId, createdBy, createdById, teamName } = data;
+  if (!name || !description || !query || !groupId || !teamId || !createdBy || !createdById || !teamName) { return; }
+  return {name, description, query, groupId, teamId, createdBy , createdById, teamName};
 }
 
 const getSanitizedTeamData = (data) => {
@@ -85,22 +86,20 @@ const createTeam = (formData, cb) => {
   const sanitizedTeamData = getSanitizedTeamData(formData);
   if (!sanitizedTeamData) {
     return cb(invalidTeamDataMsg);
-  } 
+  }
 
-  doesTeamNameExist(sanitizedTeamData.name, function(err, exists) {
-    if (err) return cb(addTeamErrMsg);
-    if (exists) return cb(teamExistsErrMsg);
-    
-    const newTeamModel = buildTeamModel(sanitizedTeamData);
-    
-    newTeamModel.save(function(err) {
-      if (err) return cb(addTeamErrMsg);
-      findTeam(newTeamModel.id, function(err, teamModel) {
-        return err ? cb(addTeamErrorMsg) : cb(undefined, teamModel);
-      });
-    });
+  const teamModel = buildTeamModel(sanitizedTeamData);
+
+  const createTeamPipeLine = [
+    cb => doesTeamNameExist(teamModel.name, cb),
+    (existingTeam, cb) => existingTeam ? cb(teamExistsErrMsg) : teamModel.save(err => cb(err)),
+    cb => findTeam(teamModel.id, cb)
+  ];
+
+  async.waterfall(createTeamPipeLine, function(err, newTeamModel) {
+    return err ? cb(err) : cb(undefined, newTeamModel);
   });
-}
+} 
 
 const updateTeam = (teamId, data, cb) => {
   const { name, neo4jAuth, neo4jConnection } = data;
@@ -108,76 +107,33 @@ const updateTeam = (teamId, data, cb) => {
   Team.findOneAndUpdate({_id: teamId}, {$set}, {new: true}, cb);
 }
 
-function createTeamReportGroup(reportGroupData, cb) {
+function createReportGroup(reportGroupData, cb) {
   const sanitizedReportGroupData = getSanitizedReportGroupData(reportGroupData);
   if (!sanitizedReportGroupData) {
     return cb(invalidReportGroupDataErrMsg);
   }
-  
-  findTeam(sanitizedReportGroupData.teamId, function(err, teamModel) {
-    if (err) return cb(err);
-    if (!teamModel) return cb(teamDoesNotExistErrMsg);
-    const existingGroup = teamModel.reportGroups.find(cur => cur.name === sanitizedReportGroupData.name);
-    if (existingGroup) {
-      return cb(addReportGroupErrMsg);
-    }
-    const reportGroupModel = reportsService.buildReportGroupModel(sanitizedReportGroupData);
-    const $push = {
-      $push: {'reportGroups': reportGroupModel}
-    };
 
-    const opts = {
-      upsert: true,
-      new: true
-    };
+  const reportGroupModel = reportsService.buildReportGroupModel(sanitizedReportGroupData);
 
-    Team.findByIdAndUpdate(teamModel.id, $push, opts, function(err, teamModel) {
-      return err ? cb(addReportGroupErrMsg) : cb(undefined, teamModel);
-    });   
-  })
+  const $query = { '_id': reportGroupModel.teamId }
+  const $update = { '$push': { 'reportCollection' : reportGroupModel } }
+  const $opts = {upsert: true, new: true }
+
+  Team.update($query, $update, $opts, (err) => cb(err, reportGroupModel));
 }
 
-function createTeamReport(reportData, cb) {
+function createReport(reportData, cb) {
   const sanitizedReportData = getSanitizedReportData(reportData);
   if (!sanitizedReportData) {
     return cb(invalidReportDataErrMsg);
   } 
+  
   const reportModel = reportsService.buildReportModel(sanitizedReportData);
-  findTeam(sanitizedReportData.teamId, function(err, teamModel) {
-    if(err) return cb(err);
-    if (!teamModel) return cb(teamDoesNotExistErrMsg);
+  const $query = { '_id': reportModel.teamId, 'reportCollection._id': reportModel.groupId }
+  const $update = { $push: {'reportCollection.$.reports': reportModel} }
+  const $opts = {upsert: true, new: true }
 
-    const reportGroup = teamModel.reportGroups.find(cur => cur.name === reportModel.groupName);
-    
-    const addReportToTeam = (callback) => {
-      const $push = {
-        $push: {'reports': reportModel}
-      };
-
-      const opts = {
-        upsert: true,
-        new: true
-      };
-
-      Team.findByIdAndUpdate(teamModel.id, $push, opts, function(err, teamModel) {
-        return err ? callback(addReportErrMsg) : callback(undefined, teamModel);
-      });   
-    }
-    
-    if (!reportGroup) {
-      const reportGroupData = {
-        name: sanitizedReportData.groupName,
-        teamId: teamModel.id,
-        createdBy: sanitizedReportData.createdBy
-      }
-      createTeamReportGroup(reportGroupData, function(err, teamModel) {
-        if (err) return cb(addReportErrMsg);
-        addReportToTeam(cb);
-      })
-    } else {
-      addReportToTeam(cb);
-    }
-  });
+  Team.update($query, $update, $opts, cb);
 }
 
 function incrementUserCount(teamId, cb) {
@@ -217,8 +173,8 @@ module.exports = {
   updateTeam,
   doesTeamNameExist,
   findTeam,
-  createTeamReport,
-  createTeamReportGroup,
+  createReport,
+  createReportGroup,
   incrementUserCount,
   incrementReportDownloadCount
 };
