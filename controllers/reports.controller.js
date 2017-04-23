@@ -58,11 +58,18 @@ function getReports(req, res) {
   });
 }
 
+function requestReport(req, res) {
+  const { groupId, userId,  report} = req.body;
+  if (!groupId || !userId || !report) return;
+  
+  reportsService.requestReport(report, userId, groupId, () => res.status(200).send({success: true}));
+}
+
 /**
  * Reports Controller Routes
  */
-
 reportsController.post('/download', downloadReport);
+reportsController.post('/request', requestReport);
 reportsController.get('/', authMiddleware.isAdmin, getReports);
 
 module.exports = reportsController;

@@ -1,7 +1,8 @@
-const Report = require('../models/report.model');
-const ReportGroup = require('../models/report-group.model');
-const ReportLog = require('../models/report-log.model');
-const Team = require('../models/team.model');
+const Report        = require('../models/report.model');
+const ReportGroup   = require('../models/report-group.model');
+const ReportLog     = require('../models/report-log.model');
+const ReportRequest = require('../models/report-request.model');
+const Team          = require('../models/team.model');
 
 function buildReportModel(reportData) {
   const {name, description, query, groupId, createdBy, createdById, teamId, teamName} = reportData;
@@ -104,10 +105,24 @@ function getReportCollectionCounts(reportCollection) {
   }
 }
 
+function requestReport(report, userId, groupId, cb) {
+  if (!report || !userId ||!groupId) return;
+
+  const reportRequestModel = new ReportRequest({
+    report,
+    userId,
+    groupId,
+    requestedDate: new Date()
+  });
+  
+  reportRequestModel.save(cb);
+}
+
 module.exports = {
   buildReportModel,
   buildReportGroupModel,
   createReportLog,
   getAllReports,
-  getReportCollectionCounts
+  getReportCollectionCounts,
+  requestReport
 }

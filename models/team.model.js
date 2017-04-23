@@ -39,7 +39,6 @@ teamSchema.virtual('downloadCount').get(function() {
 teamSchema.virtual('clientProps').get(function() {
   const  { name,  createdDate, userCount, id, downloadCount, imageURL, lastActivityDate } = this;
   const reportCollection = this.reportCollection.map(cur => cur.clientProps);
-  console.log(reportCollection);
   return { name, reportCollection, createdDate, userCount, id, downloadCount, imageURL, lastActivityDate };
 })
 
