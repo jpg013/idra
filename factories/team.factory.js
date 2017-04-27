@@ -22,7 +22,14 @@ function scrubTeamData(data) {
 }
 
 function tryToBuildTwitterCredentials(twitterCreds) {
-  if (!twitterCreds || typeof twitterCreds !== 'object') return {};
+  const defaultTwitterCreds = {
+    consumerKey: '',
+    consumerSecret: '',
+    accessTokenKey: '',
+    accessTokenSecret: ''
+  };
+  
+  if (!twitterCreds || typeof twitterCreds !== 'object') return defaultTwitterCreds;
   const { consumerSecret, consumerKey, accessTokenKey, accessTokenSecret} = twitterCreds;
   if (!consumerSecret || 
       typeof consumerSecret !== 'string' || 
@@ -36,7 +43,7 @@ function tryToBuildTwitterCredentials(twitterCreds) {
       !accessTokenSecret ||
       typeof accessTokenSecret !== 'string' ||
       accessTokenSecret.length < 5 
-      ) { return {}; }
+      ) { return defaultTwitterCreds; }
   
   return {
     consumerKey: cryptoClient.encrypt(consumerKey),
@@ -56,8 +63,7 @@ function buildTeamModel(teamFields) {
     name: teamFields.name,
     neo4jCredentials,
     imageURL: teamFields.imageURL,
-    reportCollection: [],
-    lastActivityDate: undefined,
+    reportCollections: [],
     twitterCredentials: tryToBuildTwitterCredentials(teamFields.twitterCredentials)
   });
 

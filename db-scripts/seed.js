@@ -1,12 +1,18 @@
-const Team          = require('../models/team.model');
-const User          = require('../models/user.model');
-const ReportLog     = require('../models/report-log.model');
-const ReportRequest = require('../models/report-request.model'); 
-const async         = require('async');
-const TeamService   = require('../services/team.service');
-const UserService   = require('../services/user.service');
-const SeedData      = require('./seed-data');
-const dotenv        = require('dotenv');
+const TeamFactory      = require('../factories/team.factory');
+const TeamService      = require('../services/team.service');
+const UserService      = require('../services/user.service');
+const UserFactory      = require('../factories/user.factory');
+const ReportService    = require('../services/report.service'); 
+const ReportFactory    = require('../factories/report.factory');
+
+const ReportCollection = require('../models/report-collection.model');
+const Team             = require('../models/team.model');
+const User             = require('../models/user.model');
+const ReportLog        = require('../models/report-log.model');
+const ReportRequest    = require('../models/report-request.model'); 
+const async            = require('async');
+const SeedData         = require('./seed-data');
+const dotenv           = require('dotenv');
 
 /**
  * Load in config file  
@@ -30,77 +36,79 @@ const removeReportLogs = cb => ReportLog.collection.drop(() => cb());
 const removeReportRequests = cb => ReportRequest.collection.drop(() => cb());
 
 /**
- * Create Teams
+ * Load User Teams
  */
-
-function loadTeam(seed, cb) {
-  TeamService.createTeam(seed.team, function(err, teamModel) {
-    return cb(err, seed, teamModel);
-  });
-}
-
-function loadReportCollection(seedData, teamModel, userModel, cb) {
-  if (!seedData || !teamModel ||! userModel) {
-   return cb('missing required data'); 
-  }
-  
-  async.eachSeries(seedData.reportCollection, function(data, callback) {
-    /**
-     * Build the report Groups
-     */
-    const groupArgs = Object.assign({}, data, {
-      teamId: teamModel.id, 
-      teamName: teamModel.name,
-      createdBy: `${userModel.firstName} ${userModel.lastName}`, 
-      createdById: userModel.id
-    });
-
-    async.waterfall([
-      cb => TeamService.createReportGroup(groupArgs, cb),
-      (reportGroupModel, cb) => {
-        async.eachSeries(data.reports, function(data, callback) {
-          const reportArgs = Object.assign({}, data, {
-            createdBy: `${userModel.firstName} ${userModel.lastName}`, 
-            createdById: userModel.id,
-            groupId: reportGroupModel.id,
-            teamId: teamModel.id,
-            teamName: teamModel.name
-          });
-          TeamService.createReport(reportArgs, callback)
-        }, cb)
-      }
-    ], callback);
+function loadUserTeams(cb) {
+  async.eachSeries(SeedData.teams, function(data, teamSavedCb) {
+    const scrubbedData = TeamFactory.scrubTeamData(data);
+    if (!TeamFactory.validateTeamFields(scrubbedData)) {
+      throw new Error('invalid team data');  
+    };
+    const teamModel = TeamFactory.buildTeamModel(scrubbedData);
+    teamModel.save(teamSavedCb);
   }, cb);
 }
 
-function loadUsers(seedData, teamModel, cb) {
-  if (!seedData || !teamModel) {
-   return cb('missing required data'); 
-  }
-
-  const findMasterUser = () => {
-    UserService.queryUsers({email: 'jim.morgan@innosolpro.com'}, function(err, userModels) {
-      return (userModels && userModels.length ) ? cb(err, seedData, teamModel, userModels[0]) : cb('missing required master user');
-    });
-  }
-
-  async.eachSeries(seedData.users, function(userData, userCb) {
-    userData = Object.assign(userData, {team: teamModel.id});
-    UserService.createUser(userData, userCb);
-  }, function(err) {
-    if (err) return cb(err);
-    findMasterUser();
-  }); 
+function loadUsers(cb) {
+  async.eachSeries(SeedData.users, function(data, userSavedCb) {
+    const pipeline = [
+      cb => TeamService.queryTeams({name: data.teamName}, (err, teamModels) => {
+       if (!teamModels || !teamModels.length) {
+         return cb('missing team model');
+       }
+       return cb(err, teamModels[0]);
+      }),
+      (teamModel, cb) => {
+        const userData = Object.assign({}, data, {team: teamModel.id});
+        const scrubbedData = UserFactory.scrubUserData(userData);
+        if (!UserFactory.validateUserFields(scrubbedData)) {
+          throw new Error('invalid use data');
+        }
+        const userModel = UserFactory.buildUserModel(scrubbedData)
+        userModel.save(cb)
+      }
+    ];
+    async.waterfall(pipeline, userSavedCb);
+  }, cb);
 }
 
-function loadSeedData(cb) {
-  async.eachSeries(SeedData, function(seed, seriesCb) {
-    async.waterfall([
-      cb => cb(undefined, seed),
-      loadTeam, 
-      loadUsers,
-      loadReportCollection
-    ], seriesCb);
+/**
+ * Load Report Collections
+ */
+
+function loadReportCollections(cb) {
+  const findMasterUser = cb => {
+    UserService.queryUsers({email: 'jim.morgan@innosolpro.com'}, function(err, userModels) {
+      if (!userModels || !userModels.length) return cb('missing required master user');
+      return cb(err, userModels[0]);
+    });
+  }
+  async.eachSeries(SeedData.reportCollections, function(data, cb) {
+    const pipeline = [
+      cb => findMasterUser(cb),
+      (userModel, cb) => {
+        const scrubbedData = ReportFactory.scrubReportCollectionData(Object.assign({}, data, {createdBy: userModel.id}));
+        if (!ReportFactory.validateReportCollectionFields(scrubbedData)) {
+          throw new Error('invalid report collection data');
+        }
+        const reportCollectionModel = ReportFactory.buildReportCollectionModel(scrubbedData);
+        reportCollectionModel.save(err => cb(err, userModel, reportCollectionModel))
+      },
+      (userModel, reportCollectionModel, cb) => {
+        const reportList = data.reportList.map(cur => {
+          const scrubbedData = ReportFactory.scrubReportData(Object.assign({}, cur, {createdBy: userModel.id}));
+          if (!ReportFactory.validateReportFields(scrubbedData)) {
+            throw new Error('invalid report data');
+          }
+          return ReportFactory.buildReportModel(scrubbedData);          
+        });
+
+        const $query = {'_id': reportCollectionModel.id};
+        const $update = { $push: { 'reportList': { $each : reportList} } };
+        ReportCollection.update($query, $update, cb);
+      }
+    ];
+    async.waterfall(pipeline, cb);
   }, cb);
 }
 
@@ -109,7 +117,9 @@ const seedPipeline = [
   removeUsers,
   removeReportLogs,
   removeReportRequests,
-  loadSeedData
+  loadUserTeams,
+  loadUsers,
+  loadReportCollections
 ];
 
 async.series(seedPipeline, function(err) {

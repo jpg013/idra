@@ -1,5 +1,4 @@
 const Report        = require('../models/report.model');
-const ReportGroup   = require('../models/report-group.model');
 const ReportRequest = require('../models/report-request.model');
 const Team          = require('../models/team.model');
 const ReportFactory = require('../factories/report.factory');

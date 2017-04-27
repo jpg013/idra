@@ -2,10 +2,8 @@ const User         = require('../models/user.model');
 const CryptoClient = require('../common/crypto');
 
 const emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-
 const isValidEmail = email => emailRegex.test(email);
 const isValidUserPassword = password => password.trim().length >= 8;
-
 
 function validateUserFields(fields) {
   if (!fields || typeof fields !== 'object') return false;
@@ -22,7 +20,7 @@ function validateUserFields(fields) {
 
 function scrubUserData(data) {
   if (!data || typeof data !== 'object') return {};
-  const { email, firstName, lastName, password, team, role } = data;
+  const { email, firstName, lastName, password, role, team } = data;
   return {
     email,
     firstName,

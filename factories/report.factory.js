@@ -1,14 +1,14 @@
-const Report        = require('../models/report.model'); 
-const ReportGroup   = require('../models/report-group.model'); 
-const ReportLog     = require('../models/report-log.model');
-const ReportRequest = require('../models/report-request.model');
+const Report           = require('../models/report.model'); 
+const ReportCollection = require('../models/report-collection.model'); 
+const ReportLog        = require('../models/report-log.model');
+const ReportRequest    = require('../models/report-request.model');
 
 function validateReportRequestFields(fields) {
   if (!fields || typeof fields !== 'object') return false;
   if (!fields.request ||
       !fields.request.trim().length ||
       !fields.userId ||
-      !fields.reportGroupId
+      !fields.reportCollectionId
      ) { return false; }
   return true;
 }
@@ -24,51 +24,37 @@ function validateReportFields(fields) {
   if (!fields.name || 
       !fields.description || 
       !fields.query || 
-      !fields.groupId || 
-      !fields.teamId || 
-      !fields.createdBy || 
-      !fields.createdById || 
-      !fields.teamName
+      !fields.createdBy
      ) { return false; }
   return true;
 }
 
-function validateReportGroupFields(fields) {
+function validateReportCollectionFields(fields) {
   if (!fields || typeof fields !== 'object') return false;
   if (!fields.name ||
       (fields.name.trim().length < 3) || 
-      !fields.createdBy ||
-      !fields.createdById ||
-      !fields.teamId ||
-      !fields.teamName
+      !fields.createdBy
      ) { return false; }
   return true;
 }
 
 function scrubReportData(data) {
   if (!data || typeof data !== 'object') return {};
-  const {name, description, query, groupId, createdBy, createdById, teamId, teamName} = data;
+  const {name, createdBy, description, query} = data;
   return {
     name, 
-    description, 
-    query, 
-    groupId, 
-    teamId, 
-    createdBy , 
-    createdById, 
-    teamName
+    createdBy, 
+    description,
+    query
   };
 }
 
-function scrubReportGroupData(data) {
+function scrubReportCollectionData(data) {
   if (!data || typeof data !== 'object') return {};
-  const { name, createdBy, createdById, teamId, teamName } = data;
+  const { name, createdBy } = data;
   return { 
-    name, 
-    createdBy, 
-    createdById, 
-    teamId, 
-    teamName 
+    name,
+    createdBy
   };
 }
 
@@ -83,28 +69,24 @@ function scrubReportLogData(data) {
 
 function scrubReportRequestData(data) {
   if (!data || typeof data !== 'object') return {};
-  const {userId, reportGroupId, request} = data;
+  const {userId, reportCollectionId, request} = data;
   return {
     userId,
-    reportGroupId,
+    reportCollectionId,
     request
   }
 }
 
 function buildReportModel(reportFields) {
-  const modelProps = Object.assign({}, reportFields, {
-    downloadCount: 0,
-    createdDate: new Date()
-  });
+  const modelProps = Object.assign({}, reportFields);
   return Report(modelProps);
 }
 
-function buildReportGroupModel(reportGroupFields) {
-  const modelProps = Object.assign({}, reportGroupFields, {
-    createdDate: new Date(),
-    reports: []
+function buildReportCollectionModel(reportCollectionFields) {
+  const modelProps = Object.assign({}, reportCollectionFields, {
+    reportList: []
   });
-  return ReportGroup(modelProps);
+  return ReportCollection(modelProps);
 }
 
 function buildReportLogModel(reportLogFields) {
@@ -122,16 +104,16 @@ function buildReportRequestModel(reportRequestFields) {
 }
 
 module.exports = {
-  buildReportGroupModel,
+  buildReportCollectionModel,
   buildReportLogModel,
   buildReportModel,
   buildReportRequestModel,
   scrubReportData,
-  scrubReportGroupData,
+  scrubReportCollectionData,
   scrubReportLogData,
   scrubReportRequestData,
   validateReportFields,
-  validateReportGroupFields,
+  validateReportCollectionFields,
   validateReportLogFields,
   validateReportRequestFields
 }
