@@ -1,10 +1,10 @@
 const express           = require('express');
-const reportsController = require('../controllers/reports.controller');
-const teamsController   = require('../controllers/teams.controller');
-const usersController   = require('../controllers/users.controller');
-const loginController   = require('../controllers/login.controller');
-const profileController = require('../controllers/profile.controller');
-const authMiddleware    = require('../middleware/auth');
+const ReportsController = require('../controllers/reports.controller');
+const TeamsController   = require('../controllers/teams.controller');
+const UsersController   = require('../controllers/users.controller');
+const AuthController    = require('../controllers/auth.controller');
+const ProfileController = require('../controllers/profile.controller');
+const AuthMiddleware    = require('../middleware/auth');
 
 const config = app => {
   const apiRouter = express.Router();
@@ -12,11 +12,11 @@ const config = app => {
   /**
    * Mount the controllers to routes
    */
-  apiRouter.use('/teams', authMiddleware.isAuthenticated, teamsController);
-  apiRouter.use('/users', authMiddleware.isAuthenticated, usersController);
-  apiRouter.use('/reports', authMiddleware.isAuthenticated, reportsController);
-  apiRouter.use('/profile', authMiddleware.isAuthenticated, profileController);
-  apiRouter.use('/', loginController);
+  apiRouter.use('/teams', AuthMiddleware.isAuthenticated, TeamsController);
+  apiRouter.use('/users', AuthMiddleware.isAuthenticated, UsersController);
+  apiRouter.use('/reports', AuthMiddleware.isAuthenticated, ReportsController);
+  apiRouter.use('/profile', AuthMiddleware.isAuthenticated, ProfileController);
+  apiRouter.use('/', AuthController);
 
   /**
    *  Mount the router to the app

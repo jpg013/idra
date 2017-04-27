@@ -1,5 +1,5 @@
 const jwt          = require('jsonwebtoken');
-const usersService = require('../services/users.service');
+const UserService = require('../services/user.service');
 
 const verifyToken              = (tokenString, cb) => jwt.verify(tokenString, process.env.AUTH_TOKEN_SECRET, cb);
 const signToken                = (data, expiresIn) => jwt.sign(data, process.env.AUTH_TOKEN_SECRET, { expiresIn });
@@ -8,7 +8,7 @@ const verifyTokenAndReturnUser = (tokenString, cb) => {
     if (err) {
       return cb(err);
     } 
-    usersService.findUser({_id: tokenData.id}, cb);
+    UserService.findUser({_id: tokenData.id}, cb);
   });  
 }
 

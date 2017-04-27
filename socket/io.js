@@ -5,7 +5,7 @@ const async           = require("async");
 const sockStore       = require('./sock-store');
 const sockEvents      = require('./sock-events');
 const rooms           = require('./rooms/index');
-const usersService    = require('../services/users.service');
+const UserService    = require('../services/user.service');
 
 const onIdentifyConnection = (payload) => {
   const { authToken, socket } = payload;
@@ -13,12 +13,12 @@ const onIdentifyConnection = (payload) => {
   const pipeline = [
     cb => authTokenClient.verifyToken(authToken, cb),
     (token, cb) => {
-      usersService.findUser(token.id, cb);
+      UserService.findUser(token.id, cb);
     },
     (userModel, cb) => {
       if (!userModel) return cb('missing required user model');
       sockStore.identifyConnection(userModel.id, socket.id);
-      usersService.updateUserModel(userModel.id, {'lastLoginDate': new Date()}, cb);
+      UserService.updateUserModel(userModel.id, {'lastLoginDate': new Date()}, cb);
     }
   ];
   

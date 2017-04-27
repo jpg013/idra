@@ -1,12 +1,12 @@
-const Team         = require('../models/team.model');
-const User         = require('../models/user.model');
-const ReportLog    = require('../models/report-log.model');
-const cryptoClient = require('../common/crypto');
-const async        = require('async');
-const teamsService = require('../services/teams.service');
-const usersService = require('../services/users.service');
-const seedData     = require('./seed-data');
-const dotenv       = require('dotenv');
+const Team          = require('../models/team.model');
+const User          = require('../models/user.model');
+const ReportLog     = require('../models/report-log.model');
+const ReportRequest = require('../models/report-request.model'); 
+const async         = require('async');
+const TeamService   = require('../services/team.service');
+const UserService   = require('../services/user.service');
+const SeedData      = require('./seed-data');
+const dotenv        = require('dotenv');
 
 /**
  * Load in config file  
@@ -27,13 +27,14 @@ require('../config/mongo').config();
 const removeTeams = cb => Team.collection.drop(() => cb());
 const removeUsers = cb => User.collection.drop(() => cb());
 const removeReportLogs = cb => ReportLog.collection.drop(() => cb());
+const removeReportRequests = cb => ReportRequest.collection.drop(() => cb());
 
 /**
  * Create Teams
  */
 
 function loadTeam(seed, cb) {
-  teamsService.createTeam(seed.team, function(err, teamModel) {
+  TeamService.createTeam(seed.team, function(err, teamModel) {
     return cb(err, seed, teamModel);
   });
 }
@@ -55,7 +56,7 @@ function loadReportCollection(seedData, teamModel, userModel, cb) {
     });
 
     async.waterfall([
-      cb => teamsService.createReportGroup(groupArgs, cb),
+      cb => TeamService.createReportGroup(groupArgs, cb),
       (reportGroupModel, cb) => {
         async.eachSeries(data.reports, function(data, callback) {
           const reportArgs = Object.assign({}, data, {
@@ -65,7 +66,7 @@ function loadReportCollection(seedData, teamModel, userModel, cb) {
             teamId: teamModel.id,
             teamName: teamModel.name
           });
-          teamsService.createReport(reportArgs, callback)
+          TeamService.createReport(reportArgs, callback)
         }, cb)
       }
     ], callback);
@@ -78,14 +79,14 @@ function loadUsers(seedData, teamModel, cb) {
   }
 
   const findMasterUser = () => {
-    usersService.queryUsers({email: 'jim.morgan@innosolpro.com'}, function(err, userModels) {
+    UserService.queryUsers({email: 'jim.morgan@innosolpro.com'}, function(err, userModels) {
       return (userModels && userModels.length ) ? cb(err, seedData, teamModel, userModels[0]) : cb('missing required master user');
     });
   }
 
   async.eachSeries(seedData.users, function(userData, userCb) {
     userData = Object.assign(userData, {team: teamModel.id});
-    usersService.createUser(userData, userCb);
+    UserService.createUser(userData, userCb);
   }, function(err) {
     if (err) return cb(err);
     findMasterUser();
@@ -93,7 +94,7 @@ function loadUsers(seedData, teamModel, cb) {
 }
 
 function loadSeedData(cb) {
-  async.eachSeries(seedData, function(seed, seriesCb) {
+  async.eachSeries(SeedData, function(seed, seriesCb) {
     async.waterfall([
       cb => cb(undefined, seed),
       loadTeam, 
@@ -107,6 +108,7 @@ const seedPipeline = [
   removeTeams,
   removeUsers,
   removeReportLogs,
+  removeReportRequests,
   loadSeedData
 ];
 

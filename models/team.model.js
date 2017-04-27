@@ -1,24 +1,35 @@
-const mongoose         = require('mongoose');
-const Schema           = mongoose.Schema;
-const ReportGroup      = require('./report-group.model');
-const immutable        = require('immutable');
+const mongoose           = require('mongoose');
+const Schema             = mongoose.Schema;
+const ReportGroup        = require('./report-group.model');
+const TwitterCredentials = require('./twitter-credentials.model');
+const immutable          = require('immutable');
 
 const teamSchema = new Schema({
-  name              : String,
-  reportCollection  : [ReportGroup.schema],
-  createdDate       : Date,
-  userCount         : Number,
-  neo4jConnection   : String,
-  neo4jAuth         : String,
-  lastActivityDate  : Date,
-  imageURL          : String
+  name               : {type: String, required: true},
+  reportCollection   : [ReportGroup.schema],
+  createdDate        : {type: Date, default: Date.now},
+  userCount          : {type: Number, default: 0},
+  lastActivityDate   : {type: Date},
+  imageURL           : {type: String},
+  twitterCredentials : {
+    consumerKey: {type: String},
+    consumerSecret: {type: String},
+    accessTokenKey: {type: String},
+    accessTokenSecret: {type: String},
+  },
+  neo4jCredentials : {
+    connection: {type: String, required: true},
+    auth: {type: String, required: true}
+  }
 });
 
 /**
  * Methods
  */
-teamSchema.methods.findReport = function(reportId) {
-  
+teamSchema.methods.findReport = function(reportGroupId, reportId) {
+  const reportGroupModel = this.reportCollection.find(cur => cur.id === reportGroupId);
+  if (!reportGroupModel) return;
+  return reportGroupModel.reports.find(cur => cur.id === reportId);
 }
 
 /**

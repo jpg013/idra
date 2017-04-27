@@ -1,9 +1,11 @@
-const express      = require('express')
+const express      = require('express');
 const neo4j        = require('neo4j');
 const cryptoClient = require('../common/crypto');
+const json2csv     = require('json2csv');
 
 function Idra() {
-  const convertToCsv = (data) => {
+  const convertToCsv = data => {
+    if (!data || !data.length) return [];
     const fields = Object.keys(data[0]);
     return json2csv({ data, fields });
   }
@@ -22,9 +24,9 @@ function Idra() {
     }
   }
   
-  const queryNeo4j = (query, creds, cb) => {
-    if (!query || !creds) return cb('missing required data');
-    creds = (process.env.ENV_NAME === 'PRODUCTION') ? creds : getDevCreds();
+  const runReport = (args, cb) => {
+    if (!args) return cb('missing required data');
+    creds = (process.env.ENV_NAME === 'PRODUCTION') ? {connection: args.connection, auth: args.auth} : getDevCreds();
     
     const db = new neo4j.GraphDatabase({
       url: creds.connection,
@@ -34,15 +36,20 @@ function Idra() {
       agent: null,    // optional http.Agent instance, for custom socket pooling
     });
     
-    db.cypher({query}, (err, data) => cb(err, data));
+    db.cypher({query: args.query}, function(err, results) {
+      if (err || !results) {
+        return cb(err, results);
+      }
+      cb(err, convertToCsv(results));
+    });
   }
 
   const testNeo4jCredentials = () => {
-
+    
   }
   
   return {
-    queryNeo4j,
+    runReport,
     testNeo4jCredentials,
   }
 }

@@ -1,8 +1,8 @@
-const express         = require('express')
-const loginController = express.Router();
-const jwt             = require('jsonwebtoken');
-const cryptoClient    = require('../common/crypto');
-const usersService    = require('../services/users.service');
+const express        = require('express')
+const authController = express.Router();
+const jwt            = require('jsonwebtoken');
+const cryptoClient   = require('../common/crypto');
+const UserService    = require('../services/user.service');
 
 const loginFailedMsg = "Login failed. Invalid username / password.";
 const loginErrMsg = "An error occurred while logging in";
@@ -14,7 +14,7 @@ const loginUser = (req, res) => {
     return res.status(400).send({msg: loginFailedMsg});
   }
   
-  usersService.findUserByUsername(email, function(err, userModel) {
+  UserService.findUserByUsername(email, function(err, userModel) {
     if (err) return res.json({success: false, msg: loginErrMsg});
     if (!userModel) return res.json({success: false, message: loginFailedMsg});
 
@@ -38,6 +38,6 @@ const loginUser = (req, res) => {
 /**
  * Controller Routes
  */
-loginController.post('/login', loginUser);
+authController.post('/login', loginUser);
 
-module.exports = loginController;
+module.exports = authController;

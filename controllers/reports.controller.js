@@ -1,11 +1,10 @@
 const express        = require('express')
-const reportsService = require('../services/reports.service');
-const teamsService   = require('../services/teams.service');
-const usersService   = require('../services/users.service');
+const ReportService  = require('../services/report.service');
+const TeamService    = require('../services/team.service');
+const UserService    = require('../services/user.service');
 const idra           = require('../services/idra');
-const json2csv       = require('json2csv');
 const async          = require('async');
-const authMiddleware = require('../middleware/auth');
+const AuthMiddleware = require('../middleware/auth');
 
 const reportsController = express.Router();
 
@@ -18,51 +17,55 @@ const convertToCsv = (data) => {
 }
 
 const downloadReport = (req, res) => {
-  const { reportId, teamId } = req.body;
-  if (!reportId || !teamId) return res.status(400).send({sucess: false, msg: downloadReportBadRequestMsg});
+  const { reportId, teamId, reportGroupId } = req.body;
+  
+  if (!reportId || !teamId || !reportGroupId) return res.status(400).send({sucess: false, msg: downloadReportBadRequestMsg});
+  
+  UserService.findUser(req.authTokenData.id, (err, userModel) => {
+    if (err || !userModel) {
+      return res.json({success: false, msg: downloadReportErrMsg});
+    }
 
-  usersService.findUser(req.authTokenData.id, function(err, userModel) {
-    if (err || !userModel) return res.json({success: false, msg: downloadReportErrMsg});
-    
-    const report = userModel.team.reports.find(cur => cur.id === reportId);
-    if (!report) return res.status(400).send({sucess: false, msg: downloadReportBadRequestMsg});
-    
-    const idraCreds = {
-      connection: userModel.team.neo4jConnection,
-      auth: userModel.team.neo4jAuth
-    };
+    const reportModel = userModel.team.findReport(reportGroupId, reportId)
 
-    const pipeline = [
-      cb => reportsService.createReportLog({userId: userModel.id, reportId}, cb),
-      cb => teamsService.incrementReportDownloadCount({teamId, reportId}, cb),
-      (teamModel, cb) => teamsService.setLastActivityDate(teamModel.id, cb),
-      (teamModel, cb) => idra.queryNeo4j(report.query, idraCreds, cb)
-    ];
+    if (!reportModel) {
+      return res.status(400).send({sucess: false, msg: downloadReportBadRequestMsg});  
+    }
 
-    async.waterfall(pipeline, function(err, reportData) {
-      if (err || !reportData) {
+    const onReportDone = (err, results) => {
+      if (err || !results) {
         return res.json({success: false, msg: downloadReportErrMsg});
       }
-      const reportCsv = convertToCsv(reportData);
-      res.status(200).send({success: true, data: reportCsv});
-    })
+      res.status(200).send({success: true, results})
+    }
+    
+    // Branch on whether report download is user or admin
+    if (userModel.team.id === teamId) {
+      return ReportService.downloadReportAsUser(userModel, reportModel, onReportDone)
+    }
+
+    /* User does not have privileges to view report */
+    if (!userModel.isAdmin) {
+      return res.status(403).send({success: false, msg: downloadReportErrMsg});
+    }
+
+    ReportService.downloadReportAsAdmin(teamId, reportModel, onReportDone);
   });
 }
 
 function getReports(req, res) {
-  reportsService.getAllReports((err, data) => {
+  ReportService.getAllReports((err, results) => {
     if (err) {
       return res.status(500).send({msg: 'There was an error getting the reports'});
     }
-    return res.status(200).send({data});
+    return res.status(200).send({results});
   });
 }
 
 function requestReport(req, res) {
   const { groupId, userId,  report} = req.body;
   if (!groupId || !userId || !report) return;
-  
-  reportsService.requestReport(report, userId, groupId, () => res.status(200).send({success: true}));
+  ReportService.requestReport(report, userId, groupId, () => res.status(200).send({success: true}));
 }
 
 /**
@@ -70,6 +73,6 @@ function requestReport(req, res) {
  */
 reportsController.post('/download', downloadReport);
 reportsController.post('/request', requestReport);
-reportsController.get('/', authMiddleware.isAdmin, getReports);
+reportsController.get('/', AuthMiddleware.isAdmin, getReports);
 
 module.exports = reportsController;

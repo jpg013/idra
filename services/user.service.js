@@ -1,18 +1,17 @@
-const User            = require('../models/user.model');
-const teamsService    = require('./teams.service');
-const cryptoClient    = require('../common/crypto');
-const mongoClient     = require('../common/mongo');
-const async           = require('async');
+const User         = require('../models/user.model');
+const TeamService  = require('./team.service');
+const cryptoClient = require('../common/crypto');
+const mongoClient  = require('../common/mongo');
+const async        = require('async');
+const UserFactory  = require('../factories/user.factory');
 
 /**
  * Error messages
  */
-const invalidTeamFormMsg = 'Invalid user form data';
+const invalidUserDataMsg = 'Invalid user data';
 const createUserErrorMsg = 'There was an error creating the user';
 const userExistsMsg = 'A user with this email already exists';
 const teamDoesNotExistErrorMsg = 'Team does not exist';
-const emailRegex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-const isValidEmail = email => emailRegex.test(email);
 
 const queryUsers = (query, cb) => {
   User.find(query)
@@ -24,25 +23,6 @@ const findUser = (id, cb) => User.findOne({_id: id}).populate('team').exec(cb);
 
 const findUserByUsername = (email, cb) => User.findOne({email}).populate('team').exec(cb);
 
-const sanitizeUserData = userData => {
-  const { email, firstName, lastName, password } = userData;
-  if (!firstName || !lastName || !isValidEmail(email) || !password || !isValidUserPassword(password)) {
-    return false;
-  }
-  
-  let team = userData.team;
-  if (!team) {
-    return;
-  }
-  
-  let role = (userData.role === 'admin') ? 'admin' : 'user';
-  return { email, firstName, lastName, team, role, password };
-}
-
-const isValidUserPassword = password => {
-  return password.trim().length >= 8;
-}
-
 const checkIfUserIsUnique = (userModel, cb) => {
   findUserByUsername(userModel.email, function(err, duplicateUser) {
     if (err) return cb(err);
@@ -51,7 +31,7 @@ const checkIfUserIsUnique = (userModel, cb) => {
 }
 
 const doesUserTeamExist = (userModel, cb) => {
-  teamsService.findTeam(userModel.team, function(err, teamModel) {
+  TeamService.findTeam(userModel.team, function(err, teamModel) {
     if (err) return cb(err);
     return teamModel ? cb(undefined, userModel) : cb(teamDoesNotExistErrorMsg);
   });
@@ -66,34 +46,17 @@ const persistNewUser = (dirtyUserModel, cb) => {
   })
 }
   
-const buildUserModel = userData => {
-  const { email, firstName, lastName, team, role, password } = userData;
-  const modelProps = Object.assign({}, {
-    password: cryptoClient.encrypt(password),
-    createdDate: new Date(),
-    passwordChangeRequired: true,
-    email,
-    firstName,
-    lastName,
-    team,
-    role
-  });
-  return new User(modelProps);
-}
+const createUser = (data, cb) => {
+  const scrubbedUserData = UserFactory.scrubUserData(data);
+  if (!UserFactory.validateUserFields(scrubbedUserData)) {
+    return cb(invalidUserDataMsg);
+  }
+
+  const buildUser = callback => callback(undefined, UserFactory.buildUserModel(scrubbedUserData));
   
-const createUser = (userData, cb) => {
-  const sanitizedUserData = sanitizeUserData(userData);
-  if (!sanitizedUserData) {
-    return cb(invalidTeamFormMsg);
-  };
-  const buildUser = (callback) => {
-    const newUserModel = buildUserModel(sanitizedUserData);
-    callback(undefined, newUserModel); 
-  };
-  
-  const updateTeamUserCount = (userModel, cb) => {
+  const incrementTeamUserCount = (userModel, cb) => {
     if (!userModel) return cb(createUserErrorMsg);
-    teamsService.incrementUserCount(userModel.team.id, function(err) {
+    TeamService.incrementUserCount(userModel.team.id, function(err) {
       return cb(err, userModel);
     });
   }
@@ -110,7 +73,7 @@ const createUser = (userData, cb) => {
     checkIfUserIsUnique, 
     doesUserTeamExist, 
     persistNewUser, 
-    updateTeamUserCount, 
+    incrementTeamUserCount, 
     onUserSaved
     ];  
   async.waterfall(waterfallPipeline, cb);
@@ -121,9 +84,7 @@ const deleteUser = (id, cb) => {
 }
 
 const editUser = (userData, cb) => {
-  if (userData.password && !isValidUserPassword(userData.password)) {
-    return cb('invalid password');
-  }
+  
 }
 
 function buildUserUpdateObject(update) {
@@ -137,6 +98,8 @@ function buildUserUpdateObject(update) {
         acc.$set.password = update[cur];
       } else if (cur === 'passwordChangeRequired') {
         acc.$set.passwordChangeRequired = update[cur];
+      } else if (cur === 'lastLoginDate') {
+        acc.$set.lastLoginDate = update[cur];
       }
       return acc;
     }, val);
@@ -155,6 +118,7 @@ function updateUserModel(userId, updateObject, cb) {
       upsert: true,
       new: true
     };
+
     const pipeline = [
       callback => User.update({_id: userId}, $update, opts, callback),
       (update, callback) => {
@@ -169,7 +133,6 @@ module.exports = {
   queryUsers,
   createUser,
   deleteUser,
-  isValidUserPassword,
   editUser,
   findUserByUsername,
   findUser,

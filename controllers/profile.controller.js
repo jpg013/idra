@@ -1,6 +1,7 @@
 const express           = require('express')
 const cryptoClient      = require('../common/crypto');
-const usersService      = require('../services/users.service');
+const UserService       = require('../services/user.service');
+const UserFactory       = require('../factories/user.factory');
 const profileController = express.Router();
 
 const passwordChangeErrMsg = 'There was an error changing the password.'
@@ -12,7 +13,7 @@ function updatePassword(req, res) {
   }
   
   /* Is user password valid */
-  if (!usersService.isValidUserPassword(newPassword));
+  if (!UserFactory.isValidUserPassword(newPassword));
 
   oldPassword = cryptoClient.encrypt(oldPassword);
   newPassword = cryptoClient.encrypt(newPassword);
@@ -22,7 +23,7 @@ function updatePassword(req, res) {
     return res.status(401).send({success: false, msg: passwordChangeErrMsg});
   }
 
-  usersService.findUser(userId, function(err, userModel) {
+  UserService.findUser(userId, function(err, userModel) {
     if (err || !userModel) {
       return res.status(403).send({success: false, msg: passwordChangeErrMsg});
     }
@@ -38,7 +39,7 @@ function updatePassword(req, res) {
       passwordChangeRequired: false
     };
 
-    usersService.updateUserModel(userModel.id, update, function(err, updatedUserModel) {
+    UserService.updateUserModel(userModel.id, update, function(err, updatedUserModel) {
       if (err) {
         return res.status(401).send({success: false, msg: passwordChangeErrMsg});
       }
