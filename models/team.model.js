@@ -22,6 +22,15 @@ const teamSchema = new Schema({
   }
 });
 
+ /**
+ * Methods
+ */
+teamSchema.methods.findReport = function(reportCollectionId, reportId) {
+  const reportCollectionModel = this.reportCollections.find(cur => cur.id === reportCollectionId);
+  if (!reportCollectionModel) return;
+  return reportCollectionModel.reportList.find(cur => cur.id === reportId);
+}
+
 /**
  * Schema
  */

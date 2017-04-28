@@ -56,7 +56,8 @@ const teams = [
       connection: 'http://neo4j:neo4j@172.31.28.30:7474',
       auth: 'neo4j:Innosolpro2017'
     },
-    imageURL: ''
+    imageURL: '',
+    reportCollectionNames: ['Sports and Greeklife', 'Alumni Scoring and Analysis']
   },
   {
     name: 'University of Central Missouri',
@@ -64,8 +65,9 @@ const teams = [
       connection: 'http://neo4j:neo4j@172.31.28.30:7474',
       auth: 'neo4j:Innosolpro2017'
     },
-    imageURL: ''
-  }
+    imageURL: '',
+    reportCollectionNames: ['Sports and Greeklife', 'Alumni Scoring and Analysis']
+  },
 ];
 
 

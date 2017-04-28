@@ -24,7 +24,8 @@ function validateReportFields(fields) {
   if (!fields.name || 
       !fields.description || 
       !fields.query || 
-      !fields.createdBy
+      !fields.createdBy ||
+      !fields.reportCollectionId
      ) { return false; }
   return true;
 }
@@ -40,12 +41,13 @@ function validateReportCollectionFields(fields) {
 
 function scrubReportData(data) {
   if (!data || typeof data !== 'object') return {};
-  const {name, createdBy, description, query} = data;
+  const {name, createdBy, description, query, reportCollectionId} = data;
   return {
     name, 
     createdBy, 
     description,
-    query
+    query,
+    reportCollectionId
   };
 }
 

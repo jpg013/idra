@@ -100,26 +100,11 @@ function incrementUserCount(teamId, cb) {
   Team.findByIdAndUpdate(teamId, $inc, cb);
 }
 
-function incrementReportDownloadCount(data, cb) {
-  const {reportModel, teamId} = data;
-  if (!reportModel || !teamId) return cb('missing required data');
-
-  const $inc = { 
-    '$inc': { 
-      'reportCollection.$.reports.$.downloadCount': 1  
-    } 
-  }
-  
-  const $query = {
-    '_id': teamId,
-    'reportCollection._id': reportModel.groupId,
-    'reportCollection.reports._id': reportModel.id
-  };
-  
-  Team.find($query, function(err, results) {
-    console.log(err);
-    console.log(results);
-  });  
+function incrementDownloadCount(teamId, cb) {
+  if (!teamId) return cb('missing required team id');
+  const $inc = { '$inc': { 'downloadCount': 1 } }
+  const $query = { '_id': teamId};
+  Team.update($query, $inc, cb);
 }
 
 function setLastActivityDate(teamId, cb) {
@@ -149,6 +134,6 @@ module.exports = {
   createReport,
   createReportGroup,
   incrementUserCount,
-  incrementReportDownloadCount,
+  incrementDownloadCount,
   setLastActivityDate
 };

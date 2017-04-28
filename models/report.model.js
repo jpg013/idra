@@ -7,7 +7,8 @@ const ReportSchema = new Schema({
   createdBy: {type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true},
   description: {type: String, required: true},
   query: {type: String, required: true},
-  downloadCount: {type: Number, default: 0}
+  downloadCount: {type: Number, default: 0},
+  reportCollectionId: {type: mongoose.Schema.Types.ObjectId, required: true},
 });
 
 ReportSchema.virtual('id').get(function() {
@@ -15,8 +16,8 @@ ReportSchema.virtual('id').get(function() {
 });
 
 ReportSchema.virtual('clientProps').get(function() {
-  const {name, createdDate, description, query, id, createdBy, downloadCount} = this;
-  return {name, createdDate, description, query, id, createdBy, downloadCount};
+  const {name, createdDate, description, query, id, createdBy, downloadCount, reportCollectionId} = this;
+  return {name, createdDate, description, query, id, createdBy, downloadCount, reportCollectionId};
 });
 
 module.exports = mongoose.model('Report', ReportSchema);

@@ -17,39 +17,35 @@ const convertToCsv = (data) => {
 }
 
 const downloadReport = (req, res) => {
-  const { reportId, teamId, reportGroupId } = req.body;
-  
-  if (!reportId || !teamId || !reportGroupId) return res.status(400).send({sucess: false, msg: downloadReportBadRequestMsg});
+  const { reportId, reportCollectionId } = req.body;
+  if (!reportId || !reportCollectionId) return res.status(400).send({sucess: false, msg: downloadReportBadRequestMsg});
   
   UserService.findUser(req.authTokenData.id, (err, userModel) => {
     if (err || !userModel) {
       return res.json({success: false, msg: downloadReportErrMsg});
     }
 
-    const reportModel = userModel.team.findReport(reportGroupId, reportId)
-
-    if (!reportModel) {
-      return res.status(400).send({sucess: false, msg: downloadReportBadRequestMsg});  
-    }
-
-    const onReportDone = (err, results) => {
+    const onReportDownloadDone = (err, results) => {
       if (err || !results) {
         return res.json({success: false, msg: downloadReportErrMsg});
       }
       res.status(200).send({success: true, results})
     }
-    
-    // Branch on whether report download is user or admin
-    if (userModel.team.id === teamId) {
-      return ReportService.downloadReportAsUser(userModel, reportModel, onReportDone)
-    }
 
-    /* User does not have privileges to view report */
+    const reportModel = userModel.team.findReport(reportCollectionId, reportId);
+    
+    /* User has access to report */
+    if (reportModel) {
+      return ReportService.downloadReportAsUser(userModel, reportModel, onReportDownloadDone)
+    }
+    
+    /* User is unauthorized to download report */
     if (!userModel.isAdmin) {
       return res.status(403).send({success: false, msg: downloadReportErrMsg});
     }
 
-    ReportService.downloadReportAsAdmin(teamId, reportModel, onReportDone);
+    /* download report as admin */
+    ReportService.downloadReportAsAdmin(reportId, reportCollectionId, onReportDownloadDone);
   });
 }
 

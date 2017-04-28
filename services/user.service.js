@@ -15,13 +15,30 @@ const teamDoesNotExistErrorMsg = 'Team does not exist';
 
 const queryUsers = (query, cb) => {
   User.find(query)
-    .populate('team')
+    .populate({
+      path: 'team',
+      populate: { path: 'reportCollections' }
+    })
     .exec(cb);
 }
 
-const findUser = (id, cb) => User.findOne({_id: id}).populate('team').exec(cb);  
+const findUser = (id, cb) => {
+  User.findOne({_id: id})
+    .populate({
+        path: 'team',
+        populate: { path: 'reportCollections' }
+      })
+    .exec(cb);  
+}
 
-const findUserByUsername = (email, cb) => User.findOne({email}).populate('team').exec(cb);
+const findUserByUsername = (email, cb) => {
+  User.findOne({email})
+    .populate({
+      path: 'team',
+      populate: { path: 'reportCollections' }
+    })
+    .exec(cb);
+}
 
 const checkIfUserIsUnique = (userModel, cb) => {
   findUserByUsername(userModel.email, function(err, duplicateUser) {

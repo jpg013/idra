@@ -32,6 +32,7 @@ require('../config/mongo').config();
 
 const removeTeams = cb => Team.collection.drop(() => cb());
 const removeUsers = cb => User.collection.drop(() => cb());
+const removeReportCollections = cb => ReportCollection.collection.drop(() => cb());
 const removeReportLogs = cb => ReportLog.collection.drop(() => cb());
 const removeReportRequests = cb => ReportRequest.collection.drop(() => cb());
 
@@ -60,12 +61,7 @@ function loadUsers(cb) {
       }),
       (teamModel, cb) => {
         const userData = Object.assign({}, data, {team: teamModel.id});
-        const scrubbedData = UserFactory.scrubUserData(userData);
-        if (!UserFactory.validateUserFields(scrubbedData)) {
-          throw new Error('invalid use data');
-        }
-        const userModel = UserFactory.buildUserModel(scrubbedData)
-        userModel.save(cb)
+        UserService.createUser(userData, cb);
       }
     ];
     async.waterfall(pipeline, userSavedCb);
@@ -96,7 +92,11 @@ function loadReportCollections(cb) {
       },
       (userModel, reportCollectionModel, cb) => {
         const reportList = data.reportList.map(cur => {
-          const scrubbedData = ReportFactory.scrubReportData(Object.assign({}, cur, {createdBy: userModel.id}));
+          const scrubbedData = ReportFactory.scrubReportData(Object.assign({}, cur, {
+            createdBy: userModel.id, 
+            reportCollectionId: reportCollectionModel.id
+          }));
+          
           if (!ReportFactory.validateReportFields(scrubbedData)) {
             throw new Error('invalid report data');
           }
@@ -112,14 +112,39 @@ function loadReportCollections(cb) {
   }, cb);
 }
 
+function loadTeamReports(cb) {
+  async.eachSeries(SeedData.teams, function(data, cb) {
+    const $query = { 'name': {$in: data.reportCollectionNames} };
+    const $projection = { '_id': 1 };
+    
+    const pipeline = [
+      cb => ReportCollection.find($query, $projection).lean().exec((err, results) => {
+        cb(err, results);
+      }),
+      (idResults, cb) => {
+        const reportCollections = idResults.reduce((acc, cur) => {
+          acc.push(cur._id);
+          return acc;
+        }, [])
+        const $query = { name: data.name };
+        const $update = {'$push': {'reportCollections': {$each: reportCollections}}};
+        Team.update($query, $update, cb)
+      }
+    ];
+    async.waterfall(pipeline, cb);
+  }, cb);
+} 
+
 const seedPipeline = [
   removeTeams,
   removeUsers,
+  removeReportCollections,
   removeReportLogs,
   removeReportRequests,
   loadUserTeams,
   loadUsers,
-  loadReportCollections
+  loadReportCollections,
+  loadTeamReports
 ];
 
 async.series(seedPipeline, function(err) {
