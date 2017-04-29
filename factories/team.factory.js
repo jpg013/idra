@@ -63,7 +63,8 @@ function buildTeamModel(teamFields) {
     name: teamFields.name,
     neo4jCredentials,
     imageURL: teamFields.imageURL,
-    reportCollections: [],
+    reportSets: [],
+    reports: [],
     twitterCredentials: tryToBuildTwitterCredentials(teamFields.twitterCredentials)
   });
 

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const schema = mongoose.Schema;
+const TeamModel = require('./team.model');
 
 const userSchema = new schema({
   email: {type: String, required: true},
@@ -27,7 +28,7 @@ userSchema.virtual('isAdmin').get(function() {
 
 userSchema.virtual('clientProps').get(function() {
   const {lastLoginDate, email, firstName, lastName, createdDate, role, passwordChangeRequired, id} = this;
-  const team = this.team.clientProps;
+  const team = (this.team instanceof TeamModel) ? this.team.clientProps : this.team;
   return {lastLoginDate, email, firstName, lastName, createdDate, role, passwordChangeRequired, id, team};
 })
 

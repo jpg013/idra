@@ -57,7 +57,8 @@ const teams = [
       auth: 'neo4j:Innosolpro2017'
     },
     imageURL: '',
-    reportCollectionNames: ['Sports and Greeklife', 'Alumni Scoring and Analysis']
+    reportSets: [],
+    reports: []
   },
   {
     name: 'University of Central Missouri',
@@ -66,17 +67,17 @@ const teams = [
       auth: 'neo4j:Innosolpro2017'
     },
     imageURL: '',
-    reportCollectionNames: ['Sports and Greeklife', 'Alumni Scoring and Analysis']
-  },
-];
-
-
-const reportCollections = [
-  {
-    name: 'Sports and Greeklife',
-    createdByUsername: '',
-    reportList: [
+    reportSets: [
       {
+        name: 'Sports and Greeklife',  
+      },
+      {
+        name: 'Alumni Scoring and Analysis',
+      }
+    ],
+    reports: [
+      {
+        reportSetName: 'Sports and Greeklife',
         name: 'BASEBALL PLAYERS GIVING',
         description: 'Alumni Athelete Giving by Baseball - Fund, Amount, Date of last gift',
         query: `MATCH (a:Sports {name:'BASEBALL'})-[]-(n:Alumni)-[]-(b:Fund)
@@ -90,6 +91,7 @@ const reportCollections = [
           n.totalgiving as totalgifts, a.name as Sport, b.name as Fund, b.date as date, b.amount as amount`
       },    
       {
+        reportSetName: 'Sports and Greeklife',
         name: 'FOOTBALL PLAYERS GIVING',
         description: 'Alumni Athelete Giving by Football - Fund, Amount, Date of last gift',
         query: `MATCH (a:Sports {name:'FOOTBALL'})-[]-(n:Alumni)-[]-(b:Fund)
@@ -103,6 +105,7 @@ const reportCollections = [
           n.totalgiving as totalgifts, a.name as Sport, b.name as Fund, b.date as date, b.amount as amount`
       },
       {
+        reportSetName: 'Sports and Greeklife',
         name: 'BASKETBALL MENS PLAYERS GIVING',
         description: 'Alumni Athelete Giving by BASKETBALL MENS - Fund, Amount, Date of last gift',
         query: `MATCH (a:Sports {name:"BASKETBALL MEN'S"})-[]-(n:Alumni)-[]-(b:Fund)
@@ -116,11 +119,13 @@ const reportCollections = [
           n.totalgiving as totalgifts, a.name as Sport, b.name as Fund, b.date as date, b.amount as amount`
       },
       {
+        reportSetName: 'Sports and Greeklife',
         name: 'ALUMNI BY GREEK ORG',
         description: 'Number of Alumni by Greek organization ranked by size',
         query: `MATCH (n:Greeklife)-[r]-(a) RETURN n.name as name, count(n) ORDER BY count(n) DESC`
       },
       {
+        reportSetName: 'Sports and Greeklife',
         name: 'ALUMNI GIVING WITH GREEK ORG & COMPANY',
         description: 'Alumni by giving when they belong to a Greek organization and work',
         query: `MATCH (c:Company)-[]-(a1:Alumni)-[]-(s:Greeklife)
@@ -129,14 +134,9 @@ const reportCollections = [
           a1.rtg3category as Rating3Cat, a1.rtg3description as Rating3Desc, a1.rtg4category as Rating4Cat,
           a1.rtg4description as Rating4Desc, a1.rtg5category as Rating5Cat, a1.rtg5description as Rating5Desc,
           a1.totalgiving as totalgifts, c.name as Company, s.name as Greek ORDER BY totalgifts DESC`
-      }
-    ]
-  },
-  {
-    name: 'Alumni Scoring and Analysis',
-    createdByUsername: '',
-    reportList: [
+      },
       {
+        reportSetName: 'Alumni Scoring and Analysis',
         name: 'Top 100 Composite Scoring',
         description: 'A list of the Top 100 Alumni with Scores broken out & and in compsite',
         query: `MATCH (n:Alumni) WHERE EXISTS(n.Engagement_pagerank) AND EXISTS(n.Influence_pagerank) AND EXISTS(n.BB_pagerank) AND EXISTS(n.Social_pagerank)
@@ -146,6 +146,7 @@ const reportCollections = [
           RETURN name, Engagement, Influence, BBConnections, SocialConnections, score ORDER BY score DESC LIMIT 100`
       },
       {
+        reportSetName: 'Alumni Scoring and Analysis',
         name: 'Top 100 Alumni Influencer Rank',
         description: 'A list of the Top 100 Alumni with Influence Score used to Rank Alum Influence',
         query: `MATCH (n:Alumni) WHERE EXISTS(n.Influence_pagerank)
@@ -153,6 +154,7 @@ const reportCollections = [
           RETURN name, Influence ORDER BY Influence DESC LIMIT 100`
       },
       {
+        reportSetName: 'Alumni Scoring and Analysis',
         name: 'Top 100 Alumni Engagement Rank',
         description: 'A list of the Top 100 Alumni with Engagement score used to Rank Alum Engagement',
         query: `MATCH (n:Alumni) WHERE EXISTS(n.Engagement_pagerank)
@@ -160,6 +162,7 @@ const reportCollections = [
           RETURN name, Engagement ORDER BY Engagement DESC LIMIT 100`
       },
       {
+        reportSetName: 'Alumni Scoring and Analysis',
         name: 'Top 100 Alumni BBConnection Rank',
         description: 'A list of the Top 100 Alumni with BBConnection score used to Rank Alum BlackBaud Connections',
         query: `MATCH (n:Alumni) WHERE EXISTS(n.BB_pagerank)
@@ -167,6 +170,7 @@ const reportCollections = [
           RETURN name, BBConnections ORDER BY BBConnections DESC LIMIT 100`
       },
       {
+        reportSetName: 'Alumni Scoring and Analysis',
         name: 'Top 100 Alumni Socialonnection Rank',
         description: 'A list of the Top 100 Alumni with SocialConnection score used to Rank Alum Social Connections',
         query: `MATCH (n:Alumni) WHERE EXISTS(n.Social_pagerank)
@@ -174,12 +178,11 @@ const reportCollections = [
           RETURN name, SocialConnections ORDER BY SocialConnections DESC LIMIT 100`
       }
     ]
-  }
+  },
 ];
 
 module.exports = {
   users,
   teams,
-  reportCollections
 }
 

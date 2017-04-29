@@ -13,11 +13,13 @@ const editTeamErrMsg = 'There was an error updating the team';
 const deleteTeamErrorMsg = 'There was an error deleting the team';
 
 const getTeams = (req, res) => {
-  TeamService.queryTeams({}, (err, teamCollection) => {
-    if (err) throw err;
-    const data = teamCollection.map(cur => cur.clientProps);
-    res.json({data}); 
-  })
+  TeamService.queryTeams({}, (err, results) => {
+    if (err) {
+      return res.status(500).send({results :[]});
+    } 
+    console.log(results);
+    return res.status(200).send({results});
+  });
 }
 
 const createTeam = (req, res) => {

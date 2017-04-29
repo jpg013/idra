@@ -10,11 +10,11 @@ const TeamFactory    = require('../factories/team.factory');
 const addTeamErrMsg = 'There was an error creating the team';
 const invalidTeamDataErrMsg = 'Invalid team data';
 const invalidReportDataErrMsg = 'Invalid report data';
-const invalidReportGroupDataErrMsg = 'Invalid report group data';
+const invalidReportSetDataErrMsg = 'Invalid report set data';
 const teamDoesNotExistErrMsg = 'Team does not exists';
 const teamExistsErrMsg = 'Team name already exists.';
 const addReportErrMsg = 'There was an error creating the report';
-const addReportGroupErrMsg = 'There was an error creating the report group';
+const addReportSetErrMsg = 'There was an error creating the report set';
 
 const canDeleteTeam = teamModel => {
   return teamModel.userCount === 0;
@@ -27,14 +27,18 @@ const doesTeamNameExist = (name, cb) => {
 }
 
 const queryTeams = (query, cb) => {
-  Team.find(query).exec(function(err, teamCollection) {
-    return cb(err, teamCollection);
-  });
+  Team
+    .find(query)
+    .exec((err, results = []) => {
+      if (err) return cb(err);
+      const teams = results.map(cur => cur.clientProps);
+      return cb(err, teams);
+    });
 }
 
 const findTeam = (id, cb) => {
-  Team.findOne({_id: id}, function(err, teamModel) {
-    return cb(err, teamModel);
+  Team.findOne({_id: id}, function(err, result) {
+    return cb(err, result);
   });
 }
 
@@ -66,19 +70,19 @@ const updateTeam = (teamId, data, cb) => {
   Team.findOneAndUpdate({_id: teamId}, {$set}, {new: true}, cb);
 }
 
-function createReportGroup(data, cb) {
-  const scrubbedReportGroupData = ReportFactory.scrubReportGroupData(data);
-  if (!ReportFactory.validateReportGroupFields(scrubbedReportGroupData)) {
-    return cb(invalidReportGroupDataErrMsg);
+function createReportSet(data, cb) {
+  const scrubbedData = ReportFactory.scrubReportSetData(data);
+  if (!ReportFactory.validateReportSetFields(scrubbedData)) {
+    return cb(invalidReportSetDataErrMsg);
   }
 
-  const reportGroupModel = ReportFactory.buildReportGroupModel(scrubbedReportGroupData);
+  const reportSetModel = ReportFactory.buildReportSetModel(scrubbedData);
 
-  const $query = { '_id': reportGroupModel.teamId }
-  const $update = { '$push': { 'reportCollection' : reportGroupModel } }
-  const $opts = {upsert: true, new: true }
+  const $query = { '_id': reportSetModel.teamId }
+  const $update = { '$push': { 'reportSets' : reportSetModel } }
+  const $opts = {upsert: true, new: true };
 
-  Team.update($query, $update, $opts, (err) => cb(err, reportGroupModel));
+  Team.update($query, $update, $opts, (err) => cb(err, reportSetModel));
 }
 
 function createReport(data, cb) {
@@ -88,8 +92,9 @@ function createReport(data, cb) {
   } 
   
   const reportModel = ReportFactory.buildReportModel(scrubbedData);
-  const $query = { '_id': reportModel.teamId, 'reportCollection._id': reportModel.groupId }
-  const $update = { $push: {'reportCollection.$.reports': reportModel} }
+  
+  const $query = { '_id': reportModel.teamId}
+  const $update = { $push: {'reports': reportModel} }
   const $opts = {upsert: true, new: true }
 
   Team.update($query, $update, $opts, cb);
@@ -100,10 +105,10 @@ function incrementUserCount(teamId, cb) {
   Team.findByIdAndUpdate(teamId, $inc, cb);
 }
 
-function incrementDownloadCount(teamId, cb) {
-  if (!teamId) return cb('missing required team id');
-  const $inc = { '$inc': { 'downloadCount': 1 } }
-  const $query = { '_id': teamId};
+function incrementReportDownloadCount(reportModel, cb) {
+  if (!reportModel) return cb('missing required report');
+  const $inc = { '$inc': { 'reports.$.downloadCount': 1 } }
+  const $query = { '_id': reportModel.teamId, "reports._id": reportModel.id};
   Team.update($query, $inc, cb);
 }
 
@@ -123,6 +128,24 @@ function setLastActivityDate(teamId, cb) {
   Team.update({'_id': teamId}, $set, opts, cb);
 }
 
+function getReportList(cb) {
+  const $query = {
+    $where: "this.reportSets.length > 0"
+  }
+  Team
+    .find($query, {reports: 1, reportSets: 1, name: 1})
+    .exec(function(err, results = []) {
+      if (err) return cb(err);
+      
+      const reportList = results.reduce((acc, cur) => {
+        const reportCollection = cur.clientProps.reportCollection;
+        return acc.concat(reportCollection);
+      }, []);
+      return cb(err, reportList);
+    });
+
+}
+
 module.exports = {
   canDeleteTeam,
   queryTeams,
@@ -132,8 +155,9 @@ module.exports = {
   doesTeamNameExist,
   findTeam,
   createReport,
-  createReportGroup,
+  createReportSet,
   incrementUserCount,
-  incrementDownloadCount,
-  setLastActivityDate
+  incrementReportDownloadCount,
+  setLastActivityDate,
+  getReportList
 };

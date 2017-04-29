@@ -14,29 +14,20 @@ const userExistsMsg = 'A user with this email already exists';
 const teamDoesNotExistErrorMsg = 'Team does not exist';
 
 const queryUsers = (query, cb) => {
-  User.find(query)
-    .populate({
-      path: 'team',
-      populate: { path: 'reportCollections' }
-    })
-    .exec(cb);
+  User.find(query, (err, results) => {
+    return cb(err, results);
+  });
 }
 
 const findUser = (id, cb) => {
   User.findOne({_id: id})
-    .populate({
-        path: 'team',
-        populate: { path: 'reportCollections' }
-      })
+    .populate('team')
     .exec(cb);  
 }
 
 const findUserByUsername = (email, cb) => {
   User.findOne({email})
-    .populate({
-      path: 'team',
-      populate: { path: 'reportCollections' }
-    })
+    .populate('team')
     .exec(cb);
 }
 
@@ -146,6 +137,17 @@ function updateUserModel(userId, updateObject, cb) {
   });
 }
 
+function getUserList(cb) {
+  User
+    .find({})
+    .populate('team')
+    .exec((err, results = []) => {
+      if (err) return cb(err);
+      const users = results.map(cur => cur.clientProps);
+      cb(err, users);
+    });
+}
+
 module.exports = {
   queryUsers,
   createUser,
@@ -153,5 +155,6 @@ module.exports = {
   editUser,
   findUserByUsername,
   findUser,
-  updateUserModel
+  updateUserModel,
+  getUserList
 };

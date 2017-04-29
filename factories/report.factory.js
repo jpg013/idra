@@ -1,5 +1,5 @@
 const Report           = require('../models/report.model'); 
-const ReportCollection = require('../models/report-collection.model'); 
+const ReportSet        = require('../models/report-set.model'); 
 const ReportLog        = require('../models/report-log.model');
 const ReportRequest    = require('../models/report-request.model');
 
@@ -8,7 +8,7 @@ function validateReportRequestFields(fields) {
   if (!fields.request ||
       !fields.request.trim().length ||
       !fields.userId ||
-      !fields.reportCollectionId
+      !fields.reportSetId
      ) { return false; }
   return true;
 }
@@ -25,38 +25,42 @@ function validateReportFields(fields) {
       !fields.description || 
       !fields.query || 
       !fields.createdBy ||
-      !fields.reportCollectionId
+      !fields.reportSetId ||
+      !fields.teamId
      ) { return false; }
   return true;
 }
 
-function validateReportCollectionFields(fields) {
+function validateReportSetFields(fields) {
   if (!fields || typeof fields !== 'object') return false;
   if (!fields.name ||
       (fields.name.trim().length < 3) || 
-      !fields.createdBy
+      !fields.createdBy ||
+      !fields.teamId
      ) { return false; }
   return true;
 }
 
 function scrubReportData(data) {
   if (!data || typeof data !== 'object') return {};
-  const {name, createdBy, description, query, reportCollectionId} = data;
+  const {name, createdBy, description, query, reportSetId, teamId} = data;
   return {
     name, 
     createdBy, 
     description,
     query,
-    reportCollectionId
+    reportSetId,
+    teamId
   };
 }
 
-function scrubReportCollectionData(data) {
+function scrubReportSetData(data) {
   if (!data || typeof data !== 'object') return {};
-  const { name, createdBy } = data;
+  const { name, createdBy, teamId } = data;
   return { 
     name,
-    createdBy
+    createdBy,
+    teamId
   };
 }
 
@@ -71,10 +75,10 @@ function scrubReportLogData(data) {
 
 function scrubReportRequestData(data) {
   if (!data || typeof data !== 'object') return {};
-  const {userId, reportCollectionId, request} = data;
+  const {userId, reportSetId, request} = data;
   return {
     userId,
-    reportCollectionId,
+    reportSetId,
     request
   }
 }
@@ -84,11 +88,9 @@ function buildReportModel(reportFields) {
   return Report(modelProps);
 }
 
-function buildReportCollectionModel(reportCollectionFields) {
-  const modelProps = Object.assign({}, reportCollectionFields, {
-    reportList: []
-  });
-  return ReportCollection(modelProps);
+function buildReportSetModel(reportSetFields) {
+  const modelProps = Object.assign({}, reportSetFields);
+  return ReportSet(modelProps);
 }
 
 function buildReportLogModel(reportLogFields) {
@@ -106,16 +108,16 @@ function buildReportRequestModel(reportRequestFields) {
 }
 
 module.exports = {
-  buildReportCollectionModel,
+  buildReportSetModel,
   buildReportLogModel,
   buildReportModel,
   buildReportRequestModel,
   scrubReportData,
-  scrubReportCollectionData,
+  scrubReportSetData,
   scrubReportLogData,
   scrubReportRequestData,
   validateReportFields,
-  validateReportCollectionFields,
+  validateReportSetFields,
   validateReportLogFields,
   validateReportRequestFields
 }

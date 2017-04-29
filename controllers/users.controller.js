@@ -9,9 +9,11 @@ const UserService     = require('../services/user.service');
 const deleteUserErrorMsg = 'There was an error deleting the user';
 
 const getUsers = (req, res) => {
-  UserService.queryUsers({}, function(err, users) {
-    if (err) throw err;
-    res.json({data: users.map(cur => cur.clientProps)});
+  UserService.getUserList(function(err, results) {
+    if (err) {
+      return res.status(500).send({});
+    }
+    return res.status(200).send({results});
   });
 }
 
