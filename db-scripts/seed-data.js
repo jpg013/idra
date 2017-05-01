@@ -45,7 +45,7 @@ const users = [
     password: 'spuyU8ej#se5',
     email: 'ecrowley@ucmo.edu',
     role: 'user',
-    teamName: 'University of Central Missouri'
+    teamName: 'University of Central Missouri',
   }
 ]
 
@@ -67,6 +67,12 @@ const teams = [
       auth: 'neo4j:Innosolpro2017'
     },
     imageURL: '',
+    twitterCredentials: {
+      consumer_key: 'hI5fn9Ufx9VSxLSSuyk0iV3gw',
+      consumer_secret: 'mBuEciuGcZ37kuJvgCd0m1MR1ltFfhVBO9vQDsZECQlLBdfQ99',
+      access_token_key: '3832567466-uubk9xCWTOgyo4zfXQ97ix5xXEfXENBm2sQe275',
+      access_token_secret: 'wVzPuMEveeVGwjmLEHVJTdqmL0v3GjHvDrHua36KgpzGE'
+    },
     reportSets: [
       {
         name: 'Sports and Greeklife',  

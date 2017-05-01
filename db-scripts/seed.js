@@ -7,6 +7,7 @@ const ReportFactory    = require('../factories/report.factory');
 
 const Team             = require('../models/team.model');
 const User             = require('../models/user.model');
+const TwitterSyncJob   = require('../models/twitter-sync-job.model');
 const ReportLog        = require('../models/report-log.model');
 const ReportRequest    = require('../models/report-request.model'); 
 const async            = require('async');
@@ -33,6 +34,7 @@ const removeTeams = cb => Team.collection.drop(() => cb());
 const removeUsers = cb => User.collection.drop(() => cb());
 const removeReportLogs = cb => ReportLog.collection.drop(() => cb());
 const removeReportRequests = cb => ReportRequest.collection.drop(() => cb());
+const removeTwitterSyncJobs = cb => TwitterSyncJob.collection.drop(() => cb());
 
 /**
  * Load User Teams
@@ -139,6 +141,7 @@ const seedPipeline = [
   removeUsers,
   removeReportLogs,
   removeReportRequests,
+  removeTwitterSyncJobs,
   loadUserTeams,
   loadUsers,
   loadReportCollections

@@ -12,10 +12,10 @@ const teamSchema = new Schema({
   lastActivityDate   : {type: Date},
   imageURL           : {type: String},
   twitterCredentials : {
-    consumerKey: {type: String},
-    consumerSecret: {type: String},
-    accessTokenKey: {type: String},
-    accessTokenSecret: {type: String},
+    consumer_key: {type: String},
+    consumer_secret: {type: String},
+    access_token_key: {type: String},
+    access_token_secret: {type: String},
   },
   neo4jCredentials : {
     connection: {type: String, required: true},

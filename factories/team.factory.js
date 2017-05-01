@@ -23,33 +23,32 @@ function scrubTeamData(data) {
 
 function tryToBuildTwitterCredentials(twitterCreds) {
   const defaultTwitterCreds = {
-    consumerKey: '',
-    consumerSecret: '',
-    accessTokenKey: '',
-    accessTokenSecret: ''
+    consumer_key: '',
+    consumer_secret: '',
+    access_token_key: '',
+    access_token_secret: ''
   };
-  
   if (!twitterCreds || typeof twitterCreds !== 'object') return defaultTwitterCreds;
-  const { consumerSecret, consumerKey, accessTokenKey, accessTokenSecret} = twitterCreds;
-  if (!consumerSecret || 
-      typeof consumerSecret !== 'string' || 
-      consumerSecret.length < 5 ||
-      !consumerKey ||
-      typeof consumerKey !== 'string' ||
-      consumerKey.length < 5 ||
-      !accessTokenKey ||
-      typeof accessTokenKey !== 'string' ||
-      accessTokenKey.length < 5 ||
-      !accessTokenSecret ||
-      typeof accessTokenSecret !== 'string' ||
-      accessTokenSecret.length < 5 
+  const { consumer_secret, consumer_key, access_token_key, access_token_secret} = twitterCreds;
+  if (!consumer_secret || 
+      typeof consumer_secret !== 'string' || 
+      consumer_secret.length < 5 ||
+      !consumer_key ||
+      typeof consumer_key !== 'string' ||
+      consumer_key.length < 5 ||
+      !access_token_key ||
+      typeof access_token_key !== 'string' ||
+      access_token_key.length < 5 ||
+      !access_token_secret ||
+      typeof access_token_secret !== 'string' ||
+      access_token_secret.length < 5 
       ) { return defaultTwitterCreds; }
   
   return {
-    consumerKey: cryptoClient.encrypt(consumerKey),
-    consumerSecret: cryptoClient.encrypt(consumerSecret),
-    accessTokenKey: cryptoClient.encrypt(accessTokenKey),
-    accessTokenSecret: cryptoClient.encrypt(accessTokenSecret)
+    consumer_key: cryptoClient.encrypt(consumer_key),
+    consumer_secret: cryptoClient.encrypt(consumer_secret),
+    access_token_key: cryptoClient.encrypt(access_token_key),
+    access_token_secret: cryptoClient.encrypt(access_token_secret)
   }
 }
 
