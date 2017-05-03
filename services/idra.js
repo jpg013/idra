@@ -5,6 +5,20 @@ const neo4j        = require('neo4j');
 const cryptoClient = require('../common/crypto');
 const json2csv     = require('json2csv');
 
+/**
+ * Queries
+ */
+
+const upsertFriendsQuery = `MATCH (targetNode:Alumni {screen_name: {twitterID}})
+                            UNWIND {friends} as otherUserName
+                            MATCH (otherUser {screen_name: otherUserName.twitterID})
+                            MERGE (targetNode)-[:FOLLOWS]->(otherUser)`;
+
+const upsertFollowersQuery = `MATCH (followerNode:Alumni {screen_name: {twitterID}})
+                              UNWIND {followers} as otherUserName
+                              MATCH (otherUser {screen_name: otherUserName.twitterID})
+                              MERGE (FollowerNode)-[:FOLLOWS]->(otherUser)`;
+
 function Idra() {
   const convertToCsv = data => {
     if (!data || !data.length) return [];
@@ -62,21 +76,17 @@ function Idra() {
       agent: null,    // optional http.Agent instance, for custom socket pooling
     });
 
-    const query = `MATCH (n:Alumni) WHERE n.screen_name IS NOT NULL RETURN n.name as name, n.BBid as id, n.screen_name as TwitterID`;
+    const query = `MATCH (n:Alumni) WHERE n.screen_name IS NOT NULL RETURN n.name as name, n.BBid as id, n.screen_name as twitterID`;
     
     db.cypher({query}, cb);
   }
 
   function upsertManyAndFollowers(opts, cb) {
-    const { screenName, userList } = opts;
-    if (!screenName || !userList) return cb('missing required options');
-    const query = `MATCH (followerNode:Alumni {screen_name: {screenName}})
-                  UNWIND {userList} as otherUserName
-                  MATCH (otherUser {screen_name: otherUserName.screen_name})
-                  MERGE (FollowerNode)-[:FOLLOWS]->(otherUser)`;
+    const {twitterID, followers, neo4jCredentials} = opts;
+    if (!twitterID || !followers || !neo4jCredentials) return cb('missing required options');
     
-    const creds = (process.env.ENV_NAME === 'PRODUCTION') ? {connection: opts.connection, auth: opts.auth} : getDevCreds();
-    const params = {screenName, userList};
+    const creds = (process.env.ENV_NAME === 'PRODUCTION') ? neo4jCredentials : getDevCreds();
+    const params = {twitterID, followers};
 
     const db = new neo4j.GraphDatabase({
       url: creds.connection,
@@ -86,19 +96,15 @@ function Idra() {
       agent: null,    // optional http.Agent instance, for custom socket pooling
     });
 
-    db.cypher({ query, params }, cb);
+    db.cypher({ query: upsertFollowersQuery, params }, cb);
   }
 
   function upsertManyAndFriends(opts, cb) {
-    const { screenName, userList } = opts;
-    if (!screenName || !userList) return cb('missing required options');
-    const query = `MATCH (targetNode:Alumni {screen_name: {screenName}})
-                    UNWIND {userList} as otherUserName
-                    MATCH (otherUser {screen_name: otherUserName.screen_name})
-                    MERGE (targetNode)-[:FOLLOWS]->(otherUser)`;
+    const {twitterID, friends, neo4jCredentials} = opts;
+    if (!twitterID || !friends || !neo4jCredentials) return cb('missing required options');
     
-    const creds = (process.env.ENV_NAME === 'PRODUCTION') ? {connection: opts.connection, auth: opts.auth} : getDevCreds();
-    const params = {screenName, userList};
+    const creds = (process.env.ENV_NAME === 'PRODUCTION') ? neo4jCredentials : getDevCreds();
+    const params = {twitterID, friends};
 
     const db = new neo4j.GraphDatabase({
       url: creds.connection,
@@ -107,8 +113,8 @@ function Idra() {
       proxy: null,    // optional URL
       agent: null,    // optional http.Agent instance, for custom socket pooling
     });
-
-    db.cypher({ query, params }, cb);
+    
+    db.cypher({ query: upsertFriendsQuery, params }, cb);
   }
   
   return {

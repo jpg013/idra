@@ -4,12 +4,14 @@ const UserService      = require('../services/user.service');
 const UserFactory      = require('../factories/user.factory');
 const ReportService    = require('../services/report.service'); 
 const ReportFactory    = require('../factories/report.factory');
+const TwitterCredentialFactory = require('../factories/twitter-credential.factory')
 
 const Team             = require('../models/team.model');
 const User             = require('../models/user.model');
-const TwitterSyncJob   = require('../models/twitter-sync-job.model');
-const ReportLog        = require('../models/report-log.model');
-const ReportRequest    = require('../models/report-request.model'); 
+const ReportLog             = require('../models/report-log.model');
+const ReportRequest         = require('../models/report-request.model'); 
+const TwitterCredential    = require('../models/twitter-credential.model');
+const TwitterIntegrationJob = require('../models/twitter-integration-job.model');
 const async            = require('async');
 const SeedData         = require('./seed-data');
 const dotenv           = require('dotenv');
@@ -30,24 +32,41 @@ require('../config/mongo').config();
  * remove users and teams
  */
 
-const removeTeams = cb => Team.collection.drop(() => cb());
-const removeUsers = cb => User.collection.drop(() => cb());
-const removeReportLogs = cb => ReportLog.collection.drop(() => cb());
-const removeReportRequests = cb => ReportRequest.collection.drop(() => cb());
-const removeTwitterSyncJobs = cb => TwitterSyncJob.collection.drop(() => cb());
+const dropTeams = cb => Team.collection.drop(() => cb());
+const dropUsers = cb => User.collection.drop(() => cb());
+const dropReportLogs = cb => ReportLog.collection.drop(() => cb());
+const dropReportRequests = cb => ReportRequest.collection.drop(() => cb());
+const dropTwitterIntegrationJobs = cb => TwitterIntegrationJob.collection.drop(() => cb());
+const dropTwitterCredentials = cb => TwitterCredential.collection.drop(() => cb());
+
 
 /**
  * Load User Teams
  */
 function loadUserTeams(cb) {
-  async.eachSeries(SeedData.teams, function(data, teamSavedCb) {
+  async.eachSeries(SeedData.teams, function(data, eachCb) {
     const scrubbedData = TeamFactory.scrubTeamData(data);
     if (!TeamFactory.validateTeamFields(scrubbedData)) {
       throw new Error('invalid team data');  
     };
     const teamModel = TeamFactory.buildTeamModel(scrubbedData);
-    teamModel.save(teamSavedCb);
+    teamModel.save(eachCb);
   }, cb);
+}
+
+function loadTwitterCredentials(cb) {
+  TeamService.queryTeams({name: 'Innosol Pro Admin'}, function(err, teams) {
+    const teamId = teams[0].id;
+    async.eachSeries(SeedData.twitterCredentials, function(cred, eachCb) {
+    const data = Object.assign({}, cred, {teamId, isPublic: true});
+    const scrubbedData = TwitterCredentialFactory.scrubTwitterCredentialData(data);
+    if (!TwitterCredentialFactory.validateTwitterCredentialFields(scrubbedData)) {
+      throw new Error('invalid twitter credential data');  
+    };
+    const twitterCredentialModel = TwitterCredentialFactory.buildTwitterCredentialModel(scrubbedData);
+    twitterCredentialModel.save(eachCb);
+  }, cb);
+  })
 }
 
 function loadUsers(cb) {
@@ -137,12 +156,14 @@ function loadReportCollections(cb) {
 }
 
 const seedPipeline = [
-  removeTeams,
-  removeUsers,
-  removeReportLogs,
-  removeReportRequests,
-  removeTwitterSyncJobs,
+  dropTeams,
+  dropUsers,
+  dropReportLogs,
+  dropReportRequests,
+  dropTwitterIntegrationJobs,
+  dropTwitterCredentials,
   loadUserTeams,
+  loadTwitterCredentials,
   loadUsers,
   loadReportCollections
 ];

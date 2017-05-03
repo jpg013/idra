@@ -11,12 +11,6 @@ const teamSchema = new Schema({
   userCount          : {type: Number, default: 0},
   lastActivityDate   : {type: Date},
   imageURL           : {type: String},
-  twitterCredentials : {
-    consumer_key: {type: String},
-    consumer_secret: {type: String},
-    access_token_key: {type: String},
-    access_token_secret: {type: String},
-  },
   neo4jCredentials : {
     connection: {type: String, required: true},
     auth: {type: String, required: true}

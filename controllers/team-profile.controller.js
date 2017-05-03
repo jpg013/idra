@@ -16,9 +16,9 @@ function syncTeamWithTwitter(req, res) {
   }
   TeamService.findTeam(teamId, function(err, teamModel) {
     if (err || !teamModel) {
-      return res.status(500).send({err: 'Error running twitter sync'});
+      return res.status(500).send({err: 'Error running twitter integration'});
     }
-    Jinro.createTwitterSyncJob(teamModel, function(err, results) {
+    Jinro.createTwitterIntegrationJob(teamModel, function(err, results) {
       if (err) {
         return res.status(500).send({err});
       }

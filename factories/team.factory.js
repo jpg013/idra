@@ -12,44 +12,12 @@ function validateTeamFields(fields) {
 
 function scrubTeamData(data) {
   if (!data || typeof data !== 'object') return {};
-  const { name, neo4jCredentials, imageURL, twitterCredentials } = data;
+  const { name, neo4jCredentials, imageURL } = data;
   return {
     name, 
     neo4jCredentials,
-    twitterCredentials,
     imageURL
   };
-}
-
-function tryToBuildTwitterCredentials(twitterCreds) {
-  const defaultTwitterCreds = {
-    consumer_key: '',
-    consumer_secret: '',
-    access_token_key: '',
-    access_token_secret: ''
-  };
-  if (!twitterCreds || typeof twitterCreds !== 'object') return defaultTwitterCreds;
-  const { consumer_secret, consumer_key, access_token_key, access_token_secret} = twitterCreds;
-  if (!consumer_secret || 
-      typeof consumer_secret !== 'string' || 
-      consumer_secret.length < 5 ||
-      !consumer_key ||
-      typeof consumer_key !== 'string' ||
-      consumer_key.length < 5 ||
-      !access_token_key ||
-      typeof access_token_key !== 'string' ||
-      access_token_key.length < 5 ||
-      !access_token_secret ||
-      typeof access_token_secret !== 'string' ||
-      access_token_secret.length < 5 
-      ) { return defaultTwitterCreds; }
-  
-  return {
-    consumer_key: cryptoClient.encrypt(consumer_key),
-    consumer_secret: cryptoClient.encrypt(consumer_secret),
-    access_token_key: cryptoClient.encrypt(access_token_key),
-    access_token_secret: cryptoClient.encrypt(access_token_secret)
-  }
 }
 
 function buildTeamModel(teamFields) {
@@ -63,8 +31,7 @@ function buildTeamModel(teamFields) {
     neo4jCredentials,
     imageURL: teamFields.imageURL,
     reportSets: [],
-    reports: [],
-    twitterCredentials: tryToBuildTwitterCredentials(teamFields.twitterCredentials)
+    reports: []
   });
 
   return new Team(modelProps);

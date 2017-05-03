@@ -118,22 +118,16 @@ function updateUserModel(userId, updateObject, cb) {
     return cb('missing user id or update');
   }
   
-  findUser(userId, function(err, userModel) {
-    if (err) return cb(err);
-    if (!userModel) return cb('could not find user');
-    const $update = buildUserUpdateObject(updateObject);
-    const opts = {
-      upsert: true,
-      new: true
-    };
+  const $update = buildUserUpdateObject(updateObject);
+  const $opts = {
+    upsert: true,
+    new: true
+  };
+  const $query = {_id: userId};
 
-    const pipeline = [
-      callback => User.update({_id: userId}, $update, opts, callback),
-      (update, callback) => {
-        findUser(userId, callback) 
-      }
-    ];
-    async.waterfall(pipeline, cb);
+  User.update($query, $update, $opts, function(err) {
+    if (err) return cb(err);
+    findUser(userId, (err, userModel) => cb(err, userModel));
   });
 }
 
