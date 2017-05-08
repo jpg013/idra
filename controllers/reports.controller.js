@@ -37,9 +37,7 @@ const downloadUserReport = (req, res) => {
     if (!reportModel) {
       return res.json({success: false, msg: downloadReportErrMsg});
     }
-
     return ReportService.downloadReportAsUser(userModel, reportModel, onReportDownloadDone);
-
   })
 }
 

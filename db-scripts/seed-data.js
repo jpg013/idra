@@ -54,24 +54,9 @@ const twitterCredentials = [
     consumer_key: 'hI5fn9Ufx9VSxLSSuyk0iV3gw',
     consumer_secret: 'mBuEciuGcZ37kuJvgCd0m1MR1ltFfhVBO9vQDsZECQlLBdfQ99',
     access_token_key: '3832567466-uubk9xCWTOgyo4zfXQ97ix5xXEfXENBm2sQe275',
-    access_token_secret: 'wVzPuMEveeVGwjmLEHVJTdqmL0v3GjHvDrHua36KgpzGE',
-    isPublic: true
-  },
-  {
-    consumer_key: 'EgzVLaN1OMNb3EFG5c4SKvcTD',
-    consumer_secret: 'U61JRK4OiEd0QGE68V1YXRBCy1GZ4BaIRXxfWDDbsAjSJWuuCa',
-    access_token_key: '542907787-qlzjJ4PPPfqxuomiwJdfzxgZ1mMWlSCsQLYt2PVO',
-    access_token_secret: 'RATtlY9OfDNr3a8mCJToa13swZ6MRzrvlCIru7s21xeLZ',
-    isPublic: true
-  },
-  {
-    consumer_key: 'atz9lHnjVDTUWzXfdLRo7xl2T',
-    consumer_secret: '8zl42mEYw5Vf3ToOkxVQfXUrmkEw5IX2TCdyubmjwAoolCkz7i',
-    access_token_key: '542907787-0jQnjVsyMf40kuffLXwlKVlPnC5DRtXI30K34QBV',
-    access_token_secret: '7hUALeV7xlPToMd19lkHv8w7uMTHZAlz30DDshIGXYRrJ',
-    isPublic: true
+    access_token_secret: 'wVzPuMEveeVGwjmLEHVJTdqmL0v3GjHvDrHua36KgpzGE'
   }
-]
+];
 
 const teams = [
   {

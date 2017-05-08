@@ -30,6 +30,19 @@ const isAdmin = (req, res, next) => {
   });
 }
 
+const populateUser = (req, res, next) => {
+  User.findOne({_id: req.authTokenData.id}, (err, userModel) => {
+    if (!userModel) {
+      return res.status(401).send({
+        success: false,
+        message: 'User does not exists'
+      })
+    }
+    req.user = userModel;
+    next();
+  });
+}
+
 const isAuthenticated = (req, res, next) => {
   const token = getRequestBearerToken(req.headers);
   if (!token) {
@@ -53,5 +66,6 @@ const isAuthenticated = (req, res, next) => {
 
 module.exports = {
   isAuthenticated,
-  isAdmin
+  isAdmin,
+  populateUser
 };

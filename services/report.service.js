@@ -59,7 +59,6 @@ function downloadReportAsAdmin(reportId, teamId, cb) {
         return cb('missing required data');
       }
       const reportModel = teamModel.findReport(reportId);
-      console.log(reportModel);
       if (!reportModel) {
         return cb('missing required data');
       }

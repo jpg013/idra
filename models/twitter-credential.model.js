@@ -8,23 +8,16 @@ const TwitterCredentialSchema = new Schema({
   access_token_key: { type: String, required: true },
   access_token_secret: { type: String, required: true },
   teamId: {type: mongoose.Schema.Types.ObjectId, required: true},
-  rateLimit: {
-    friends: {
-      remaining: { type: Number },
-      reset: { type: Number }
-    },
-    followers: {
-      remaining: { type: Number },
-      reset: { type: Number }
-    }
-  },
-  isPublic: { type: Boolean, default: false },
-  lastUsedTimestamp: { type: Number, default: 0 },
-  inUse: {type: Boolean, default: false } 
+  lockedUntil: { type: Number }
 });
 
 TwitterCredentialSchema.virtual('id').get(function() {
   return this._id.toString();
+});
+
+TwitterCredentialSchema.virtual('clientProps').get(function() {
+  const { consumer_key, consumer_secret, access_token_key, access_token_secret, teamId } = this;
+  return { consumer_key, consumer_secret, access_token_key, access_token_secret, teamId };
 });
 
 // set up a mongoose model and pass it using module.exports

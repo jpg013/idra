@@ -43,10 +43,10 @@ function startCronJob(delay = 1) {
 
 // Update the job status
 const updateJobStatus = (opts, cb) => {
-  const {jobId, status} = opts;
+  const {jobId, status, msg} = opts;
   const $opts = {upsert: true, new: true };
   const $query = {_id: jobId};
-  const $set = {$set: {'status': status}};
+  const $set = {$set: {'status': status, 'statusMsg': msg}};
   TwitterIntegrationJob.findOneAndUpdate($query, $set, $opts, cb);
 }
 
@@ -60,37 +60,7 @@ const decryptTwitterCredentials = creds => {
   }
 }
 
-const getTwitterClient = creds => new Twitter(decryptTwitterCredentials(creds));
-
-const updateTwitterRateLimit = (job, cb) => {
-  const twitterClient = buildTwitterClient(job.twitterCredentials);
-
-  twitterClient.get('application/rate_limit_status', function(err, results) {
-    if (err) return cb(err);
-    if (!results) return cb('error getting rate limit');
-    
-    const friends = {
-      remaining: results.resources.friends['/friends/list'].remaining,
-      reset: results.resources.friends['/friends/list'].reset
-    };
-
-    const followers = {
-      remaining: results.resources.followers['/followers/list'].remaining,
-      reset: results.resources.followers['/followers/list'].reset
-    };
-
-    const rateLimit = {
-      friends: friends,
-      followers: followers
-    };
-
-    const $opts = {upsert: true, new: true };
-    const $query = {_id: job.id};
-    const $set = {$set: {rateLimit: rateLimit}};
-
-    TwitterSyncJob.findOneAndUpdate($query, $set, $opts, cb)    
-  })
-}
+const getTwitterClient = cred => new Twitter(decryptTwitterCredentials(cred));
 
 function getIntegrationUserList(job, cb) {
   /* Call out to idra to get the user list to integrate */
@@ -109,11 +79,11 @@ function getIntegrationUserList(job, cb) {
   });
 }
 
-function getTwitterFollowers(job, screenName, cb) {
-  const {twitterCreds, twitterID} = opts;
-  if (!twitterCreds || !twitterID) return cb('missing required options');
+function getTwitterFollowers(opts, cb) {
+  const {twitterCred, twitterID} = opts;
+  if (!twitterCred || !twitterID) return cb('missing required options');
 
-  const twitterClient = getTwitterClient(twitterCreds);
+  const twitterClient = getTwitterClient(twitterCred);
   
   twitterClient.get('followers/list', { screen_name: twitterID }, function(err, results = []) {
     if (err) return cb(err);
@@ -144,10 +114,10 @@ function upsertTwitterFollowers(opts, cb) {
 }
 
 function getTwitterFriends(opts, cb) {
-  const {twitterCreds, twitterID} = opts;
-  if (!twitterCreds || !twitterID) return cb('missing required options');
+  const {twitterCred, twitterID} = opts;
+  if (!twitterCred || !twitterID) return cb('missing required options');
 
-  const twitterClient = getTwitterClient(twitterCreds);
+  const twitterClient = getTwitterClient(twitterCred);
   
   twitterClient.get('friends/list', { screen_name: twitterID }, function(err, results = []) {
     if (err) return cb(err);
@@ -177,119 +147,161 @@ function upsertTwitterFriends(opts, cb) {
   Idra.upsertManyAndFriends(params, err => cb(err));
 }
 
-function getFriendsRateCredentialReset(twitterCred) {
-  if (!twitterCred || !twitterCred.rateLimit || typeof twitterCred.rateLimit.friends !== 'object') {
-    return
-  }
+function getApplicationRateLimitReset(rateLimit) {
+  if (!rateLimit || typeof rateLimit.application !== 'object') return;
   
-  const friendsReset = twitterCred.rateLimit.friends.reset;
-  
-  /* The reset seems to be in seconds whereas the getTime returns ms so doing a conversion on the fly */
-  const adjustedReset = friendsReset - (new Date().getTime() / 1000) + 1000; // Add 1000 ms for padding
-  
-  if (adjustedReset < 0) { return MAX_RATE_LIMIT_WINDOW; }
-  return Math.min(MAX_RATE_LIMIT_WINDOW, adjustedReset);
-}
-
-function getFollowersRateCredentialReset(twitterCred) {
-  if (!twitterCred || !twitterCred.rateLimit || typeof twitterCred.rateLimit.followers !== 'object') {
-    return
-  }
-  
-  const followersReset = twitterCred.rateLimit.followers.reset;
+  // Reset seems to be in seconds, convert to ms
+  const applicationReset = (rateLimit.application.reset * 1000);
   
   /* The reset seems to be in seconds whereas the getTime returns ms so doing a conversion on the fly */
-  const adjustedReset = followersReset - (new Date().getTime() / 1000) + 1000; // Add 1000 ms for padding
+  const adjustedReset = applicationReset + 1000; // Add 1000 ms for padding
   
-  if (adjustedReset < 0) { return MAX_RATE_LIMIT_WINDOW; }
-  return Math.min(MAX_RATE_LIMIT_WINDOW, adjustedReset);
+  // Now plus 15 minutes
+  const maxReset = new Date().getTime() + MAX_RATE_LIMIT_WINDOW; 
+  if (adjustedReset < 0) { return maxReset; }
+  return Math.min(maxReset, adjustedReset);
 }
 
-function getRateCredentialsResetTime(teamId, cb) {
-  if (!teamId) return cb('missing required team id');
-  const $query = {
-    '$and': [
-      {
-        '$or': [
-          {teamId: teamId},
-          {isPublic: true}
-        ]
-      },
-      { 'rateLimit': {$exists: true} },
-      { 'inUse': { $eq: false }}
-    ]
-  };
+function getFriendsRateLimitReset(rateLimit) {
+  if (!rateLimit || typeof rateLimit.friends !== 'object') return;
+  
+  const friendsReset = rateLimit.friends.reset * 1000;
+  
+  /* The reset seems to be in seconds whereas the getTime returns ms so doing a conversion on the fly */
+  const adjustedReset = friendsReset + 1000; // Add 1000 ms for padding
+  
+  // Now plus 15 minutes
+  const maxReset = new Date().getTime() + MAX_RATE_LIMIT_WINDOW; 
+  if (adjustedReset < 0) { return maxReset; }
+  return Math.min(maxReset, adjustedReset);
+}
 
-  const $fields = { rateLimit: 1 };
+function getFollowersRateLimitReset(rateLimit) {
+  if (!rateLimit || typeof rateLimit.followers !== 'object') { return }
+  
+  const followersReset = rateLimit.followers.reset * 1000;
+  
+  /* The reset seems to be in seconds whereas the getTime returns ms so doing a conversion on the fly */
+  const adjustedReset = followersReset + 1000; // Add 1000 ms for padding
+  
+  // Now plus 15 minutes
+  const maxReset = new Date().getTime() + MAX_RATE_LIMIT_WINDOW; 
+  if (adjustedReset < 0) { return maxReset; }
+  return Math.min(maxReset, adjustedReset);
+}
 
-  TwitterCredential.find($query, $fields, function(err, results=[]) {
+function getRateLimitStatus(twitterCred, cb) {
+  if (!twitterCred) return cb('missing required twitter creds');
+  const twitterClient = getTwitterClient(twitterCred);
+  
+  twitterClient.get('application/rate_limit_status', function(err, results = []) {
     if (err) return cb(err);
-    if (!results.length) {
-      /* We have no available rate limits b/c all are in use, set 10s timeout and try again */
-      setTimeout(() => getRateCredentialsResetTime(teamId, cb), 10000);
+    const friends = {
+      remaining: results.resources.friends['/friends/list'].remaining,
+      reset: results.resources.friends['/friends/list'].reset
+    };
+
+    const followers = {
+      remaining: results.resources.followers['/followers/list'].remaining,
+      reset: results.resources.followers['/followers/list'].reset
+    };
+
+    const application = {
+      remaining: results.resources.application['/application/rate_limit_status'].remaining,
+      reset: results.resources.application['/application/rate_limit_status'].reset
+    }
+
+    return cb(err, {friends, followers, application});
+  });
+}
+
+function isRateLimitExceeded(rateLimit) {
+  return (rateLimit.friends.remaining < 2 && rateLimit.followers.remaining < 2 || rateLimit.application.remaining < 2);
+}
+
+function queryTwitterCredential(job, cb) {
+  if (!job) return cb('missing required job');
+  const $query = { 'teamId' : job.teamId };
+  TwitterCredential.findOne($query, cb);
+}
+
+function secureTwitterCredential(job, cb) {
+  const pipeline = [
+    cb => queryTwitterCredential(job, cb),
+    (cred, cb) => {
+      if (!cred) return cb('Could not find twitter credentials');
+      if (cred.lockedUntil) return cb('locked');
+      getRateLimitStatus(cred, (err, rateLimit) => cb(err, cred, rateLimit));
+    },
+    (cred, rateLimit, cb) => {
+      if (!isRateLimitExceeded(rateLimit)) {
+        return cb(undefined, cred);
+      } else {
+        lockTwitterCredential(cred, getResetTimeForTwitterCredential(rateLimit), cb);
+      }
+    }
+  ];
+
+  async.waterfall(pipeline, function(err, cred) {
+    if (err && err !== 'locked') return;
+    
+    if (err === 'locked' || !cred || cred.lockedUntil) {
+      console.log('waiting for twitter credential to unlock')
+      waitForTwitterCredentialToUnlock(job, (err) => err ? cb(err) : secureTwitterCredential(job, cb));
     } else {
-      const resetTimes = results.map(cur => {
-        return Math.max(
-          getFriendsRateCredentialReset(cur),
-          getFollowersRateCredentialReset(cur)  
-        );
-      })
-      const minWait = Math.min(...resetTimes);
-      return cb(err, minWait);
+      return cb(err, cred);  
     }
   })
 }
 
-function waitForTwitterCredentials(teamId, cb) {
-  console.log('WAITING FOR TWITTER CREDENTIALS');
-  getRateCredentialsResetTime(teamId, function(err, wait) {
+function waitForTwitterCredentialToUnlock(job, cb) {
+  if (!job) return cb('missing required job');
+  queryTwitterCredential(job, function(err, cred) {
     if (err) return cb(err);
-    if (isNaN(wait)) {
-      return cb('wait is not a valid time period');
-    }
-    setTimeout(() => getTwitterCredentials(teamId, cb), wait);
-  });
+    if (!cred) return cb('Could not find twitter credentials');
+    if (!cred.lockedUntil || isNaN(cred.lockedUntil)) return cb(undefined);
+    
+    const wait = cred.lockedUntil - new Date().getTime() + 1000;
+    console.log('wait time for credential, ', wait);
+
+    // Await unlocking
+    setTimeout(() => { cb(undefined) }, wait);  
+  })
 }
 
-function getTwitterCredentials(teamId, cb) {
-  if (!teamId) return cb('missing required team id');
-  const $query = {
-    '$and': [
-      {
-        '$or': [
-          {teamId: teamId},
-          {isPublic: true}
-        ]
-      },
-      { 'rateLimit': {$exists: true} },
-      { 'rateLimit.friends.remaining': {$gt: 1}},
-      { 'rateLimit.followers.remaining': {$gt: 1}},
-      { 'inUse': { $eq: false }}
-    ]
-  };
-  const $fields = {
-    consumer_key: 1,
-    consumer_secret: 1,
-    access_token_key: 1,
-    access_token_secret: 1
-  };
-  const $sort = { 'lastUsedTimestamp': 1};
-  const $update = { $set: {'inUse': true} };
+function getResetTimeForTwitterCredential(rateLimit) {
+  return Math.max(
+    getFriendsRateLimitReset(rateLimit),
+    getFollowersRateLimitReset(rateLimit),
+    getApplicationRateLimitReset(rateLimit)
+  )
+}
 
-  const $opts = {
-    fields: $fields,
-    sort: $sort,
-    new: true,
-  };
+function scheduleTwitterCredentialUnlock(twitterCred, timeInterval) {
+  if (!twitterCred || isNaN(timeInterval)) {return}
+  // TODO: Maybe something a little more sophisticated than a set timeout
+  setTimeout(() => { unlockTwitterCredential(twitterCred.id) }, timeInterval);
+}
+
+function unlockTwitterCredential(id) {
+  const $query = {_id: id};
+  const $update = { $unset: {'lockedUntil': ""}};
+  TwitterCredential.update($query, $update, err => err);
+}
+
+function lockTwitterCredential(cred, reset, cb) {
+  const $query = {_id: cred.id};
+  const $update = { $set: {'lockedUntil':reset} } ;
+  console.log('lock twitter credential');
+  console.log($update);
   
-  TwitterCredential.findOneAndUpdate($query, $update, $opts, (err, results) => {
+  const interval = reset - new Date().getTime();
+  console.log(`locking twitter credential, will unlock in ${interval} ms`);
+  
+  TwitterCredential.findOneAndUpdate($query, $update, {new: true}, (err, cred) => {
     if (err) return cb(err);
-    if (results) {
-      return cb(err, results);
-    } else {
-      /* No available rate limits right now */
-      waitForTwitterCredentials(teamId, cb);  
-    }
+    scheduleTwitterCredentialUnlock(cred, interval)
+    return cb(err, cred);
   });
 }
 
@@ -297,14 +309,14 @@ function updateIntegrationUserInProcess(jobID, user, cb) {
   if (!jobID || !user) return cb('missing required data');
   const $query = {_id : jobID};
   const $update = {$set: {inProcess: user}};
-  TwitterIntegrationJob.update($query, $update, cb);
+  TwitterIntegrationJob.update($query, $update, err => cb(err));
 }
 
 function incrementIntegrationCompleted(jobID, cb) {
   if (!jobID) return cb('missing required data');
   const $query = {_id : jobID};
   const $update = {$inc: {completed: 1}};
-  TwitterIntegrationJob.update($query, $update, cb);
+  TwitterIntegrationJob.update($query, $update, err => cb(err));
 }
 
 function processIntegrationUserList(job, cb) {
@@ -313,36 +325,36 @@ function processIntegrationUserList(job, cb) {
   const { teamId, neo4jCredentials } = job;
   const jobId = job.id;
 
-  const getJob = cb => TwitterIntegrationJob.find({_id: jobID}, (err, results=[]) => cb(err, results[0]));
-
   async.eachSeries(userList, function(user, cb) {
     const { twitterID } = user;
     const userId = user.id;
-
+    console.log(`processing user ${user.name}`);
+    
     // Grab available credentials before starting
-    getTwitterCredentials(teamId, function(err, twitterCreds) {
-      const getFriends = cb => getTwitterFriends({twitterID, twitterCreds}, cb);
-      const setFriends = (friends, cb) => setUserFriendList({jobId, userId, friends}, err => cb(err, friends));
-      const upsertFriends = (friends, cb) => upsertTwitterFriends({neo4jCredentials, friends, twitterID}, cb);
-      const getFollowers = cb => getTwitterFollowers({twitterID, twitterCreds}, cb);
-      const setFollowers = (followers, cb) => setUserFollowerList({jobId, userId, followers}, err => cb(err, followers));
-      const upsertFollowers = (followers, cb) => upsertTwitterFollowers({neo4jCredentials, followers, twitterID}, cb);
-      return;
+    secureTwitterCredential(job, function(err, twitterCred) {
+      const updateUser = cb => updateIntegrationUserInProcess(jobId, user, cb);
+      const getFriends = cb => getTwitterFriends({twitterID, twitterCred}, (err, friends=[]) => cb(undefined, friends));
+      const setFriends = (friends=[], cb) => friends.length ? setUserFriendList({jobId, userId, friends}, err => cb(err, friends)) : cb(undefined, friends);
+      const upsertFriends = (friends=[], cb) => upsertTwitterFriends({neo4jCredentials, friends, twitterID}, cb);
+      const getFollowers = cb => getTwitterFollowers({twitterID, twitterCred}, (err, followers=[]) => cb(undefined, followers));
+      const setFollowers = (followers=[], cb) => followers.length? setUserFollowerList({jobId, userId, followers}, err => cb(err, followers)) : cb(undefined, followers);
+      const upsertFollowers = (followers=[], cb) => upsertTwitterFollowers({neo4jCredentials, followers, twitterID}, cb);
+      const incCompleted = cb => incrementIntegrationCompleted(jobId, cb);
+      
       const pipeline = [
-        updateIntegrationUserInProcess,
+        updateUser,
         getFriends,
         setFriends,
         upsertFriends,
         getFollowers,
         setFollowers,
         upsertFollowers,
-        updateTwitterCredentialRateLimit,
-        incrementIntegrationCompleted
+        incCompleted
       ];
 
       async.waterfall(pipeline, err => {
-        console.log('finished processing user list');
-        console.log(err);
+        console.log(`finished processing user ${user.name}`);
+        cb(err);
       })
     });
   }, cb);
@@ -351,7 +363,7 @@ function processIntegrationUserList(job, cb) {
 function runTwitterIntegration(job, cb) {
   if (!job) { return }
 
-  const setJobInProcess = (job, cb) => updateJobStatus({jobId: job.id, status: 'inProgress'}, cb);
+  const setJobInProcess = (job, cb) => updateJobStatus({jobId: job.id, status: 'inProgress', msg: 'rolling along nicely'}, cb);
   
   const pipeline = [
     cb => cb(undefined, job),
@@ -361,10 +373,12 @@ function runTwitterIntegration(job, cb) {
   ];
 
   async.waterfall(pipeline, function(err, data) {
-    console.log('finished running integration');
-    console.log(err);
-    console.log(data);
-    cb();
+    if (err) {
+      // Integration has failed, log the error message;
+      return updateJobStatus({jobId: job.id, status: 'failed', msg: err}, cb);
+    } else {
+      return updateJobStatus({jobId: job.id, status: 'success', msg: 'Integration completed'}, cb);
+    }
   });
 }
 

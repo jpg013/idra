@@ -10,12 +10,15 @@ const TwitterIntegrationJobSchema = new Schema({
     name: { type: String },
     id: { type: String },
     twitterID: { type: String },
-    followers: [ { type: String }],
+    followers: [{
+      twitterID: { type: String, required: true }
+    }],
     friends: [{
       twitterID: { type: String, required: true }
     }]
   }],
   status: { type: String, default: 'pending'},
+  statusMsg: { type: String, default: 'ready to run'},
   inProcess: { 
     name: { type: String },
     id: { type: String },
@@ -24,7 +27,7 @@ const TwitterIntegrationJobSchema = new Schema({
   neo4jCredentials: {
     connection: {type: String, required: true},
     auth: {type: String, required: true}
-  },
+  }
 });
 
 TwitterIntegrationJobSchema.virtual('id').get(function() {

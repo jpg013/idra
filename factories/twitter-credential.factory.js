@@ -14,28 +14,25 @@ function validateTwitterCredentialFields(fields) {
 
 function scrubTwitterCredentialData(data) {
   if (!data || typeof data !== 'object') return {};
-  const { access_token_secret, access_token_key, consumer_secret, consumer_key, isPublic, teamId } = data;
+  const { access_token_secret, access_token_key, consumer_secret, consumer_key, teamId } = data;
   return { 
     access_token_secret, 
     access_token_key, 
     consumer_secret, 
     consumer_key,
-    isPublic,
     teamId
   };
 }
 
 function buildTwitterCredentialModel(fields) {
-  const { consumer_secret, consumer_key, access_token_key, access_token_secret, isPublic, teamId } = fields;
+  const { consumer_secret, consumer_key, access_token_key, access_token_secret, teamId } = fields;
   
   const props = {
     consumer_key: cryptoClient.encrypt(consumer_key),
     consumer_secret: cryptoClient.encrypt(consumer_secret),
     access_token_key: cryptoClient.encrypt(access_token_key),
     access_token_secret: cryptoClient.encrypt(access_token_secret),
-    isPublic: isPublic || false,
-    teamId,
-    rateLimit: {}
+    teamId
   };  
 
   return new TwitterCredential(props);

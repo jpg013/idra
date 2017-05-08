@@ -17,7 +17,6 @@ const getTeams = (req, res) => {
     if (err) {
       return res.status(500).send({results :[]});
     } 
-    console.log(results);
     return res.status(200).send({results});
   });
 }

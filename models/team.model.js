@@ -58,6 +58,6 @@ teamSchema.virtual('collectionCount').get(function() {
 teamSchema.virtual('clientProps').get(function() {
   const { name, createdDate, userCount, lastActivityDate, imageURL, downloadCount, reportCount, collectionCount, id, reportCollection } = this;
   return { name, createdDate, userCount, lastActivityDate, imageURL, downloadCount, reportCollection, reportCount, collectionCount, id };
-})
+});
 
 module.exports = mongoose.model('Team', teamSchema);
