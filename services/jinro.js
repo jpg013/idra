@@ -12,7 +12,6 @@ const CryptoClient          = require('../common/crypto');
 const Idra                  = require('./idra');
 
 const twitterIntegrationErrMsg = "There was an error integration user team with twitter";
-const twitterIntegrationInProgressMsg = "Twitter integration currently in progress for user team";
 
 const MAX_RATE_LIMIT_WINDOW = 900000; // 15 minutes
 
@@ -61,23 +60,6 @@ const decryptTwitterCredentials = creds => {
 }
 
 const getTwitterClient = cred => new Twitter(decryptTwitterCredentials(cred));
-
-function getIntegrationUserList(job, cb) {
-  /* Call out to idra to get the user list to integrate */
-  Idra.getTwitterScreenNames(job.neo4jCredentials, function(err, results) {
-    if (err || !results) {
-      return cb('there was an error getting twitter integration user list');
-    }
-    
-    const userList =  results.map(cur => Object.assign({}, cur, { followers: [], friends: [] }));
-    
-    const $opts = {upsert: true, new: true };
-    const $query = {_id: job.id};
-    const $set = {$set: {userList}};
-
-    TwitterIntegrationJob.findOneAndUpdate($query, $set, $opts, cb)    
-  });
-}
 
 function getTwitterFollowers(opts, cb) {
   const {twitterCred, twitterID} = opts;
@@ -363,12 +345,11 @@ function processIntegrationUserList(job, cb) {
 function runTwitterIntegration(job, cb) {
   if (!job) { return }
 
-  const setJobInProcess = (job, cb) => updateJobStatus({jobId: job.id, status: 'inProgress', msg: 'rolling along nicely'}, cb);
+  const setJobInProcess = (job, cb) => updateJobStatus({jobId: job.id, status: 'inProgress', msg: 'Running Twitter Integration'}, cb);
   
   const pipeline = [
     cb => cb(undefined, job),
     setJobInProcess,
-    getIntegrationUserList,
     processIntegrationUserList
   ];
 
@@ -382,32 +363,9 @@ function runTwitterIntegration(job, cb) {
   });
 }
 
-function createTwitterIntegrationJob(teamModel, cb) {
-  if (!teamModel) { 
-    return cb("missing required team");
-  }
-
-  const pipeline = [
-    cb => checkExistingTwitterIntegrationJob(teamModel.id, (err, exists) => exists ? cb(twitterIntegrationInProgressMsg) : cb(err)),
-    cb => buildNewTwitterIntegrationJob(teamModel, cb)
-  ];
-
-  async.waterfall(pipeline, function(err, twitterIntegrationJob) {
-    if (err) {
-      switch(err) {
-        case twitterIntegrationInProgressMsg:
-          return cb(twitterIntegrationInProgressMsg);
-        default: 
-          return cb(twitterIntegrationErrMsg);
-      }
-    }
-    
-    // kick off cron job in 1 second
-    startCronJob(1);
-    
-    // Return the new twitter sync job to the cb
-    return cb(err, twitterIntegrationJob);
-  });
+function runPendingTwitterIntegrationJobs() {
+  // kick off cron job in 1 second
+  startCronJob(1);
 }
 
 function buildNewTwitterIntegrationJob(teamModel, cb) {
@@ -435,5 +393,5 @@ function checkExistingTwitterIntegrationJob(teamId, cb) {
 }
 
 module.exports = {
-  createTwitterIntegrationJob
+  runPendingTwitterIntegrationJobs
 }

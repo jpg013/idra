@@ -3,8 +3,6 @@ const cryptoClient           = require('../common/crypto');
 const async                  = require('async');
 const ReportFactory          = require('../factories/report.factory');
 const TeamFactory            = require('../factories/team.factory');
-const TwitterIntegration     = require('../models/twitter-integration-job.model');
-const TwitterCredentialModel = require('../models/twitter-credential.model');
 
 /**
  * Constants
@@ -147,37 +145,13 @@ function getReportList(cb) {
     });
 }
 
-function getAdminProfile(teamId, cb) {
+function getProfileDetails(teamId, cb) {
   if (!teamId) return cb('missing required team id');
-  
-  const getTeamDetails = (results, cb) => {
-    findTeam(teamId, function(err, teamModel) {
-      if (!teamModel) return cb('cannot find team');
-      const { name } = teamModel.clientProps;
-      const teamDetails = {name};
-      results.teamDetails = {name};
-      return cb(err, results);
-    });
-  }
-
-  const getTwitterCredential = (results, cb) => {
-    TwitterCredentialModel.findOne({teamId: teamId}, (err, cred) => {
+  findTeam(teamId, function(err, teamModel) {
       if (err) return cb(err);
-      results.twitterCredential = cred ? cred.clientProps : {};
-      return cb(err, results);
+      return teamModel ? cb(err, teamModel.clientProps) : cb(err, undefined);
     });
-  }
-
-  const pipeline = [
-    cb => cb(undefined, {}),
-    getTeamDetails,
-    getTwitterCredential
-  ];
-
-  async.waterfall(pipeline, (err, results) => {
-    return cb(err, results);
-  });
-}
+} 
 
 module.exports = {
   canDeleteTeam,
@@ -193,5 +167,5 @@ module.exports = {
   incrementReportDownloadCount,
   setLastActivityDate,
   getReportList,
-  getAdminProfile
+  getProfileDetails
 };

@@ -48,7 +48,7 @@ const users = [
     teamName: 'University of Central Missouri',
   }
 ];
-
+/*
 const twitterCredentials = [
   {
     consumer_key: 'hI5fn9Ufx9VSxLSSuyk0iV3gw',
@@ -57,6 +57,9 @@ const twitterCredentials = [
     access_token_secret: 'wVzPuMEveeVGwjmLEHVJTdqmL0v3GjHvDrHua36KgpzGE'
   }
 ];
+*/
+
+const twitterCredentials = [];
 
 const teams = [
   {

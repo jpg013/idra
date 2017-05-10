@@ -3,9 +3,11 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const TwitterIntegrationJobSchema = new Schema({
-  date: { type: Date, required: true, default: Date.now},
+  createdTimestamp: { type: Number, required: true },
+  finishedTimestamp: { type: Number },
   teamId: {type: mongoose.Schema.Types.ObjectId, required: true},
-  completed: { type: Number, default: 0},
+  completedCount: { type: Number, default: 0},
+  totalCount: { type: Number, default: 0},
   userList: [{
     name: { type: String },
     id: { type: String },
@@ -17,8 +19,12 @@ const TwitterIntegrationJobSchema = new Schema({
       twitterID: { type: String, required: true }
     }]
   }],
-  status: { type: String, default: 'pending'},
-  statusMsg: { type: String, default: 'ready to run'},
+  status: {
+    type: String,
+    enum: ['pending', 'completed', 'error', 'inProgress'],
+    default: 'pending'
+  },
+  statusMsg: { type: String, default: 'Waiting for Twitter Integration to start...'},
   inProcess: { 
     name: { type: String },
     id: { type: String },
@@ -32,6 +38,13 @@ const TwitterIntegrationJobSchema = new Schema({
 
 TwitterIntegrationJobSchema.virtual('id').get(function() {
   return this._id.toString();
+});
+
+TwitterIntegrationJobSchema.virtual('clientProps').get(function() {
+  const {id, teamId, completedCount, status, statusMsg, inProcess } = this;
+  const createdDate = this.createdTimestamp ? new Date(this.createdTimestamp) : undefined;
+  const finishedDate = this.finishedTimestamp ? new Date(this.finishedTimestamp) : undefined;
+  return { id, teamId, completedCount, status, statusMsg, inProcess, createdDate, finishedDate };
 });
 
 // set up a mongoose model and pass it using module.exports
