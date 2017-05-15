@@ -1,7 +1,7 @@
-const adminRoom = require('./admin-room');
+const AdminTeamProfileRoom = require('./admin-team-profile-room.js');
 
-const config = () => {
-  adminRoom.config();
+const config = socketEmitter => {
+  AdminTeamProfileRoom.config(socketEmitter);
 }
 
 module.exports = {

@@ -10,6 +10,7 @@ const async                 = require('async');
 const CronJob               = require('cron').CronJob;
 const CryptoClient          = require('../common/crypto');
 const Idra                  = require('./idra');
+const SocketIO              = require('../socket/io');
 
 const twitterIntegrationErrMsg = "There was an error integration user team with twitter";
 
@@ -46,7 +47,11 @@ const updateJobStatus = (opts, cb) => {
   const $opts = {upsert: true, new: true };
   const $query = {_id: jobId};
   const $set = {$set: {'status': status, 'statusMsg': msg}};
-  TwitterIntegrationJob.findOneAndUpdate($query, $set, $opts, cb);
+  TwitterIntegrationJob.findOneAndUpdate($query, $set, $opts, (err, twitterIntegrationModel) => {
+    if (err) return cb(err);
+    SocketIO.handleTwitterIntegrationUpdate(twitterIntegrationModel);
+    return cb(err, twitterIntegrationModel);
+  });
 }
 
 const decryptTwitterCredentials = creds => {
@@ -228,7 +233,6 @@ function secureTwitterCredential(job, cb) {
     if (err && err !== 'locked') return;
     
     if (err === 'locked' || !cred || cred.lockedUntil) {
-      console.log('waiting for twitter credential to unlock')
       waitForTwitterCredentialToUnlock(job, (err) => err ? cb(err) : secureTwitterCredential(job, cb));
     } else {
       return cb(err, cred);  
@@ -244,7 +248,6 @@ function waitForTwitterCredentialToUnlock(job, cb) {
     if (!cred.lockedUntil || isNaN(cred.lockedUntil)) return cb(undefined);
     
     const wait = cred.lockedUntil - new Date().getTime() + 1000;
-    console.log('wait time for credential, ', wait);
 
     // Await unlocking
     setTimeout(() => { cb(undefined) }, wait);  
@@ -274,11 +277,7 @@ function unlockTwitterCredential(id) {
 function lockTwitterCredential(cred, reset, cb) {
   const $query = {_id: cred.id};
   const $update = { $set: {'lockedUntil':reset} } ;
-  console.log('lock twitter credential');
-  console.log($update);
-  
   const interval = reset - new Date().getTime();
-  console.log(`locking twitter credential, will unlock in ${interval} ms`);
   
   TwitterCredential.findOneAndUpdate($query, $update, {new: true}, (err, cred) => {
     if (err) return cb(err);
@@ -310,7 +309,6 @@ function processIntegrationUserList(job, cb) {
   async.eachSeries(userList, function(user, cb) {
     const { twitterID } = user;
     const userId = user.id;
-    console.log(`processing user ${user.name}`);
     
     // Grab available credentials before starting
     secureTwitterCredential(job, function(err, twitterCred) {
@@ -335,7 +333,6 @@ function processIntegrationUserList(job, cb) {
       ];
 
       async.waterfall(pipeline, err => {
-        console.log(`finished processing user ${user.name}`);
         cb(err);
       })
     });
@@ -350,15 +347,15 @@ function runTwitterIntegration(job, cb) {
   const pipeline = [
     cb => cb(undefined, job),
     setJobInProcess,
-    processIntegrationUserList
+    //processIntegrationUserList
   ];
 
   async.waterfall(pipeline, function(err, data) {
     if (err) {
       // Integration has failed, log the error message;
-      return updateJobStatus({jobId: job.id, status: 'failed', msg: err}, cb);
+      //return updateJobStatus({jobId: job.id, status: 'failed', msg: err}, cb);
     } else {
-      return updateJobStatus({jobId: job.id, status: 'success', msg: 'Integration completed'}, cb);
+      //return updateJobStatus({jobId: job.id, status: 'success', msg: 'Integration completed'}, cb);
     }
   });
 }

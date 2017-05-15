@@ -3,7 +3,6 @@ const Team            = require('../models/team.model');
 const AuthMiddleware  = require('../middleware/auth');
 const TeamsController = express.Router();
 const TeamService     = require('../services/team.service');
-const SockEvents      = require('../socket/sock-events');
 
 /**
  * Constants
@@ -27,13 +26,6 @@ const createTeam = (req, res) => {
       return res.json({ success: false, msg: err }); 
     }
     res.json({success: true, data: createdTeam.clientProps});
-
-    const socketData = {
-      room: 'admin',
-      action: 'SOCKET_ADD_TEAM',
-      data: createdTeam
-    }
-    sockEvents.emit(sockEvents.e.notifyRoom, socketData);
   });
 }
 

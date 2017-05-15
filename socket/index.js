@@ -1,30 +1,31 @@
-const sockjs       = require("sockjs");
-const store        = require('./sock-store');
-const sockEvents   = require('./sock-events');
-const io           = require('./io');
+const sockjs      = require("sockjs");
+const SocketStore = require('./socket-store');
+const io          = require('./io');
 
 /**
  * Private variable to hold the socket connection
  */
 let sock;
 
+const handleSocketConnection = socket => {
+  SocketStore.addConnection(socket);
+
+  const onSocketMsg = msg => {
+    if (!msg) { return; }
+    msg = JSON.parse(msg);
+    io.handleClientMessage(msg.event, Object.assign({}, msg.payload, {socket}));
+  };
+
+  const onSocketClose = () => SocketStore.removeConnection(socket.id);
+
+  socket.on('data', onSocketMsg);
+  socket.on('close', onSocketClose);
+}
+
 const config = server => {
   sock = sockjs.createServer({ sockjs_url: process.env.SOCK_URL });
   
-  sock.on('connection', function(socket) {
-    store.addConnection(socket);
-
-    const onSocketMsg = msg => {
-      if (!msg) { return; }
-      msg = JSON.parse(msg);
-      sockEvents.emit(msg.event, Object.assign({}, msg.payload, {socket}));
-    };
-
-    const onSocketClose = () => store.removeConnection(socket.id);
-
-    socket.on('data', onSocketMsg);
-    socket.on('close', onSocketClose);
-  });
+  sock.on('connection', handleSocketConnection);
   
   /**
    * Config our io handlers
