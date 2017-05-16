@@ -1,16 +1,15 @@
 const immutable = require('immutable');
-const { List, Map, Set } = immutable;
 
 /* Map of all current connections */
-let connectionMap = Map();
+let connectionMap = immutable.Map();
 /* Map of all identified connections */
-let userConnectionMap = Map();
+let userConnectionMap = immutable.Map();
 
-let rooms = Map({
-  'ADMIN_TEAM_PROFILE' : Map()
+let rooms = immutable.Map({
+  'ADMIN_TEAM_PROFILE' : immutable.Map()
 });
 
-const roomRestrictions = Map({
+const roomRestrictions = immutable.Map({
   "ADMIN_TEAM_PROFILE": [user => user.isAdmin],
 });
 
@@ -52,7 +51,7 @@ const buildConnectionStore = () => {
   const joinAdminTeamProfileRoom = (userModel, teamId) => {
     if (!userModel || !userModel.isAdmin || !teamId) return;
     rooms = rooms.updateIn(['ADMIN_TEAM_PROFILE', teamId], val => {
-      val = val ? val : Set();
+      val = val ? val : immutable.Set();
       return val.contains(userModel.id) ? val : val.add(userModel.id)
     });
   }

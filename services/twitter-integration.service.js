@@ -5,13 +5,13 @@ const Jinro                      = require('./jinro.js');
 
 function getLastIntegrationJob(teamId, cb) {
   if (!teamId) return cb('missing required team id');
-  const $query = {teamId};
+  const $query = {_teamId: teamId};
   const $sort = {timestamp: 1}
   const $fields = {
     createdTimestamp: 1,
     completedCount: 1,
     status: 1,
-    teamId: 1,
+    _teamId: 1,
     statusMsg: 1,
     inProcess: 1
   };
@@ -49,19 +49,19 @@ function createIntegrationJob(teamModel, cb) {
     twitterIntegrationJobModel.save(err => {
       if (err) return cb(err);
       // Kick off the pending job
-      //Jinro.runPendingTwitterIntegrationJobs();
+      Jinro.runPendingTwitterIntegrationJobs();
       cb(err, twitterIntegrationJobModel.clientProps);
     })
   });
 }
 
 function getRunningTwitterIntegrationJob(teamId, cb) {
-  const $query = {teamId,  status: {'$ne': 'finished'}};
+  const $query = {_teamId: teamId,  status: {'$ne': 'finished'}};
   const $proj = {
     createdTimestamp: 1,
     completedCount: 1,
     status: 1,
-    teamId: 1,
+    _teamId: 1,
     statusMsg: 1,
     inProcess: 1
   };

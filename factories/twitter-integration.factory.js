@@ -8,7 +8,7 @@ function validateTwitterIntegrationFields(fields) {
       (typeof fields.neo4jCredentials !== 'object') ||
       !fields.neo4jCredentials.auth ||
       !fields.neo4jCredentials.connection ||
-      !fields.teamId
+      !fields._teamId
      ) { return false; }
   return true;
 }
@@ -17,18 +17,18 @@ function scrubTwitterIntegrationData(data) {
   if (!data || typeof data !== 'object') return {};
   const { teamId, neo4jCredentials, userList } = data;
   return {
-    teamId, 
+    _teamId: teamId, 
     neo4jCredentials,
     userList
   }
 }
 
 function buildTwitterIntegrationJobModel(fields) {
-  const { teamId, neo4jCredentials, userList } = fields;
+  const { _teamId, neo4jCredentials, userList } = fields;
   
   const props = {
     neo4jCredentials,
-    teamId,
+    _teamId,
     userList,
     createdTimestamp: new Date().getTime(),
     totalCount: userList.length

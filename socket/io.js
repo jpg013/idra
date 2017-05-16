@@ -35,11 +35,12 @@ function handleClientMessage(event, params={}) {
 }
 
 function handleTwitterIntegrationUpdate(twitterIntegrationModel) {
-  if (!props) return;
+  if (!twitterIntegrationModel) return;
   emitSocketEvent(SocketEvents.twitterIntegrationUpdate, twitterIntegrationModel);
 }
 
 module.exports = {
   config,
-  handleClientMessage
+  handleClientMessage,
+  handleTwitterIntegrationUpdate
 };

@@ -342,7 +342,7 @@ function processIntegrationUserList(job, cb) {
 function runTwitterIntegration(job, cb) {
   if (!job) { return }
 
-  const setJobInProcess = (job, cb) => updateJobStatus({jobId: job.id, status: 'inProgress', msg: 'Running Twitter Integration'}, cb);
+  const setJobInProcess = (job, cb) => updateJobStatus({jobId: job.id, status: 'inProgress', msg: 'Running Twitter Integration Job'}, cb);
   
   const pipeline = [
     cb => cb(undefined, job),

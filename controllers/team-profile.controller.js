@@ -92,6 +92,7 @@ function startTwitterIntegration(req, res) {
     }
     TwitterIntegrationService.createIntegrationJob(teamModel, function(err, results) {
       if (err) {
+        console.log(err);
         return res.status(500).send({success: false, msg: err});
       }
       return res.status(200).send({results});

@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
 const TwitterIntegrationJobSchema = new Schema({
   createdTimestamp: { type: Number, required: true },
   finishedTimestamp: { type: Number },
-  teamId: {type: mongoose.Schema.Types.ObjectId, required: true},
+  _teamId: {type: mongoose.Schema.Types.ObjectId, required: true},
   completedCount: { type: Number, default: 0},
   totalCount: { type: Number, default: 0},
   userList: [{
@@ -24,7 +24,7 @@ const TwitterIntegrationJobSchema = new Schema({
     enum: ['pending', 'completed', 'error', 'inProgress'],
     default: 'pending'
   },
-  statusMsg: { type: String, default: 'Waiting for Twitter Integration to start...'},
+  statusMsg: { type: String, default: 'Waiting for Twitter Integration Job to start'},
   inProcess: { 
     name: { type: String },
     id: { type: String },
@@ -38,6 +38,10 @@ const TwitterIntegrationJobSchema = new Schema({
 
 TwitterIntegrationJobSchema.virtual('id').get(function() {
   return this._id.toString();
+});
+
+TwitterIntegrationJobSchema.virtual('teamId').get(function() {
+  return this._teamId.toString();
 });
 
 TwitterIntegrationJobSchema.virtual('clientProps').get(function() {

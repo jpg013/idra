@@ -3,6 +3,7 @@ const async       = require('async');
 const user        = require('../../models/user.model');
 const SocketStore = require('../socket-store');
 const ioEvents    = require('../io-events');
+const SocketWrite = require('../socket-write');
 
 const onJoinRoom = (params={}) => {
   const { room, teamId, socket, authToken } = params;
@@ -19,15 +20,19 @@ const onJoinRoom = (params={}) => {
 
 const onTwitterIntegrationUpdate = twitterIntegrationModel => {
   if (!twitterIntegrationModel) return;
-
-  const roomConnections = SocketStore.getConnectedRoomSockets('ADMIN_TEAM_PROFILE');
+  
+  const roomConnections = SocketStore.getConnectedRoomSockets(
+    'ADMIN_TEAM_PROFILE', 
+    {teamId: twitterIntegrationModel.teamId}
+  );
   if (!roomConnections) return;
 
   const payload = { 
-    action: 'TWITTER_INTEGRATION_UPDATE',
+    type: 'TWITTER_INTEGRATION_UPDATE',
+    teamId: twitterIntegrationModel.teamId,
     data: twitterIntegrationModel.clientProps
   };
-  roomSocks.forEach(cur => writeToSocket(cur, ioEvents.notifyRoom, payload));
+  roomConnections.forEach(cur => SocketWrite(cur, ioEvents.notifyRoom, payload));
 }
 
 const config = socketEmitter => {
