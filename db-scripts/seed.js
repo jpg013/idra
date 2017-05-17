@@ -1,20 +1,16 @@
-const TeamFactory      = require('../factories/team.factory');
-const TeamService      = require('../services/team.service');
-const UserService      = require('../services/user.service');
-const UserFactory      = require('../factories/user.factory');
-const ReportService    = require('../services/report.service'); 
-const ReportFactory    = require('../factories/report.factory');
+const TeamFactory              = require('../factories/team.factory');
+const TeamService              = require('../services/team.service');
+const UserService              = require('../services/user.service');
 const TwitterCredentialFactory = require('../factories/twitter-credential.factory')
-
-const Team             = require('../models/team.model');
-const User             = require('../models/user.model');
-const ReportLog             = require('../models/report-log.model');
-const ReportRequest         = require('../models/report-request.model'); 
-const TwitterCredential    = require('../models/twitter-credential.model');
-const TwitterIntegrationJob = require('../models/twitter-integration-job.model');
-const async            = require('async');
-const SeedData         = require('./seed-data');
-const dotenv           = require('dotenv');
+const Team                     = require('../models/team.model');
+const User                     = require('../models/user.model');
+const ReportLog                = require('../models/report-log.model');
+const ReportRequest            = require('../models/report-request.model'); 
+const TwitterCredential        = require('../models/twitter-credential.model');
+const TwitterIntegration       = require('../models/twitter-integration.model');
+const async                    = require('async');
+const SeedData                 = require('./seed-data');
+const dotenv                   = require('dotenv');
 
 /**
  * Load in config file  
@@ -36,9 +32,8 @@ const dropTeams = cb => Team.collection.drop(() => cb());
 const dropUsers = cb => User.collection.drop(() => cb());
 const dropReportLogs = cb => ReportLog.collection.drop(() => cb());
 const dropReportRequests = cb => ReportRequest.collection.drop(() => cb());
-const dropTwitterIntegrationJobs = cb => TwitterIntegrationJob.collection.drop(() => cb());
+const dropTwitterIntegrations = cb => TwitterIntegration.collection.drop(() => cb());
 const dropTwitterCredentials = cb => TwitterCredential.collection.drop(() => cb());
-
 
 /**
  * Load User Teams
@@ -160,7 +155,7 @@ const seedPipeline = [
   dropUsers,
   dropReportLogs,
   dropReportRequests,
-  dropTwitterIntegrationJobs,
+  dropTwitterIntegrations,
   dropTwitterCredentials,
   loadUserTeams,
   loadTwitterCredentials,

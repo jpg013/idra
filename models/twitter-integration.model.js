@@ -2,7 +2,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const TwitterIntegrationJobSchema = new Schema({
+const TwitterIntegrationSchema = new Schema({
   createdTimestamp: { type: Number, required: true },
   finishedTimestamp: { type: Number },
   _teamId: {type: mongoose.Schema.Types.ObjectId, required: true},
@@ -21,10 +21,10 @@ const TwitterIntegrationJobSchema = new Schema({
   }],
   status: {
     type: String,
-    enum: ['pending', 'completed', 'error', 'inProgress'],
+    enum: ['pending', 'completed', 'error', 'inProgress', 'cancelled', 'cancelling'],
     default: 'pending'
   },
-  statusMsg: { type: String, default: 'Waiting for Twitter Integration Job to start'},
+  statusMsg: { type: String, default: 'Waiting for Twitter Integration to start'},
   inProcess: { 
     name: { type: String },
     id: { type: String },
@@ -33,25 +33,24 @@ const TwitterIntegrationJobSchema = new Schema({
   neo4jCredentials: {
     connection: {type: String, required: true},
     auth: {type: String, required: true}
-  }
+  },
+  createdBy: {type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 });
 
-TwitterIntegrationJobSchema.virtual('id').get(function() {
+TwitterIntegrationSchema.virtual('id').get(function() {
   return this._id.toString();
 });
 
-TwitterIntegrationJobSchema.virtual('teamId').get(function() {
+TwitterIntegrationSchema.virtual('teamId').get(function() {
   return this._teamId.toString();
 });
 
-TwitterIntegrationJobSchema.virtual('clientProps').get(function() {
-  const {id, teamId, completedCount, status, statusMsg, inProcess } = this;
-  const createdDate = this.createdTimestamp ? new Date(this.createdTimestamp) : undefined;
-  const finishedDate = this.finishedTimestamp ? new Date(this.finishedTimestamp) : undefined;
-  return { id, teamId, completedCount, status, statusMsg, inProcess, createdDate, finishedDate };
+TwitterIntegrationSchema.virtual('clientProps').get(function() {
+  const {id, teamId, completedCount, status, statusMsg, inProcess, createdTimestamp, finishedTimestamp } = this;
+  return { id, teamId, completedCount, status, statusMsg, inProcess, createdTimestamp, finishedTimestamp };
 });
 
 // set up a mongoose model and pass it using module.exports
-module.exports = mongoose.model('TwitterIntegrationJob', TwitterIntegrationJobSchema);
+module.exports = mongoose.model('TwitterIntegration', TwitterIntegrationSchema);
 
 
