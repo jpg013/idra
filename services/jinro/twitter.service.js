@@ -128,7 +128,7 @@ function getRateLimitStatus(twitterCred, cb) {
   
   twitterClient.get('application/rate_limit_status', function(err, results = []) {
     if (err) {
-      return parseTwitterError(err);
+      return cb(parseTwitterError(err));
     }
     const friends = {
       remaining: results.resources.friends['/friends/list'].remaining,

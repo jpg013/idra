@@ -2,20 +2,21 @@ const TwitterIntegrationFactory = require('../factories/twitter-integration.fact
 const TwitterIntegrationModel   = require('../models/twitter-integration.model');
 const Idra                      = require('./idra.js');
 
+const defaultFields = {
+  createdTimestamp: 1,
+  finishedTimestamp: 1,
+  completedCount: 1,
+  status: 1,
+  _teamId: 1,
+  statusMsg: 1,
+  userInProgress: 1,
+  createdBy: 1
+};
+
 function getTwitterIntegration(id, cb) {
   const $query = {_id: id};
-  const $fields = {
-    createdTimestamp: 1,
-    finishedTimestamp: 1,
-    completedCount: 1,
-    status: 1,
-    _teamId: 1,
-    statusMsg: 1,
-    inProcess: 1
-  };
-
   TwitterIntegrationModel
-    .find($query, $fields)
+    .findOne($query, defaultFields)
     .exec(cb);
 }
 
@@ -23,18 +24,9 @@ function getMostRecentIntegration(teamId, cb) {
   if (!teamId) return cb('missing required team id');
   const $query = {_teamId: teamId};
   const $sort = {createdTimestamp: -1}
-  const $fields = {
-    createdTimestamp: 1,
-    finishedTimestamp: 1,
-    completedCount: 1,
-    status: 1,
-    _teamId: 1,
-    statusMsg: 1,
-    inProcess: 1
-  };
 
   TwitterIntegrationModel
-    .find($query, $fields)
+    .find($query, defaultFields)
     .sort($sort)
     .limit(1)
     .exec(function(err, results=[]) {
@@ -67,26 +59,18 @@ function createIntegration(params={}, cb) {
 }
 
 function getRunningTwitterIntegration(teamId, cb) {
-  const $query = {_teamId: teamId,  status: {'$ne': 'completed'}};
-  const $proj = {
-    createdTimestamp: 1,
-    completedCount: 1,
-    status: 1,
-    _teamId: 1,
-    statusMsg: 1,
-    inProcess: 1
-  };
+  const $query = {_teamId: teamId,  status: {'$in': ['pending', 'inProgress', 'cancelling']}};
 
   TwitterIntegrationModel
-    .findOne($query, $proj)
+    .findOne($query, defaultFields)
     .exec((err, results) => cb(err, results));    
 }
 
-function getPendingTwitterIntegrations() {
+function getPendingTwitterIntegrations(cb) {
   const $query = { status: 'pending' };
   const $sort = { createdTimestamp: 1 };
 
-  TwitterIntegration
+  TwitterIntegrationModel
     .find($query)
     .sort($sort)
     .exec(function(err, results=[]) {
@@ -95,23 +79,23 @@ function getPendingTwitterIntegrations() {
 }
 
 function updateTwitterIntegration(id, updateFields={}, cb) {
-  const $update = buildUpdaterObject(updateFields);
-  const $opts = {upsert: true, new: true };
+  const $set = buildModelSetter(updateFields);
+  const $opts = {upsert: true, new: true, fields : defaultFields};
   const $query = {_id: id};
-  TwitterIntegration.findOneAndUpdate($query, $update, $opts, cb);
+  TwitterIntegrationModel.findOneAndUpdate($query, $set, $opts, cb);
 }
 
-const buildUpdaterObject = (fields={}) => {
-  Object.keys(fields).reduce((acc, cur) => {
+const buildModelSetter = (fields={}) => {
+  return Object.keys(fields).reduce((acc, cur) => {
     switch(cur) {
-      case 'status':
-        acc.$set[cur] = fields[cur];
-        break;
-      case 'statusMsg': 
-        acc.$set[cur] = fields[cur];
-        break;
       case 'user':
+      case 'statusMsg': 
+      case 'finishedTimestamp':
+      case 'status':
+      case 'userInProgress':
         acc.$set[cur] = fields[cur];
+        break;
+      default:
         break;
     }  
     return acc;
@@ -122,7 +106,7 @@ const buildUpdaterObject = (fields={}) => {
 function checkIntegrationStatus(id, cb) {
   const $query = {_id: id};
   const $proj = { status: 1 };
-  TwitterIntegration
+  TwitterIntegrationModel
     .findOne($query, $proj)
     .lean()
     .exec(function(err, results={}) {
@@ -134,20 +118,20 @@ function setUserFriendList(opts, cb) {
   const {id, userId, friends} = opts;
   const $query = { _id: id, 'userList.id': userId };
   const $update = { $set: { 'userList.$.friends': friends}};
-  TwitterIntegration.update($query, $update, err => cb(err));
+  TwitterIntegrationModel.update($query, $update, err => cb(err));
 }
 
 function setUserFollowerList(opts, cb) {
   const {id, userId, followers} = opts;
   const $query = { _id: id, 'userList.id': userId };
   const $update = { $set: { 'userList.$.followers': followers}};
-  TwitterIntegration.update($query, $update, err => cb(err)); 
+  TwitterIntegrationModel.update($query, $update, err => cb(err)); 
 }
 
 function incrementIntegrationCompleted(id, cb) {
   const $query = {_id : id};
   const $update = {$inc: {completed: 1}};
-  TwitterIntegration.update($query, $update, err => cb(err));
+  TwitterIntegrationModel.update($query, $update, err => cb(err));
 }
 
 module.exports = {

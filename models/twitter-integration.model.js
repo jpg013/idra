@@ -25,10 +25,10 @@ const TwitterIntegrationSchema = new Schema({
     default: 'pending'
   },
   statusMsg: { type: String, default: 'Waiting for Twitter Integration to start'},
-  inProcess: { 
+  userInProgress: { 
     name: { type: String },
     id: { type: String },
-    TwitterID: { type: String }
+    twitterID: { type: String }
   },
   neo4jCredentials: {
     connection: {type: String, required: true},
@@ -46,8 +46,8 @@ TwitterIntegrationSchema.virtual('teamId').get(function() {
 });
 
 TwitterIntegrationSchema.virtual('clientProps').get(function() {
-  const {id, teamId, completedCount, status, statusMsg, inProcess, createdTimestamp, finishedTimestamp } = this;
-  return { id, teamId, completedCount, status, statusMsg, inProcess, createdTimestamp, finishedTimestamp };
+  const {id, teamId, completedCount, status, statusMsg, userInProgress, createdTimestamp, finishedTimestamp, createdBy } = this;
+  return { id, teamId, completedCount, status, statusMsg, userInProgress, createdTimestamp, finishedTimestamp, createdBy };
 });
 
 // set up a mongoose model and pass it using module.exports

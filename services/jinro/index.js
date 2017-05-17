@@ -18,7 +18,7 @@ const SocketIO                  = require('../../socket/io');
 const invalidTwitterCredentials = 'Twitter access token is invalid.';
 const integrationError = 'An error occurred during Twitter integration.'
 
-function twitterIntegrationSuccessHandler(jobId, cb) {
+function twitterIntegrationSuccessHandler(id, cb) {
   console.log('twitter integration success handler')
   /*
   const $opts = {upsert: true, new: true };
@@ -37,22 +37,26 @@ function twitterIntegrationSuccessHandler(jobId, cb) {
   */
 }
 
-function twitterIntegrationErrorHandler(jobId, err, cb) {
-  if (err === 'cancel integration') {
-    console.log('cancelled!!!');
-    //updateJobStatus({jobId: job.id, status: 'cancelled', msg: 'Integration cancelled'}, cb);
+function twitterIntegrationErrorHandler(id, err, cb) {
+  let update = { finishedTimestamp: new Date().getTime() };
+  if (err === 'integration stopped') {
+    update.status = 'cancelled';
+    update.statusMsg = 'Integration cancelled';
   } else {
-    console.log('mother fucker')
-    //updateJobStatus({jobId: job.id, status: 'error', msg: err}, cb);  
+    update.status = 'error';
+    update.statusMsg = err;
   }
+  TwitterIntegrationService.updateTwitterIntegration(id, update, () => {
+    sendUpdateToClient(id);
+  });
 }
 
 function executePendingTwitterIntegrations(onFinished) {
   TwitterIntegrationService.getPendingTwitterIntegrations(function(err, results=[]) {
     if (err) return cb(err);
-    async.eachSeries(results, function(job, cb) {
-      runTwitterIntegration(job, err => {
-        return err ? twitterIntegrationErrorHandler(job.id, err, cb) : twitterIntegrationSuccessHandler(job.id, cb);
+    async.eachSeries(results, function(integration, cb) {
+      runTwitterIntegration(integration, err => {
+        return err ? twitterIntegrationErrorHandler(integration.id, err, cb) : twitterIntegrationSuccessHandler(integration.id, cb);
       });
     }, onFinished);
   });
@@ -76,15 +80,15 @@ function isRateLimitExceeded(rateLimit) {
   return (rateLimit.friends.remaining < 2 && rateLimit.followers.remaining < 2 || rateLimit.application.remaining < 2);
 }
 
-function queryTwitterCredential(job, cb) {
-  if (!job) return cb('missing required job');
-  const $query = { 'teamId' : job.teamId };
+function queryTwitterCredential(integration, cb) {
+  if (!integration) return cb('missing required job');
+  const $query = { 'teamId' : integration.teamId };
   TwitterCredential.findOne($query, cb);
 }
 
-function secureTwitterCredential(job, cb) {
+function secureTwitterCredential(integration, cb) {
   const pipeline = [
-    cb => queryTwitterCredential(job, cb),
+    cb => queryTwitterCredential(integration, cb),
     (cred, cb) => {
       if (!cred) return cb('Could not find twitter credentials');
       if (cred.lockedUntil) return cb('locked');
@@ -103,24 +107,24 @@ function secureTwitterCredential(job, cb) {
     if (err && err !== 'locked') return cb(err);
     
     if (err === 'locked' || !cred || cred.lockedUntil) {
-      waitForTwitterCredentialToUnlock(job, (err) => err ? cb(err) : secureTwitterCredential(job, cb));
+      waitForTwitterCredentialToUnlock(integration, (err) => err ? cb(err) : secureTwitterCredential(integration, cb));
     } else {
       return cb(err, cred);  
     }
   })
 }
 
-function waitForTwitterCredentialToUnlock(job, cb) {
-  if (!job) return cb('missing required job');
-  queryTwitterCredential(job, function(err, cred) {
+function waitForTwitterCredentialToUnlock(integration, cb) {
+  if (!integration) return cb('missing required integration');
+  queryTwitterCredential(integration, function(err, cred) {
     if (err) return cb(err);
     if (!cred) return cb('Could not find twitter credentials');
-    if (!cred.lockedUntil || isNaN(cred.lockedUntil)) return cb(undefined);
+    if (!cred.lockedUntil || isNaN(cred.lockedUntil)) return cb();
     
     const wait = cred.lockedUntil - new Date().getTime() + 1000;
 
     // Await unlocking
-    setTimeout(() => { cb(undefined) }, wait);  
+    setTimeout(() => { cb() }, wait);  
   })
 }
 
@@ -156,11 +160,19 @@ function lockTwitterCredential(cred, reset, cb) {
   });
 }
 
-function doesIntegrationNeedHalted(id, cb) {
-  TwitterIntegrationService.checkJobStatus(id, function(err, status) {
+function hasIntegrationBeenHalted(id, cb) {
+  TwitterIntegrationService.checkIntegrationStatus(id, function(err, status) {
     if (err) return cb(err);
-    if (!status) return cb('Invalid integration status');
-    return (status === 'cancelling') ? cb('cancel integration') : cb();
+    
+    switch(status) {
+      case 'cancelling':
+        return cb('integration stopped')
+      case 'error':
+      case 'completed':
+        return cb('Invalid integration status');
+      default:
+        return cb();
+    }
   });
 }
 
@@ -175,8 +187,9 @@ function processIntegrationUserList(twitterIntegration, cb) {
     
     // Grab available credentials before starting
     secureTwitterCredential(twitterIntegration, function(err, twitterCred) {
-      const checkHalted = cb => doesIntegrationNeedHalted(id, cb);
-      const updateInProcess = cb => TwitterIntegrationService.updateTwitterIntegration(id, {inProcess: user }, err => {
+      if (err) return cb(err);
+      
+      const updateUserInProgress = cb => TwitterIntegrationService.updateTwitterIntegration(id, {userInProgress: user }, err => {
         sendUpdateToClient(id);
         cb(err);
       });
@@ -192,7 +205,7 @@ function processIntegrationUserList(twitterIntegration, cb) {
       });
       
       const pipeline = [
-        updateInProcess,
+        updateUserInProgress,
         getFriends,
         setFriends,
         upsertFriends,
@@ -204,7 +217,7 @@ function processIntegrationUserList(twitterIntegration, cb) {
 
       async.waterfall(pipeline, err => {
         if (err) return cb(err); 
-        checkHalted(twitterIntegration.id, cb);
+        hasIntegrationBeenHalted(twitterIntegration.id, cb)
       });
     });
   }, cb);
@@ -212,27 +225,23 @@ function processIntegrationUserList(twitterIntegration, cb) {
 
 function runTwitterIntegration(twitterIntegration, cb) {
   if (!twitterIntegration) { return }
-
+  
   const statusUpdate = {
     status: 'inProgress',
-    statusMsg: 'Running Twitter Integration Job'
+    statusMsg: 'Running Twitter Integration'
   };
   
-  const setIntegrationInProcess = cb => TwitterIntegrationService.updateTwitterIntegration(twitterIntegration.id, statusUpdate, cb);
-  
-  const pipeline = [
-    cb => cb(undefined, job),
-    setJobInProcess,
-    processIntegrationUserList
-  ];
-
-  async.waterfall(pipeline, cb);
+  TwitterIntegrationService.updateTwitterIntegration(twitterIntegration.id, statusUpdate, function(err, updatedIntegration) {
+    if (err) return cb(err);
+    if (!updatedIntegration) return cb('missing required integration');
+    sendUpdateToClient(updatedIntegration.id);
+    processIntegrationUserList(twitterIntegration, cb)
+  });
 }
 
 function runPendingTwitterIntegrations() {
-  return;
-  // kick off cron job in 1 second
-  startCronJob(1);
+  // kick off cron job in 5 seconds
+  startCronJob(5);
 }
 
 function onCronJobFinished(err) {}
@@ -245,7 +254,7 @@ function startCronJob(delay = 1) {
 
 function sendUpdateToClient(id) {
   TwitterIntegrationService.getTwitterIntegration(id, function(err, twitterIntegration={}) {
-    SocketIO.handleTwitterIntegrationUpdate(twitterIntegration.clientProps);
+    SocketIO.handleTwitterIntegrationUpdate(twitterIntegration);
   });
 }
 
