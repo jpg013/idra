@@ -199,11 +199,11 @@ function processIntegrationUserList(twitterIntegration, cb) {
       const getFollowers = cb => TwitterService.getTwitterFollowers({twitterID, twitterCred}, (err, followers=[]) => cb(undefined, followers));
       const setFollowers = (followers=[], cb) => TwitterIntegrationService.setUserFollowerList({id, userId, followers}, err => cb(err, followers));
       const upsertFollowers = (followers=[], cb) => upsertTwitterFollowers({neo4jCredentials, followers, twitterID}, cb);
-      const incCompleted = cb => TwitterIntegrationService.incrementIntegrationCompleted(id, err => {
+      const incCompleted = cb => TwitterIntegrationService.incrementCompletedCount(id, err => {
         sendUpdateToClient(id);
         cb(err);
       });
-      
+
       const pipeline = [
         updateUserInProgress,
         getFriends,

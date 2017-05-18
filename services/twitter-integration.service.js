@@ -6,11 +6,13 @@ const defaultFields = {
   createdTimestamp: 1,
   finishedTimestamp: 1,
   completedCount: 1,
+  totalCount: 1,
   status: 1,
   _teamId: 1,
   statusMsg: 1,
   userInProgress: 1,
-  createdBy: 1
+  createdBy: 1,
+  _id: 1
 };
 
 function getTwitterIntegration(id, cb) {
@@ -128,9 +130,9 @@ function setUserFollowerList(opts, cb) {
   TwitterIntegrationModel.update($query, $update, err => cb(err)); 
 }
 
-function incrementIntegrationCompleted(id, cb) {
+function incrementCompletedCount(id, cb) {
   const $query = {_id : id};
-  const $update = {$inc: {completed: 1}};
+  const $update = {$inc: { completedCount: 1 }};
   TwitterIntegrationModel.update($query, $update, err => cb(err));
 }
 
@@ -144,5 +146,5 @@ module.exports = {
   checkIntegrationStatus,
   setUserFollowerList,
   setUserFriendList,
-  incrementIntegrationCompleted,
+  incrementCompletedCount,
 }

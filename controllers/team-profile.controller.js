@@ -72,6 +72,28 @@ function getAdminTeamProfile(req, res) {
   async.waterfall(pipeline, onDone);
 }
 
+function stopTwitterIntegration(req, res) {
+  if (!req.user || !req.user.isAdmin) {
+    return res.status(403).send({err: 'must have admin privileges to stop Twitter Integration'});
+  }
+  const {id} = req.body;
+  if (!id) {
+    return res.status(400).send({err: 'Missing required integration id'});
+  }
+  
+  const updateProps = {
+    status: 'cancelling',
+    statusMsg: 'Cancelling Twitter Integration'
+  };
+  
+  TwitterIntegrationService.updateTwitterIntegration(id, updateProps, function(err, integrationModel) {
+    if (err) {
+      return res.status(500).send({success: false, msg: 'There was an error while stopping Twitter Integration for user team.'});
+    }
+    return res.status(200).send({data: integrationModel.clientProps});
+  });
+}
+
 function startTwitterIntegration(req, res) {
   if (!req.user || !req.user.isAdmin) {
     return res.status(403).send({err: 'must have admin privileges to start Twitter Integration'});
@@ -164,5 +186,6 @@ function updateTwitterCredential(req, res) {
 TeamProfileController.get('/admin', AuthMiddleware.isAdmin, getAdminTeamProfile);
 TeamProfileController.post('/twittercredential', AuthMiddleware.populateUser, updateTwitterCredential);
 TeamProfileController.post('/twitterintegration', AuthMiddleware.populateUser, startTwitterIntegration);
+TeamProfileController.delete('/twitterintegration', AuthMiddleware.populateUser, stopTwitterIntegration);
 
 module.exports = TeamProfileController;

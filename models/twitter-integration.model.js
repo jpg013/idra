@@ -46,8 +46,8 @@ TwitterIntegrationSchema.virtual('teamId').get(function() {
 });
 
 TwitterIntegrationSchema.virtual('clientProps').get(function() {
-  const {id, teamId, completedCount, status, statusMsg, userInProgress, createdTimestamp, finishedTimestamp, createdBy } = this;
-  return { id, teamId, completedCount, status, statusMsg, userInProgress, createdTimestamp, finishedTimestamp, createdBy };
+  const {id, teamId, completedCount, totalCount, status, statusMsg, userInProgress, createdTimestamp, finishedTimestamp, createdBy } = this;
+  return { id, teamId, completedCount, totalCount, status, statusMsg, userInProgress, createdTimestamp, finishedTimestamp, createdBy };
 });
 
 // set up a mongoose model and pass it using module.exports
