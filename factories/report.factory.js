@@ -43,7 +43,13 @@ function validateReportSetFields(fields) {
 
 function scrubReportData(data) {
   if (!data || typeof data !== 'object') return {};
-  const {name, createdBy, description, query, reportSetId, teamId} = data;
+  const {name, user, description, query, reportSetId, teamId} = data;
+  if (!user) return; 
+  const createdBy = {
+    userId: user.id,
+    userName: `${user.firstName} ${user.lastName}`
+  };
+  
   return {
     name, 
     createdBy, 

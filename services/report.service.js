@@ -7,7 +7,7 @@ const TeamService      = require('./team.service');
 const CryptoClient     = require('../common/crypto');
 const Idra             = require('./idra');
 
-const invalidDataErrMsg = 'invalid report data';
+const invalidDataErrMsg = 'Invalid report data';
 
 function createReportLog(data, cb) {
   const scrubbedReportLogData = ReportFactory.scrubReportLogData(data);
@@ -73,9 +73,30 @@ function downloadReportAsAdmin(reportId, teamId, cb) {
   async.waterfall(pipeline, cb);
 }
 
+function testQuery(query, teamId, cb) {
+  if (!query || !teamId) return cb('missing required data');
+
+  const pipeline = [
+    cb => TeamService.findTeam(teamId, cb),
+    (teamModel, cb) => {
+      if (!teamModel) {
+        return cb('missing required data');
+      }
+      const idraParams = {
+        connection: CryptoClient.decrypt(teamModel.neo4jCredentials.connection),
+        auth: CryptoClient.decrypt(teamModel.neo4jCredentials.auth),
+        query: query
+      }
+      Idra.runReport(idraParams, cb);
+    }
+  ];
+  async.waterfall(pipeline, cb);
+}
+
 module.exports = {
   createReportLog,
   createReportRequest,
   downloadReportAsAdmin,
-  downloadReportAsUser
+  downloadReportAsUser,
+  testQuery
 }

@@ -12,11 +12,12 @@ const Jino                      = require('../services/jinro/index');
  */
 const TeamProfileController = express.Router();
 
-const getTeamDetails = (opts = {}, cb) => {
-  TeamService.getProfileDetails(opts.teamId, (err, teamDetails = {}) => {
+const getTeam = (opts = {}, cb) => {
+  TeamService.findTeam(opts.teamId, (err, teamModel) => {
     if (err) return cb(err);
+    if (!teamModel) return cb ('Could not find team model');
     if (opts.results) {
-      opts.results.teamDetails = teamDetails;
+      opts.results.teamModel = teamModel.clientProps;
     }
     return cb(err, opts);
   });
@@ -64,7 +65,7 @@ function getAdminTeamProfile(req, res) {
 
   const pipeline = [
     init,
-    getTeamDetails,
+    getTeam,
     getTwitterCredentialDetails,
     getTwitterIntegrationDetails
   ];

@@ -54,7 +54,7 @@ function Idra() {
     
     db.cypher({query: args.query}, function(err, results) {
       if (err || !results) {
-        return cb(err, results);
+        return cb(parseNeo4jError(err), results);
       }
       cb(err, convertToCsv(results));
     });
@@ -115,6 +115,16 @@ function Idra() {
     });
     
     db.cypher({ query: upsertFriendsQuery, params }, cb);
+  }
+
+  function parseNeo4jError(err) {
+    if (!err) return;
+    switch(err.neo4j.code) {
+      case 'Neo.ClientError.Statement.SyntaxError':
+        return 'Invalid Neo4j cypher syntax';
+      default:
+        return 'There was an error querying Neo4j';
+    }
   }
   
   return {

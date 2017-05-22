@@ -125,13 +125,9 @@ function loadReportCollections(cb) {
     
     const buildReports = (userModel, teamModel, reportSets, cb) => {
       async.eachSeries(data.reports, (data, eachCb) => {
-        const createdBy = {
-          userId: userModel.id,
-          userName: `${userModel.firstName} ${userModel.lastName}`
-        };
         const reportSet = reportSets.find(cur => cur.name === data.reportSetName);
         const reportData = Object.assign({}, data, {
-          createdBy, 
+          user: userModel, 
           teamId: teamModel.id,
           reportSetId: reportSet.id
         });

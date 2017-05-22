@@ -76,6 +76,66 @@ function requestReport(req, res) {
   ReportService.createReportRequest(data, () => res.status(200).send({success: true}));
 }
 
+function testReportQuery(req, res, next) {
+  const { query, teamId } = req.body;
+  ReportService.testQuery(query, teamId, (err, results) => {
+    req.error = err;
+    req.results = results;
+    next();
+  });
+}
+
+function errorResponseHandler(error, res) {
+  if (!res) return;
+  switch(error) {
+    case 'missing required data':
+      return res.status(400).send({error});
+    case 'Invalid Neo4j cypher syntax':
+    case 'Invalid report data':
+    case 'There was an error saving the report':
+      return res.status(200).send({error});
+    default:
+      return res.status(500).send({});
+  }
+}
+
+function createReport(req, res, next) {
+  const { query, description, reportSetId, teamId, name } = req.body;
+
+  const saveReportModel = cb => {
+    const reportData = Object.assign({}, {
+      user: req.user, 
+      teamId,
+      reportSetId,
+      query,
+      description,
+      name
+    });
+    TeamService.createReport(reportData, cb);
+  }
+
+  const testReport = cb => ReportService.testQuery(query, teamId, err => cb(err));
+  
+  const pipeline = [
+    testReport,
+    saveReportModel
+  ];
+
+  async.waterfall(pipeline, (err, results) => {
+    req.error = err;
+    req.results = results;
+    next();
+  });
+}
+
+function responseHandler(req, res) {
+  const { error, results} = req;
+  if (error) {
+    return errorResponseHandler(error, res);
+  }
+  return res.status(200).send({results});
+}
+
 /**
  * Reports Controller Routes
  */
@@ -83,5 +143,7 @@ reportsController.post('/download', downloadUserReport);
 reportsController.post('/admindownload/', AuthMiddleware.isAdmin, downloadAdminReport);
 reportsController.post('/request', requestReport);
 reportsController.get('/list', AuthMiddleware.isAdmin, getReportList);
+reportsController.post('/testquery', AuthMiddleware.isAdmin, testReportQuery, responseHandler)
+reportsController.post('', AuthMiddleware.isAdmin, AuthMiddleware.populateUser, createReport, responseHandler);
 
 module.exports = reportsController;

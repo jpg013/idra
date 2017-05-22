@@ -90,14 +90,26 @@ function createReport(data, cb) {
   if (!ReportFactory.validateReportFields(scrubbedData)) {
     return cb(invalidReportDataErrMsg);
   } 
-  
   const reportModel = ReportFactory.buildReportModel(scrubbedData);
   
-  const $query = { '_id': reportModel.teamId}
+  const $query = { 
+    '_id': reportModel.teamId,
+    'reportSets': { '$elemMatch': { '_id' : reportModel.reportSetId } } 
+  };
+
   const $update = { $push: {'reports': reportModel} }
   const $opts = {upsert: true, new: true }
 
-  Team.update($query, $update, $opts, cb);
+  Team.findOneAndUpdate($query, $update, $opts, (err, updatedTeamModel) => {
+    if (err) {
+      return cb('There was an error saving the report');   
+    }
+    const persistedReportModel = updatedTeamModel.findReport(reportModel.id);
+    if (!persistedReportModel) {
+      return cb('There was an error saving the report');   
+    }
+    return cb(err, persistedReportModel);
+  });
 }
 
 function incrementUserCount(teamId, cb) {
@@ -145,14 +157,6 @@ function getReportList(cb) {
     });
 }
 
-function getProfileDetails(teamId, cb) {
-  if (!teamId) return cb('missing required team id');
-  findTeam(teamId, function(err, teamModel) {
-      if (err) return cb(err);
-      return teamModel ? cb(err, teamModel.clientProps) : cb(err, undefined);
-    });
-} 
-
 module.exports = {
   canDeleteTeam,
   queryTeams,
@@ -166,6 +170,5 @@ module.exports = {
   incrementUserCount,
   incrementReportDownloadCount,
   setLastActivityDate,
-  getReportList,
-  getProfileDetails
+  getReportList
 };
