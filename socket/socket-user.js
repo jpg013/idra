@@ -28,11 +28,23 @@ function syncUser(userModel) {
   if (!userModel) { return; }
   const conn = SocketStore.getClientSocket(userModel.id);
   if (!conn) { return; }
+  console.log('writing to the fucking socket!');
+  console.log(userModel.clientProps);
   SocketWrite(conn, ioEvents.syncUser, userModel.clientProps);
 };
 
 function config(socketEmitter) {
   socketEmitter.on(ioEvents.identifySocket, identifyConnection);
+  socketEmitter.on(ioEvents.createReport, onCreateReport);
+}
+
+function onCreateReport(reportModel) {
+  if (!reportModel) return;
+  UserService.getUsersForTeam(reportModel.teamId, (err, results=[]) => {
+    if (err || !results.length) return;
+    console.log(results);
+    results.forEach(cur => syncUser(cur));    
+  });
 }
 
 module.exports = {

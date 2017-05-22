@@ -5,6 +5,7 @@ const UserService    = require('../services/user.service');
 const idra           = require('../services/idra');
 const async          = require('async');
 const AuthMiddleware = require('../middleware/auth');
+const SocketIO       = require('../socket/io');
 
 const reportsController = express.Router();
 
@@ -95,7 +96,7 @@ function errorResponseHandler(error, res) {
     case 'There was an error saving the report':
       return res.status(200).send({error});
     default:
-      return res.status(500).send({});
+      return res.status(500).send({error});
   }
 }
 
@@ -112,13 +113,17 @@ function createReport(req, res, next) {
       name
     });
     TeamService.createReport(reportData, cb);
-  }
-
+  };
   const testReport = cb => ReportService.testQuery(query, teamId, err => cb(err));
+  const notifySocket = (reportModel, cb) => {
+    SocketIO.handleCreateReport(reportModel)
+    cb(undefined, reportModel);
+  };
   
   const pipeline = [
     testReport,
-    saveReportModel
+    saveReportModel,
+    notifySocket
   ];
 
   async.waterfall(pipeline, (err, results) => {

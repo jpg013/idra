@@ -39,8 +39,14 @@ function handleTwitterIntegrationUpdate(twitterIntegrationModel) {
   emitSocketEvent(SocketEvents.twitterIntegrationUpdate, twitterIntegrationModel);
 }
 
+function handleCreateReport(reportModel) {
+  if (!reportModel) return;
+  emitSocketEvent(SocketEvents.createReport, reportModel);
+}
+
 module.exports = {
   config,
   handleClientMessage,
-  handleTwitterIntegrationUpdate
+  handleTwitterIntegrationUpdate,
+  handleCreateReport
 };

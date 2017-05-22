@@ -142,6 +142,16 @@ function getUserList(cb) {
     });
 }
 
+function getUsersForTeam(teamId, cb) {
+  User
+    .find({team: teamId})
+    .populate('team')
+    .exec((err, results = []) => {
+      if (err) return cb(err);
+      cb(err, results);
+    });
+}
+
 module.exports = {
   queryUsers,
   createUser,
@@ -150,5 +160,6 @@ module.exports = {
   findUserByUsername,
   findUser,
   updateUserModel,
-  getUserList
+  getUserList,
+  getUsersForTeam
 };
