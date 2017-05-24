@@ -44,9 +44,15 @@ function handleCreateReport(reportModel) {
   emitSocketEvent(SocketEvents.createReport, reportModel);
 }
 
+function handleSyncUser(userModel) {
+  if (!userModel) return;
+  emitSocketEvent(SocketEvents.syncUser, userModel);
+}
+
 module.exports = {
   config,
   handleClientMessage,
   handleTwitterIntegrationUpdate,
-  handleCreateReport
+  handleCreateReport,
+  handleSyncUser
 };

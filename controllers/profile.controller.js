@@ -2,6 +2,7 @@ const express           = require('express')
 const cryptoClient      = require('../common/crypto');
 const UserService       = require('../services/user.service');
 const UserFactory       = require('../factories/user.factory');
+const SocketIO          = require('../socket/io');
 const profileController = express.Router();
 
 const passwordChangeErrMsg = 'There was an error changing the password.'
@@ -25,13 +26,13 @@ function updatePassword(req, res) {
 
   UserService.findUser(userId, function(err, userModel) {
     if (err || !userModel) {
-      return res.status(403).send({success: false, msg: passwordChangeErrMsg});
+      return res.status(500).send({success: false, msg: passwordChangeErrMsg});
     }
     if (userModel.password !== oldPassword) {
-      return res.status(400).send({success: false, msg: 'Current password is incorrect'});
+      return res.status(200).send({success: false, msg: 'Current password is incorrect'});
     }
     if (userModel.password === newPassword) {
-      return res.status(4010).send({success: false, msg: 'New password cannot be the same'});
+      return res.status(200).send({success: false, msg: 'Passwords must be different'});
     }
 
     const update = {
@@ -43,7 +44,8 @@ function updatePassword(req, res) {
       if (err) {
         return res.status(401).send({success: false, msg: passwordChangeErrMsg});
       }
-      return res.status(200).send({success: true, data: updatedUserModel});
+      res.status(200).send({success: true, results: updatedUserModel.clientProps});
+      SocketIO.handleSyncUser(updatedUserModel);
     });
   });
 }
