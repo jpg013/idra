@@ -66,7 +66,7 @@ const teams = [
   {
     name: 'Innosol Pro Admin',
     neo4jCredentials: {
-      connection: 'http://neo4j:neo4j@172.31.28.30:7474',
+      connection: 'http://neo4j:neo4j@172.31.28.80:7474',
       auth: 'neo4j:Innosolpro2017'
     },
     imageURL: '',
@@ -185,7 +185,7 @@ const teams = [
   {
     name: 'University of Central Missouri',
     neo4jCredentials: {
-      connection: 'http://neo4j:neo4j@172.31.28.30:7474',
+      connection: 'http://neo4j:neo4j@172.31.28.80:7474',
       auth: 'neo4j:Innosolpro2017'
     },
     imageURL: '',
