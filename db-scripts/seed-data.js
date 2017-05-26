@@ -195,6 +195,15 @@ const teams = [
       },
       {
         name: 'Alumni Scoring and Analysis',
+      },
+      {
+        name: 'Alumni Evaluation Reports'
+      },
+      {
+        name: 'Trip Reports'
+      },
+      {
+        name: 'Development Portfolios'
       }
     ],
     reports: [

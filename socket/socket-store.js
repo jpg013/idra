@@ -34,7 +34,6 @@ const buildConnectionStore = () => {
   }
 
   const removeConnection = connId => {
-    console.log('remove connections');
     connectionMap = connectionMap.delete(connId);
     const userId = userConnectionMap.findKey(cur => cur == connId);
     if (!userId) {
@@ -115,7 +114,6 @@ const buildConnectionStore = () => {
   const leaveRoom = (roomName, opts={}) => {
     const {userId} = opts;
     if (!roomName || !userId) { return; }
-    console.log('leaving rooms!');
     switch(roomName) {
       case 'ADMIN_TEAM_PROFILE':
         return leaveAdminTeamProfileRoom(userId);
@@ -125,9 +123,7 @@ const buildConnectionStore = () => {
   }
 
   const removeUserFromAllRooms = userId => {
-    console.log(rooms);
     leaveRoom('ADMIN_TEAM_PROFILE', {userId});
-    console.log(rooms);
   }
  
   return {
