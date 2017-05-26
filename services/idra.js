@@ -12,12 +12,12 @@ const json2csv     = require('json2csv');
 const upsertFriendsQuery = `MATCH (targetNode:Alumni {screen_name: {twitterID}})
                             UNWIND {friends} as otherUserName
                             MATCH (otherUser {screen_name: otherUserName.twitterID})
-                            MERGE (targetNode)-[:FOLLOWS]->(otherUser)`;
+                            MERGE (targetNode)-[:Follows]->(otherUser)`;
 
 const upsertFollowersQuery = `MATCH (followerNode:Alumni {screen_name: {twitterID}})
                               UNWIND {followers} as otherUserName
                               MATCH (otherUser {screen_name: otherUserName.twitterID})
-                              MERGE (FollowerNode)-[:FOLLOWS]->(otherUser)`;
+                              MERGE (FollowerNode)-[:Follows]->(otherUser)`;
 
 function Idra() {
   const convertToCsv = data => {
