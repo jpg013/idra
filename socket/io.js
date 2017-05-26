@@ -13,18 +13,6 @@ function emitSocketEvent(event, payload) {
   socketEmitter.emit(event, payload);
 };
 
-/*
-function onNotifyRoom(eData) {
-  const {room, action, data} = eData;
-  if (!room || !action || !data) return;
-  const roomSocks = sockStore.getConnectedRoomSockets(room);
-  if (!roomSocks) return;
-
-  const sockPayload = { room, action, data };
-  roomSocks.forEach(cur => writeToSocket(cur, sockEvents.e.notifyRoom, sockPayload));
-}
-*/
-
 function config() {
   SocketUser.config(socketEmitter);
   SocketRooms.config(socketEmitter);

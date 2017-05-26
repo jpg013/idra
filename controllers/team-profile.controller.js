@@ -160,22 +160,39 @@ function startTwitterIntegration(req, res) {
       /* Kick off a Jinro job to run the pending integration */  
       Jino.runPendingTwitterIntegrations();
       
-      return res.status(200).send({data: newTwitterIntegration.clientProps});
+      return res.status(200).send({data: newTwitterIntegration.clientProps, success: true});
     })
+  });
+}
+
+function createTwitterCredential(req, res) {
+  const { consumer_key, consumer_secret, access_token_key, access_token_secret, teamId } = req.body;
+  if ((teamId !== req.user.team.toString()) && !req.user.isAdmin) {
+    return res.status(403).send({success: false});
+  }
+  
+  if (!teamId || !consumer_key || !consumer_secret || !access_token_key || !access_token_secret || !teamId) {
+    return res.status(400).send({err: 'Missing required data'});
+  }
+  
+  TwitterCredentialService.createTwitterCredential({ consumer_key, consumer_secret, access_token_key, access_token_secret, teamId }, (err) => {
+    if (err) {
+      return res.status(500).send({success: false});
+    }
+    return res.status(200).send({success: true});
   });
 }
 
 function updateTwitterCredential(req, res) {
   const { consumer_key, consumer_secret, access_token_key, access_token_secret, teamId } = req.body;
-
   if (!teamId) return res.status(400).send({err: 'Missing required data'});
-  if ((teamId !== req.user.team.toString()) && !user.isAdmin) {
+  if ((teamId !== req.user.team.toString()) && !req.user.isAdmin) {
     return res.status(403).send({success: false});
   }
   
   TwitterCredentialService.updateTwitterCredential({ consumer_key, consumer_secret, access_token_key, access_token_secret, teamId }, (err) => {
     if (err) {
-      return res.status(500).send({success: true});
+      return res.status(500).send({success: false});
     }
     return res.status(200).send({success: true});
   });
@@ -185,7 +202,8 @@ function updateTwitterCredential(req, res) {
  * Controller Routes
  */
 TeamProfileController.get('/admin', AuthMiddleware.isAdmin, getAdminTeamProfile);
-TeamProfileController.post('/twittercredential', AuthMiddleware.populateUser, updateTwitterCredential);
+TeamProfileController.put('/twittercredential', AuthMiddleware.populateUser, updateTwitterCredential);
+TeamProfileController.post('/twittercredential', AuthMiddleware.populateUser, createTwitterCredential);
 TeamProfileController.post('/twitterintegration', AuthMiddleware.populateUser, startTwitterIntegration);
 TeamProfileController.delete('/twitterintegration', AuthMiddleware.populateUser, stopTwitterIntegration);
 

@@ -35,7 +35,7 @@ function onCreateReport(reportModel) {
   if (!reportModel) return;
   UserService.getUsersForTeam(reportModel.teamId, (err, results=[]) => {
     if (err || !results.length) return;
-    results.forEach(cur => syncUser(cur));    
+    results.forEach(cur => onSyncUser(cur));    
   });
 }
 

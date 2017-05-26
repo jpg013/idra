@@ -18,6 +18,22 @@ const onJoinRoom = (params={}) => {
   });
 }
 
+const onLeaveRoom = (params={}) => {
+  const { room, socket, authToken } = params;
+  if (!room || !socket || !authToken) {
+    return; 
+  }
+  if (room !== 'ADMIN_TEAM_PROFILE') {
+    return;   
+  }
+  AuthClient.verifyTokenAndReturnUser(authToken, (err, userModel) => {
+    if (err) return;
+    if (!userModel || !userModel.isAdmin) { return; }
+    const opts = { userId: userModel.id };
+    SocketStore.leaveRoom(room, opts);
+  });
+}
+
 const onTwitterIntegrationUpdate = twitterIntegrationModel => {
   if (!twitterIntegrationModel) return;
   
@@ -37,6 +53,7 @@ const onTwitterIntegrationUpdate = twitterIntegrationModel => {
 
 const config = socketEmitter => {
   socketEmitter.on(ioEvents.joinRoom, onJoinRoom);
+  socketEmitter.on(ioEvents.leaveRoom, onLeaveRoom);
   socketEmitter.on(ioEvents.twitterIntegrationUpdate, onTwitterIntegrationUpdate);
 }
 

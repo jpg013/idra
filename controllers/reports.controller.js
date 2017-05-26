@@ -141,6 +141,21 @@ function responseHandler(req, res) {
   return res.status(200).send({results});
 }
 
+function getReportBuilder(req, res, next) {
+  const { reportId } = req.query;
+  if (reportId) {
+
+  } else {
+    TeamService.getTeamListData((err, results) => {
+      req.err = err;
+      req.results = {
+       teamItems:  results
+      };
+      next();
+    });
+  }
+}
+
 /**
  * Reports Controller Routes
  */
@@ -148,6 +163,7 @@ reportsController.post('/download', downloadUserReport);
 reportsController.post('/admindownload/', AuthMiddleware.isAdmin, downloadAdminReport);
 reportsController.post('/request', requestReport);
 reportsController.get('/list', AuthMiddleware.isAdmin, getReportList);
+reportsController.get('/builder', AuthMiddleware.isAdmin, getReportBuilder, responseHandler);
 reportsController.post('/testquery', AuthMiddleware.isAdmin, testReportQuery, responseHandler)
 reportsController.post('', AuthMiddleware.isAdmin, AuthMiddleware.populateUser, createReport, responseHandler);
 

@@ -19,22 +19,15 @@ const invalidTwitterCredentials = 'Twitter access token is invalid.';
 const integrationError = 'An error occurred during Twitter integration.'
 
 function twitterIntegrationSuccessHandler(id, cb) {
-  console.log('twitter integration success handler')
-  /*
-  const $opts = {upsert: true, new: true };
-  const $query = {_id: jobId};
-  const $set = {
-    $set: {
-      'status': 'completed',
-      'statusMsg': 'Twitter Integration Successfully Completed',
-      'finishedTimestamp': new Date().getTime()  
-    }
+  let update = { 
+    finishedTimestamp: new Date().getTime(),
+    status: 'completed',
+    statusMsg: 'Twitter integration successfully completed'
   };
-  TwitterIntegration.findOneAndUpdate($query, $set, $opts, (err, twitterIntegrationModel) => {
-    if (err) return cb(err);
-    SocketIO.handleTwitterIntegrationUpdate(twitterIntegrationModel);
+    
+  TwitterIntegrationService.updateTwitterIntegration(id, update, () => {
+    sendUpdateToClient(id);
   });
-  */
 }
 
 function twitterIntegrationErrorHandler(id, err, cb) {

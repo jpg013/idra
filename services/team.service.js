@@ -157,6 +157,15 @@ function getReportList(cb) {
     });
 }
 
+function getTeamListData(cb) {
+  const $projection = { _id: 1, name: 1 };
+  
+  Team
+    .find({}, $projection)
+    .lean()
+    .exec(cb)
+}
+
 module.exports = {
   canDeleteTeam,
   queryTeams,
@@ -170,5 +179,6 @@ module.exports = {
   incrementUserCount,
   incrementReportDownloadCount,
   setLastActivityDate,
-  getReportList
+  getReportList,
+  getTeamListData
 };

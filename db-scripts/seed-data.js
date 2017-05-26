@@ -49,6 +49,7 @@ const users = [
   }
 ];
 
+/*
 const twitterCredentials = [
   {
     consumer_key: 'EgzVLaN1OMNb3EFG5c4SKvcTD',
@@ -57,6 +58,9 @@ const twitterCredentials = [
     access_token_secret: 'RATtlY9OfDNr3a8mCJToa13swZ6MRzrvlCIru7s21xeLZ'
   }
 ];
+*/
+
+const twitterCredentials = [];
 
 const teams = [
   {

@@ -29,11 +29,30 @@ const createTeam = (req, res) => {
   });
 }
 
+function getTeamReportSets(req, res) {
+  const { teamId } = req.query;
+  if (!teamId) {
+    return res.status(400).send({err: 'missing required team id'});
+  }
+  TeamService.findTeam(teamId, (err, teamModel) => {
+    if (err || !teamModel)  {
+      return res.status(500).send({error: err});
+    }
+    const setItems = teamModel.reportSets.map(cur => {
+      return {
+        name: cur.name,
+        id: cur.id
+      }
+    });
+    return res.status(200).send({results: setItems});
+  })
+}
 
 /**
  * Controller Routes
  */
 TeamsController.get('/', AuthMiddleware.isAdmin, getTeams);
+TeamsController.get('/reportsets', AuthMiddleware.isAdmin, getTeamReportSets);
 //teamsController.delete('/', authMiddleware.isAdmin, deleteTeam);
 TeamsController.post('/', AuthMiddleware.isAdmin, createTeam);
 //teamsController.put('/', authMiddleware.isAdmin, editTeam);

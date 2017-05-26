@@ -1,14 +1,22 @@
 const TwitterCredentialFactory = require('../factories/twitter-credential.factory');
 const TwitterCredentialModel   = require('../models/twitter-credential.model');
 
-const updateTwitterCredential = (data = {}, cb) => {
+const createTwitterCredential = (data = {}, cb) => {
   const fields = TwitterCredentialFactory.scrubTwitterCredentialData(data);
   if (!TwitterCredentialFactory.validateTwitterCredentialFields(fields)){
     return cb('missing required twitter credential data');
   }
 
-  const updatedModel = TwitterCredentialFactory.buildTwitterCredentialModel(fields);
+  const newModel = TwitterCredentialFactory.buildTwitterCredentialModel(fields);
+  newModel.save(cb);
+}
 
+const updateTwitterCredential = (data = {}, cb) => {
+  const fields = TwitterCredentialFactory.scrubTwitterCredentialData(data);
+  if (!TwitterCredentialFactory.validateTwitterCredentialFields(fields)){
+    return cb('missing required twitter credential data');
+  }
+  const updatedModel = TwitterCredentialFactory.buildTwitterCredentialModel(fields);
   const $query = { teamId: fields.teamId };
   const $update = { $set: updatedModel.persistProps };
   const $opts = { upsert: true };
@@ -25,5 +33,6 @@ function getTwitterCredential(teamId, cb) {
 
 module.exports = {
   getTwitterCredential,
-  updateTwitterCredential
+  updateTwitterCredential,
+  createTwitterCredential
 }

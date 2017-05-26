@@ -25,5 +25,3 @@ ReportSchema.virtual('clientProps').get(function() {
 });
 
 module.exports = mongoose.model('Report', ReportSchema);
-
-

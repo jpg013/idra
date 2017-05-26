@@ -34,8 +34,14 @@ const buildConnectionStore = () => {
   }
 
   const removeConnection = connId => {
+    console.log('remove connections');
     connectionMap = connectionMap.delete(connId);
-    userConnectionMap = connectionMap.delete(connId);
+    const userId = userConnectionMap.findKey(cur => cur == connId);
+    if (!userId) {
+      return;
+    }
+    userConnectionMap = userConnectionMap.delete(userId);
+    removeUserFromAllRooms(userId);
   }
 
   const getClientSocket = userId => {
@@ -53,6 +59,15 @@ const buildConnectionStore = () => {
     rooms = rooms.updateIn(['ADMIN_TEAM_PROFILE', teamId], val => {
       val = val ? val : immutable.Set();
       return val.contains(userModel.id) ? val : val.add(userModel.id)
+    });
+  }
+
+  const leaveAdminTeamProfileRoom = userId => {
+    if (!userId) return;
+    rooms = rooms.update('ADMIN_TEAM_PROFILE', val => {
+      return val.keySeq().toList().reduce((acc, cur) => {
+        return acc.set(cur, val.get(cur).delete(userId));
+      }, immutable.Map());
     });
   }
   
@@ -97,10 +112,24 @@ const buildConnectionStore = () => {
     return rooms.getIn(['ADMIN_TEAM_PROFILE', teamId]);
   }
 
-  const leaveRoom = (roomName, user) => {
-
+  const leaveRoom = (roomName, opts={}) => {
+    const {userId} = opts;
+    if (!roomName || !userId) { return; }
+    console.log('leaving rooms!');
+    switch(roomName) {
+      case 'ADMIN_TEAM_PROFILE':
+        return leaveAdminTeamProfileRoom(userId);
+      default:
+        return;
+    }
   }
 
+  const removeUserFromAllRooms = userId => {
+    console.log(rooms);
+    leaveRoom('ADMIN_TEAM_PROFILE', {userId});
+    console.log(rooms);
+  }
+ 
   return {
     addConnection,
     identifyConnection,
