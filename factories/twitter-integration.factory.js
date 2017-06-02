@@ -1,5 +1,4 @@
 const TwitterIntegrationModel = require('../models/twitter-integration.model');
-const cryptoClient            = require('../common/crypto');
 
 function validateTwitterIntegrationFields(fields) {
   if (!fields || typeof fields !== 'object') return false;

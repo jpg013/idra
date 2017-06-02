@@ -1,7 +1,7 @@
 // get an instance of mongoose and mongoose.Schema
 const mongoose     = require('mongoose');
 const Schema       = mongoose.Schema;
-const CryptoClient = require('../common/crypto');
+const cryptoClient = require('../common/crypto');
 
 const TwitterCredentialSchema = new Schema({
   consumer_key: { type: String, required: true },
@@ -24,10 +24,10 @@ TwitterCredentialSchema.virtual('persistProps').get(function() {
 TwitterCredentialSchema.virtual('clientProps').get(function() {
   const { consumer_key, consumer_secret, access_token_key, access_token_secret, teamId } = this;
   return { 
-    consumer_key: CryptoClient.decrypt(consumer_key),
-    consumer_secret: CryptoClient.decrypt(consumer_secret),
-    access_token_key: CryptoClient.decrypt(access_token_key),
-    access_token_secret: CryptoClient.decrypt(access_token_secret),
+    consumer_key: cryptoClient.decrypt(consumer_key),
+    consumer_secret: cryptoClient.decrypt(consumer_secret),
+    access_token_key: cryptoClient.decrypt(access_token_key),
+    access_token_secret: cryptoClient.decrypt(access_token_secret),
     teamId 
   };
 });

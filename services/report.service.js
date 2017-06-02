@@ -4,7 +4,6 @@ const ReportRequest    = require('../models/report-request.model');
 const ReportFactory    = require('../factories/report.factory');
 const async            = require('async');
 const TeamService      = require('./team.service');
-const CryptoClient     = require('../common/crypto');
 const Idra             = require('./idra');
 
 const invalidDataErrMsg = 'Invalid report data';
@@ -32,8 +31,8 @@ function downloadReportAsUser(userModel, reportModel, cb) {
   if (!userModel || !reportModel) return cb('missing required data');
 
   const idraArgs = {
-    connection: CryptoClient.decrypt(userModel.team.neo4jCredentials.connection),
-    auth: CryptoClient.decrypt(userModel.team.neo4jCredentials.auth),
+    connection: userModel.team.neo4jCredentials.connection,
+    auth: userModel.team.neo4jCredentials.auth,
     query: reportModel.query
   };
   
@@ -63,8 +62,8 @@ function downloadReportAsAdmin(reportId, teamId, cb) {
         return cb('missing required data');
       }
       const idraArgs = {
-        connection: CryptoClient.decrypt(teamModel.neo4jCredentials.connection),
-        auth: CryptoClient.decrypt(teamModel.neo4jCredentials.auth),
+        connection: teamModel.neo4jCredentials.connection,
+        auth: teamModel.neo4jCredentials.auth,
         query: reportModel.query
       }
       Idra.runReport(idraArgs, cb);
@@ -83,8 +82,8 @@ function testQuery(query, teamId, cb) {
         return cb('missing required data');
       }
       const idraParams = {
-        connection: CryptoClient.decrypt(teamModel.neo4jCredentials.connection),
-        auth: CryptoClient.decrypt(teamModel.neo4jCredentials.auth),
+        connection: teamModel.neo4jCredentials.connection,
+        auth: teamModel.neo4jCredentials.auth,
         query: query
       }
       Idra.runReport(idraParams, cb);

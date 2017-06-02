@@ -33,15 +33,15 @@ function Idra() {
     }
   }
 
-  const decryptNeo4jCreds = creds => {
+  const decryptCreds = (creds={}) => {
     return {
-      connection: cryptoClient.decrypt(userModel.team.neo4jConnection),
-      auth: cryptoClient.decrypt(userModel.team.neo4jAuth)   
+      connection: cryptoClient.decrypt(creds.connection),
+      auth: cryptoClient.decrypt(creds.auth)   
     }
   }
   
   const runReport = (opts={}, cb) => {
-    const creds = (process.env.ENV_NAME === 'PRODUCTION') ? {connection: opts.connection, auth: opts.auth} : getDevCreds();
+    const creds = (process.env.ENV_NAME === 'PRODUCTION') ? decryptCreds({connection: opts.connection, auth: opts.auth}) : getDevCreds();
     
     const db = new neo4j.GraphDatabase({
       url: creds.connection,
@@ -64,7 +64,7 @@ function Idra() {
   }
 
   const getTwitterScreenNames = (opts={}, cb) => {
-    const creds = (process.env.ENV_NAME === 'PRODUCTION') ? {connection: opts.connection, auth: opts.auth} : getDevCreds();
+    const creds = (process.env.ENV_NAME === 'PRODUCTION') ? decryptCreds({connection: opts.connection, auth: opts.auth}) : getDevCreds();
     
     const db = new neo4j.GraphDatabase({
       url: creds.connection,
@@ -83,7 +83,7 @@ function Idra() {
     const {twitterID, followers, neo4jCredentials} = opts;
     if (!twitterID || !followers || !neo4jCredentials) return cb('missing required options');
     
-    const creds = (process.env.ENV_NAME === 'PRODUCTION') ? neo4jCredentials : getDevCreds();
+    const creds = (process.env.ENV_NAME === 'PRODUCTION') ? decryptCreds({connection: opts.connection, auth: opts.auth}) : getDevCreds();
     const params = {twitterID, followers};
 
     const db = new neo4j.GraphDatabase({
@@ -101,7 +101,7 @@ function Idra() {
     const {twitterID, friends, neo4jCredentials} = opts;
     if (!twitterID || !friends || !neo4jCredentials) return cb('missing required options');
     
-    const creds = (process.env.ENV_NAME === 'PRODUCTION') ? neo4jCredentials : getDevCreds();
+    const creds = (process.env.ENV_NAME === 'PRODUCTION') ? decryptCreds({connection: opts.connection, auth: opts.auth}) : getDevCreds();
     const params = {twitterID, friends};
 
     const db = new neo4j.GraphDatabase({
