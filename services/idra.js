@@ -40,9 +40,8 @@ function Idra() {
     }
   }
   
-  const runReport = (args, cb) => {
-    if (!args) return cb('missing required data');
-    const creds = (process.env.ENV_NAME === 'PRODUCTION') ? {connection: args.connection, auth: args.auth} : getDevCreds();
+  const runReport = (opts={}, cb) => {
+    const creds = (process.env.ENV_NAME === 'PRODUCTION') ? {connection: opts.connection, auth: opts.auth} : getDevCreds();
     
     const db = new neo4j.GraphDatabase({
       url: creds.connection,
@@ -52,7 +51,7 @@ function Idra() {
       agent: null,    // optional http.Agent instance, for custom socket pooling
     });
     
-    db.cypher({query: args.query}, function(err, results) {
+    db.cypher({query: opts.query}, function(err, results) {
       if (err || !results) {
         return cb(parseNeo4jError(err), results);
       }
@@ -64,9 +63,8 @@ function Idra() {
     
   }
 
-  const getTwitterScreenNames = (opts, cb) => {
-    if (!opts) return cb('missing required data');
-    const creds = (process.env.ENV_NAME === 'PRODUCTION') ? {connection: args.connection, auth: args.auth} : getDevCreds();
+  const getTwitterScreenNames = (opts={}, cb) => {
+    const creds = (process.env.ENV_NAME === 'PRODUCTION') ? {connection: opts.connection, auth: opts.auth} : getDevCreds();
     
     const db = new neo4j.GraphDatabase({
       url: creds.connection,

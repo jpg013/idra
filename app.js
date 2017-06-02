@@ -3,7 +3,6 @@
 /**
  * Module dependencies.
  */
-const http           = require('http');
 const https          = require('https');
 const fs             = require('fs');
 const express        = require('express');
@@ -40,8 +39,7 @@ require('./config/mongo').config();
  * Create our express app and server
  */
 const app     = express();
-const httpServer  = http.createServer(app);
-//const httpsServer = https.createServer(sslCreds, app);
+const httpsServer = https.createServer(sslCreds, app);
 
 /**
  * App Configuration
@@ -65,11 +63,10 @@ app.get('*', function (request, response){
 /**
  * Config Sockets
  */
-socket.config(httpServer);
+socket.config(httpsServer);
 
 /**
  * Listen on ports
  */
 
-httpServer.listen(process.env.PORT);
-//httpsServer.listen(process.env.HTTPS_PORT);
+httpsServer.listen(process.env.HTTPS_PORT);
