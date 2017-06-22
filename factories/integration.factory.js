@@ -1,46 +1,48 @@
-const TwitterIntegrationModel = require('../models/twitter-integration.model');
+const IntegrationModel = require('../models/integration.model');
 
-function validateTwitterIntegrationFields(fields) {
+function validateIntegrationFields(fields) {
   if (!fields || typeof fields !== 'object') return false;
   if (!fields.userList ||
       !fields.neo4jCredentials ||
       (typeof fields.neo4jCredentials !== 'object') ||
       !fields.neo4jCredentials.auth ||
       !fields.neo4jCredentials.connection ||
-      !fields._teamId ||
+      !fields.teamId ||
       !fields.createdBy
      ) { return false; }
   return true;
 }
 
-function scrubTwitterIntegrationData(data) {
+function scrubIntegrationData(data) {
   if (!data || typeof data !== 'object') return {};
-  const { teamId, neo4jCredentials, userList, createdBy } = data;
+  const { teamId, neo4jCredentials, userList, createdBy, type } = data;
   return {
-    _teamId: teamId, 
+    teamId, 
     neo4jCredentials,
     userList,
-    createdBy
+    createdBy,
+    type
   }
 }
 
-function buildTwitterIntegrationModel(fields) {
-  const { _teamId, neo4jCredentials, userList, createdBy } = fields;
+function buildIntegrationModel(fields) {
+  const { teamId, neo4jCredentials, userList, createdBy, type } = fields;
   
   const props = {
     neo4jCredentials,
-    _teamId,
+    teamId,
     userList,
     createdBy,
+    type,
     createdTimestamp: new Date().getTime(),
     totalCount: userList.length
   };  
 
-  return new TwitterIntegrationModel(props);
+  return new IntegrationModel(props);
 }
 
 module.exports = {
-  buildTwitterIntegrationModel,
-  scrubTwitterIntegrationData,
-  validateTwitterIntegrationFields
+  buildIntegrationModel,
+  scrubIntegrationData,
+  validateIntegrationFields
 };

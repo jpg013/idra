@@ -30,8 +30,7 @@ function buildTeamModel(teamFields) {
     name: teamFields.name,
     neo4jCredentials,
     imageURL: teamFields.imageURL,
-    reportSets: [],
-    reports: []
+    reportSets: []
   });
 
   return new Team(modelProps);

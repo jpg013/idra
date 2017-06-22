@@ -1,4 +1,5 @@
 const Team                   = require('../models/team.model');
+const TwitterCredential      = require('../models/twitter-credential.model');
 const cryptoClient           = require('../common/crypto');
 const async                  = require('async');
 const ReportFactory          = require('../factories/report.factory');
@@ -166,6 +167,46 @@ function getTeamListData(cb) {
     .exec(cb)
 }
 
+function createTwitterCredential(data, cb) {
+  const { consumer_key, consumer_secret, access_token_key, access_token_secret } = data;
+  if (!consumer_key || 
+      !consumer_secret || 
+      !access_token_key || 
+      !access_token_secret ) {
+        return cb('missing required data');
+      }
+  
+  const twitterCredentialModel = new TwitterCredential({
+    consumer_key: cryptoClient.encrypt(consumer_key),
+    consumer_secret: cryptoClient.encrypt(consumer_secret),
+    access_token_key: cryptoClient.encrypt(access_token_key),
+    access_token_secret: cryptoClient.encrypt(access_token_secret)
+  });
+  
+  twitterCredentialModel.save(cb);
+}
+
+function updateTwitterCredential(data, cb) {
+  const { consumer_key, consumer_secret, access_token_key, access_token_secret } = data;
+  if (!consumer_key || 
+      !consumer_secret || 
+      !access_token_key || 
+      !access_token_secret,
+      id ) {
+        return cb('missing required data');
+      }
+  
+  const $query = { 'twitterCredentials.$._id': id };
+  const $update = { $set: {
+    consumer_key: cryptoClient.encrypt(consumer_key),
+    consumer_secret: cryptoClient.encrypt(consumer_secret),
+    access_token_key: cryptoClient.encrypt(access_token_key),
+    access_token_secret: cryptoClient.encrypt(access_token_secret)
+  } };
+  const $opts = { upsert: true };
+  TwitterCredentialModel.update($query, $update, $opts, cb);
+}
+
 module.exports = {
   canDeleteTeam,
   queryTeams,
@@ -180,5 +221,7 @@ module.exports = {
   incrementReportDownloadCount,
   setLastActivityDate,
   getReportList,
-  getTeamListData
+  getTeamListData,
+  createTwitterCredential,
+  updateTwitterCredential
 };

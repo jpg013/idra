@@ -6,7 +6,7 @@ const ReportSchema = new Schema({
   createdDate: {type: Date, required: true, default: Date.now},
   createdBy: {
     userId: {type: mongoose.Schema.Types.ObjectId},
-    userName: {type: String}
+    name: {type: String}
   },
   description: {type: String, required: true},
   query: {type: String, required: true},

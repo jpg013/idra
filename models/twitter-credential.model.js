@@ -8,7 +8,6 @@ const TwitterCredentialSchema = new Schema({
   consumer_secret: { type: String, required: true },
   access_token_key: { type: String, required: true },
   access_token_secret: { type: String, required: true },
-  teamId: {type: mongoose.Schema.Types.ObjectId, required: true},
   lockedUntil: { type: Number }
 });
 
@@ -17,18 +16,17 @@ TwitterCredentialSchema.virtual('id').get(function() {
 });
 
 TwitterCredentialSchema.virtual('persistProps').get(function() {
-  const { consumer_key, consumer_secret, access_token_key, access_token_secret, teamId } = this;
-  return { consumer_key, consumer_secret, access_token_key, access_token_secret, teamId };
+  const { consumer_key, consumer_secret, access_token_key, access_token_secret} = this;
+  return { consumer_key, consumer_secret, access_token_key, access_token_secret };
 });
 
 TwitterCredentialSchema.virtual('clientProps').get(function() {
-  const { consumer_key, consumer_secret, access_token_key, access_token_secret, teamId } = this;
+  const { consumer_key, consumer_secret, access_token_key, access_token_secret} = this;
   return { 
     consumer_key: cryptoClient.decrypt(consumer_key),
     consumer_secret: cryptoClient.decrypt(consumer_secret),
     access_token_key: cryptoClient.decrypt(access_token_key),
-    access_token_secret: cryptoClient.decrypt(access_token_secret),
-    teamId 
+    access_token_secret: cryptoClient.decrypt(access_token_secret)
   };
 });
 

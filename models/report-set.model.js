@@ -1,15 +1,17 @@
 // get an instance of mongoose and mongoose.Schema
-const mongoose    = require('mongoose');
-const Schema      = mongoose.Schema;
+const mongoose = require('mongoose');
+const Schema   = mongoose.Schema;
+const Report   = require('./report.model');
 
 const reportSetSchema = new Schema({
   name: {type: String, required: true},
   createdDate: {type: Date, required: true, default: Date.now},
   createdBy: {
-    userId: {type: mongoose.Schema.Types.ObjectId},
+    id: {type: mongoose.Schema.Types.ObjectId},
     userName: {type: String}
   },
-  teamId: {type: mongoose.Schema.Types.ObjectId, required: true}
+  teamId: {type: mongoose.Schema.Types.ObjectId, required: true},
+  reports : [Report.schema],
 });
 
 /**
@@ -25,9 +27,9 @@ reportSetSchema.virtual('id').get(function() {
 });
 
 reportSetSchema.virtual('clientProps').get(function() {
-  const { name, createdDate, id, teamId } = this;
-  const createdBy = this.createdBy.userName;
-  return { name, createdDate, createdBy, id, teamId };
+  const { name, createdDate, id, createdby, teamId} = this;
+  const reports = this.reports.map(cur => cur.clientProps);
+  return { name, createdDate, createdBy, id, teamId, reports };
 });
 
 module.exports = mongoose.model('ReportSet', reportSetSchema);

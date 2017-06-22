@@ -1,13 +1,10 @@
 const TeamFactory              = require('../factories/team.factory');
 const TeamService              = require('../services/team.service');
 const UserService              = require('../services/user.service');
-const TwitterCredentialFactory = require('../factories/twitter-credential.factory')
 const Team                     = require('../models/team.model');
 const User                     = require('../models/user.model');
 const ReportLog                = require('../models/report-log.model');
 const ReportRequest            = require('../models/report-request.model'); 
-const TwitterCredential        = require('../models/twitter-credential.model');
-const TwitterIntegration       = require('../models/twitter-integration.model');
 const async                    = require('async');
 const SeedData                 = require('./seed-data');
 const dotenv                   = require('dotenv');
@@ -32,12 +29,12 @@ const dropTeams = cb => Team.collection.drop(() => cb());
 const dropUsers = cb => User.collection.drop(() => cb());
 const dropReportLogs = cb => ReportLog.collection.drop(() => cb());
 const dropReportRequests = cb => ReportRequest.collection.drop(() => cb());
-const dropTwitterIntegrations = cb => TwitterIntegration.collection.drop(() => cb());
-const dropTwitterCredentials = cb => TwitterCredential.collection.drop(() => cb());
+
 
 /**
  * Load User Teams
  */
+
 function loadUserTeams(cb) {
   async.eachSeries(SeedData.teams, function(data, eachCb) {
     const scrubbedData = TeamFactory.scrubTeamData(data);
@@ -45,23 +42,8 @@ function loadUserTeams(cb) {
       throw new Error('invalid team data');  
     };
     const teamModel = TeamFactory.buildTeamModel(scrubbedData);
-    teamModel.save(eachCb);
+    teamModel.save(err => eachCb(err));
   }, cb);
-}
-
-function loadTwitterCredentials(cb) {
-  TeamService.queryTeams({name: 'Innosol Pro Admin'}, function(err, teams) {
-    const teamId = teams[0].id;
-    async.eachSeries(SeedData.twitterCredentials, function(cred, eachCb) {
-    const data = Object.assign({}, cred, {teamId, isPublic: true});
-    const scrubbedData = TwitterCredentialFactory.scrubTwitterCredentialData(data);
-    if (!TwitterCredentialFactory.validateTwitterCredentialFields(scrubbedData)) {
-      throw new Error('invalid twitter credential data');  
-    };
-    const twitterCredentialModel = TwitterCredentialFactory.buildTwitterCredentialModel(scrubbedData);
-    twitterCredentialModel.save(eachCb);
-  }, cb);
-  })
 }
 
 function loadUsers(cb) {
@@ -83,10 +65,10 @@ function loadUsers(cb) {
 }
 
 /**
- * Load Report Collections
+ * Load Reports
  */
 
-function loadReportCollections(cb) {
+function loadTeamReports(cb) {
   async.eachSeries(SeedData.teams, function(data, cb) {
     const findMasterUser = cb => {
       UserService.queryUsers({email: 'jim.morgan@innosolpro.com'}, function(err, userModels) {
@@ -151,12 +133,9 @@ const seedPipeline = [
   dropUsers,
   dropReportLogs,
   dropReportRequests,
-  dropTwitterIntegrations,
-  dropTwitterCredentials,
   loadUserTeams,
-  loadTwitterCredentials,
   loadUsers,
-  loadReportCollections
+  //loadTeamReports
 ];
 
 async.series(seedPipeline, function(err) {
