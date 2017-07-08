@@ -1,9 +1,9 @@
-const User         = require('../models/user.model');
-const TeamService  = require('./team.service');
+const User         = require('../models/userModel');
+const TeamService  = require('./teamService');
 const cryptoClient = require('../common/crypto');
 const mongoClient  = require('../common/mongo');
 const async        = require('async');
-const UserFactory  = require('../factories/user.factory');
+const UserFactory  = require('../factories/userFactory');
 
 /**
  * Error messages
@@ -22,7 +22,7 @@ const queryUsers = (query, cb) => {
 const findUser = (id, cb) => {
   User.findOne({_id: id})
     .populate('team')
-    .exec(cb);  
+    .exec(cb);
 }
 
 const findUserByUsername = (email, cb) => {
@@ -77,13 +77,13 @@ const createUser = (data, cb) => {
   };
 
   const waterfallPipeline = [
-    buildUser, 
-    checkIfUserIsUnique, 
-    doesUserTeamExist, 
-    persistNewUser, 
-    incrementTeamUserCount, 
+    buildUser,
+    checkIfUserIsUnique,
+    doesUserTeamExist,
+    persistNewUser,
+    incrementTeamUserCount,
     onUserSaved
-    ];  
+    ];
   async.waterfall(waterfallPipeline, cb);
 }
 

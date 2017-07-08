@@ -1,5 +1,6 @@
-const mongoose = require('mongoose');
-const Schema   = mongoose.Schema;
+const mongoose  = require('mongoose');
+const Schema    = mongoose.Schema;
+const ReportLog = require('./reportLogModel');
 
 const ReportSchema = new Schema({
   name: {type: String, required: true},
@@ -11,8 +12,7 @@ const ReportSchema = new Schema({
   description: {type: String, required: true},
   query: {type: String, required: true},
   downloadCount: {type: Number, default: 0},
-  reportSetId: {type: mongoose.Schema.Types.ObjectId, required: true},
-  teamId: {type: mongoose.Schema.Types.ObjectId, required: true}
+  logs: [ReportLog.schema]
 });
 
 ReportSchema.virtual('id').get(function() {
@@ -20,8 +20,8 @@ ReportSchema.virtual('id').get(function() {
 });
 
 ReportSchema.virtual('clientProps').get(function() {
-  const {name, createdDate, description, query, id, createdBy, downloadCount, reportSetId, teamId} = this;
-  return {name, createdDate, description, query, id, createdBy, downloadCount, reportSetId, teamId};
+  const {name, createdDate, description, query, id, createdBy, downloadCount} = this;
+  return {name, createdDate, description, query, id, createdBy, downloadCount};
 });
 
 module.exports = mongoose.model('Report', ReportSchema);

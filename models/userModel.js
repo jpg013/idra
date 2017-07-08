@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const schema = mongoose.Schema;
-const TeamModel = require('./team.model');
+const TeamModel = require('./teamModel');
 
 const userSchema = new schema({
   email: {type: String, required: true},

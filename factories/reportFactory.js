@@ -1,14 +1,12 @@
-const Report           = require('../models/report.model'); 
-const ReportSet        = require('../models/report-set.model'); 
-const ReportLog        = require('../models/report-log.model');
-const ReportRequest    = require('../models/report-request.model');
+const Report           = require('../models/reportModel');
+const ReportLog        = require('../models/reportLogModel');
+const ReportRequest    = require('../models/reportRequestModel');
 
 function validateReportRequestFields(fields) {
   if (!fields || typeof fields !== 'object') return false;
   if (!fields.request ||
       !fields.request.trim().length ||
-      !fields.userId ||
-      !fields.reportSetId
+      !fields.userId
      ) { return false; }
   return true;
 }
@@ -21,20 +19,9 @@ function validateReportLogFields(fields) {
 
 function validateReportFields(fields) {
   if (!fields || typeof fields !== 'object') return false;
-  if (!fields.name || 
-      !fields.description || 
-      !fields.query || 
-      !fields.createdBy ||
-      !fields.reportSetId ||
-      !fields.teamId
-     ) { return false; }
-  return true;
-}
-
-function validateReportSetFields(fields) {
-  if (!fields || typeof fields !== 'object') return false;
   if (!fields.name ||
-      (fields.name.trim().length < 3) || 
+      !fields.description ||
+      !fields.query ||
       !fields.createdBy ||
       !fields.teamId
      ) { return false; }
@@ -43,29 +30,18 @@ function validateReportSetFields(fields) {
 
 function scrubReportData(data) {
   if (!data || typeof data !== 'object') return {};
-  const {name, user, description, query, reportSetId, teamId} = data;
-  if (!user) return; 
+  const {name, user, description, query, teamId} = data;
+  if (!user) return;
   const createdBy = {
     userId: user.id,
     userName: `${user.firstName} ${user.lastName}`
   };
   
   return {
-    name, 
-    createdBy, 
-    description,
-    query,
-    reportSetId,
-    teamId
-  };
-}
-
-function scrubReportSetData(data) {
-  if (!data || typeof data !== 'object') return {};
-  const { name, createdBy, teamId } = data;
-  return { 
     name,
     createdBy,
+    description,
+    query,
     teamId
   };
 }
@@ -81,10 +57,9 @@ function scrubReportLogData(data) {
 
 function scrubReportRequestData(data) {
   if (!data || typeof data !== 'object') return {};
-  const {userId, reportSetId, request} = data;
+  const {userId, request} = data;
   return {
     userId,
-    reportSetId,
     request
   }
 }
@@ -92,11 +67,6 @@ function scrubReportRequestData(data) {
 function buildReportModel(reportFields) {
   const modelProps = Object.assign({}, reportFields);
   return Report(modelProps);
-}
-
-function buildReportSetModel(reportSetFields) {
-  const modelProps = Object.assign({}, reportSetFields);
-  return ReportSet(modelProps);
 }
 
 function buildReportLogModel(reportLogFields) {
@@ -114,16 +84,13 @@ function buildReportRequestModel(reportRequestFields) {
 }
 
 module.exports = {
-  buildReportSetModel,
   buildReportLogModel,
   buildReportModel,
   buildReportRequestModel,
   scrubReportData,
-  scrubReportSetData,
   scrubReportLogData,
   scrubReportRequestData,
   validateReportFields,
-  validateReportSetFields,
   validateReportLogFields,
   validateReportRequestFields
 }

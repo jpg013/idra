@@ -1,8 +1,8 @@
 const express                   = require('express')
 const AuthMiddleware            = require('../middleware/auth');
-const TwitterCredentialService  = require('../services/twitter-credential.service');
-const TeamService               = require('../services/team.service');
-const IntegrationService        = require('../services/integration.service');
+const TwitterCredentialService  = require('../services/twitterCredentialService');
+const TeamService               = require('../services/teamService');
+const IntegrationService        = require('../services/integrationService');
 const async                     = require('async');
 const Idra                      = require('../services/idra');
 const Jino                      = require('../services/jinro/index');
@@ -35,7 +35,7 @@ const getTwitterCredentialDetails = (opts={}, cb) => {
 
 function getAdminTeamProfile(req, res) {
   const teamId = req.query.teamId;
-  if (!teamId) { 
+  if (!teamId) {
     return res.status(400).send({err: 'Missing required team id'});
   }
 
@@ -99,7 +99,7 @@ function startIntegration(req, res) {
   
   const checkExistingTwitterIntegration = (results, cb) => TwitterIntegrationService.getRunningTwitterIntegration(teamId, (err, twitterIntegration) => {
     if (err) return cb(err);
-    return twitterIntegration ? cb('Twitter integration currently in progress for user team.', twitterIntegration.clientProps) : cb(err, results); 
+    return twitterIntegration ? cb('Twitter integration currently in progress for user team.', twitterIntegration.clientProps) : cb(err, results);
   });
   const getTeam = (results, cb) => TeamService.findTeam(teamId, (err, team) => {
     if (err) return cb(err);
@@ -112,7 +112,7 @@ function startIntegration(req, res) {
       if (err) return cb(err);
       if (!twitterCredential) return cb('No valid Twitter credentials found for user team.');
       results.twitterCredential = twitterCredential;
-      cb(err, results);    
+      cb(err, results);
     });
   }
   const getIntegrationUserList = (results, cb) => {
@@ -125,9 +125,9 @@ function startIntegration(req, res) {
   
   const pipeline = [
     cb => cb(undefined, {createdBy: req.user.id}),
-    checkExistingTwitterIntegration, 
-    getTeam, 
-    getTwitterCredential, 
+    checkExistingTwitterIntegration,
+    getTeam,
+    getTwitterCredential,
     getIntegrationUserList
   ];
   

@@ -5,9 +5,6 @@ const Schema = mongoose.Schema;
 const ReportLogSchema = new Schema({
   date: Date,
   userId: mongoose.Schema.Types.ObjectId,
-  reportId: mongoose.Schema.Types.ObjectId,
-  teamId: mongoose.Schema.Types.ObjectId,
-  groupId:  mongoose.Schema.Types.ObjectId
 });
 
 ReportLogSchema.virtual('id').get(function() {
@@ -16,5 +13,3 @@ ReportLogSchema.virtual('id').get(function() {
 
 // set up a mongoose model and pass it using module.exports
 module.exports = mongoose.model('ReportLog', ReportLogSchema);
-
-

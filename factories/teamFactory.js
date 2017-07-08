@@ -1,4 +1,4 @@
-const Team         = require('../models/team.model');
+const Team         = require('../models/teamModel');
 const cryptoClient = require('../common/crypto');
 
 function validateTeamFields(fields) {
@@ -14,7 +14,7 @@ function scrubTeamData(data) {
   if (!data || typeof data !== 'object') return {};
   const { name, neo4jCredentials, imageURL } = data;
   return {
-    name, 
+    name,
     neo4jCredentials,
     imageURL
   };

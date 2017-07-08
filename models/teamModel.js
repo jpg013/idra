@@ -1,12 +1,12 @@
 const mongoose           = require('mongoose');
 const Schema             = mongoose.Schema;
-const ReportSet          = require('./report-set.model');
-const TwitterCredential  = require('./twitter-credential.model');
-const Integration        = require('./integration.model');
+const Report             = require('./reportModel');
+const TwitterCredential  = require('./twitterCredentialModel');
+const Integration        = require('./integrationModel');
 
 const teamSchema = new Schema({
   name                  : {type: String, required: true},
-  reportSets            : [ ReportSet.schema ],
+  reports               : [ Report.schema ],
   createdDate           : {type: Date, default: Date.now},
   userCount             : {type: Number, default: 0},
   lastActivityDate      : {type: Date},
@@ -23,10 +23,8 @@ const teamSchema = new Schema({
  * Methods
  */
 teamSchema.methods.findReport = function(reportId) {
-  return this.reportSets.reduce((acc, cur) => {
-    return acc ? acc : cur.reports.find(cur => cur.id === reportId);
-  });
-}
+  return this.reports.find(cur => cur.id === reportId);
+};
 
 /**
  * Schema
@@ -36,19 +34,23 @@ teamSchema.virtual('id').get(function() {
 });
 
 teamSchema.virtual('downloadCount').get(function() {
-  return this.reportSets.reduce((acc, cur) => {
-    const setCount = acc.reduce((acc, cur) => {
-      return acc +  cur.downloadCount;
-    }, 0);
-    return acc + setCount;
-  }, 0)
+  return this.reports.reduce((acc, cur) => {
+    return acc + cur.downloadCount;
+  }, 0);
 });
 
-
 teamSchema.virtual('clientProps').get(function() {
-  const { name, createdDate, userCount, lastActivityDate, imageURL, downloadCount, id } = this;
-  const reportSets = this.reportSets.map(cur => cur.clientProps);
-  return { name, createdDate, userCount, lastActivityDate, imageURL, downloadCount, reportSets, id };
+  const { name, createdDate, userCount, lastActivityDate, imageURL, downloadCount, reports, id } = this;
+  return {
+    name,
+    createdDate,
+    userCount,
+    lastActivityDate,
+    imageURL,
+    downloadCount,
+    reports,
+    id
+  };
 });
 
 module.exports = mongoose.model('Team', teamSchema);

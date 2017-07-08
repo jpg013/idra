@@ -1,4 +1,4 @@
-const TwitterCredential = require('../models/twitter-credential.model');
+const TwitterCredential = require('../models/twitterCredentialModel');
 const cryptoClient = require('../common/crypto');
 
 function validateTwitterCredentialFields(fields) {
@@ -15,10 +15,10 @@ function validateTwitterCredentialFields(fields) {
 function scrubTwitterCredentialData(data) {
   if (!data || typeof data !== 'object') return {};
   const { access_token_secret, access_token_key, consumer_secret, consumer_key, teamId } = data;
-  return { 
-    access_token_secret, 
-    access_token_key, 
-    consumer_secret, 
+  return {
+    access_token_secret,
+    access_token_key,
+    consumer_secret,
     consumer_key,
     teamId
   };
@@ -33,7 +33,7 @@ function buildTwitterCredentialModel(fields) {
     access_token_key: cryptoClient.encrypt(access_token_key),
     access_token_secret: cryptoClient.encrypt(access_token_secret),
     teamId
-  };  
+  };
 
   return new TwitterCredential(props);
 }

@@ -1,8 +1,8 @@
 const express         = require('express')
-const Team            = require('../models/team.model');
+const Team            = require('../models/teamModel');
 const AuthMiddleware  = require('../middleware/auth');
 const TeamsController = express.Router();
-const TeamService     = require('../services/team.service');
+const TeamService     = require('../services/teamService');
 
 /**
  * Constants
@@ -15,7 +15,7 @@ const getTeams = (req, res) => {
   TeamService.queryTeams({}, (err, results) => {
     if (err) {
       return res.status(500).send({results :[]});
-    } 
+    }
     return res.status(200).send({results});
   });
 }
@@ -23,7 +23,7 @@ const getTeams = (req, res) => {
 const createTeam = (req, res) => {
   TeamService.createTeam(req.body, (err, createdTeam) => {
     if (err) {
-      return res.json({ success: false, msg: err }); 
+      return res.json({ success: false, msg: err });
     }
     res.json({success: true, data: createdTeam.clientProps});
   });

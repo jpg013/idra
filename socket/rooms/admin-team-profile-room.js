@@ -1,6 +1,6 @@
 const AuthClient  = require("../../common/auth-token");
 const async       = require('async');
-const user        = require('../../models/user.model');
+const user        = require('../../models/userModel');
 const SocketStore = require('../socket-store');
 const ioEvents    = require('../io-events');
 const SocketWrite = require('../socket-write');
@@ -8,7 +8,7 @@ const SocketWrite = require('../socket-write');
 const onJoinRoom = (params={}) => {
   const { room, teamId, socket, authToken } = params;
   if (!room || !teamId || !socket || !authToken) return;
-  if (room !== 'ADMIN_TEAM_PROFILE') return; 
+  if (room !== 'ADMIN_TEAM_PROFILE') return;
   
   AuthClient.verifyTokenAndReturnUser(authToken, (err, userModel) => {
     if (err) return;
@@ -21,10 +21,10 @@ const onJoinRoom = (params={}) => {
 const onLeaveRoom = (params={}) => {
   const { room, socket, authToken } = params;
   if (!room || !socket || !authToken) {
-    return; 
+    return;
   }
   if (room !== 'ADMIN_TEAM_PROFILE') {
-    return;   
+    return;
   }
   AuthClient.verifyTokenAndReturnUser(authToken, (err, userModel) => {
     if (err) return;
@@ -38,12 +38,12 @@ const onTwitterIntegrationUpdate = twitterIntegrationModel => {
   if (!twitterIntegrationModel) return;
   
   const roomConnections = SocketStore.getConnectedRoomSockets(
-    'ADMIN_TEAM_PROFILE', 
+    'ADMIN_TEAM_PROFILE',
     {teamId: twitterIntegrationModel.teamId}
   );
   if (!roomConnections) return;
 
-  const payload = { 
+  const payload = {
     type: 'TWITTER_INTEGRATION_UPDATE',
     teamId: twitterIntegrationModel.teamId,
     data: twitterIntegrationModel.clientProps

@@ -2,7 +2,7 @@ const sockEvents = require('../sock-events');
 const sockStore  = require('../sock-store');
 const authToken  = require("../../common/auth-token");
 const async      = require('async');
-const user       = require('../../models/user.model');
+const user       = require('../../models/userModel');
 
 const onJoinRoom = (data) => {
   const tokenString = data.payload;
@@ -22,9 +22,9 @@ const onJoinRoom = (data) => {
         room: 'admin',
         data: {
           connectedClients: users.map(cur => cur.clientProps)
-        } 
+        }
       };
-      socket.write(JSON.stringify(payload));    
+      socket.write(JSON.stringify(payload));
     });
   });
 }

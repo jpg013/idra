@@ -3,9 +3,9 @@
 /**
  * Module dependencies.
  */
-const TwitterService            = require('./twitter.service');
-const TwitterIntegrationService = require('../twitter-integration.service');
-const TwitterCredential         = require('../../models/twitter-credential.model');
+const TwitterService            = require('./twitterService');
+const TwitterIntegrationService = require('../twitterIntegrationService');
+const TwitterCredential         = require('../../models/twitterCredentialModel');
 const async                     = require('async');
 const CronJob                   = require('cron').CronJob;
 const Idra                      = require('../idra');
@@ -19,7 +19,7 @@ const invalidTwitterCredentials = 'Twitter access token is invalid.';
 const integrationError = 'An error occurred during Twitter integration.'
 
 function twitterIntegrationSuccessHandler(id, cb) {
-  let update = { 
+  let update = {
     finishedTimestamp: new Date().getTime(),
     status: 'completed',
     statusMsg: 'Twitter integration successfully completed'
@@ -102,7 +102,7 @@ function secureTwitterCredential(integration, cb) {
     if (err === 'locked' || !cred || cred.lockedUntil) {
       waitForTwitterCredentialToUnlock(integration, (err) => err ? cb(err) : secureTwitterCredential(integration, cb));
     } else {
-      return cb(err, cred);  
+      return cb(err, cred);
     }
   })
 }
@@ -117,7 +117,7 @@ function waitForTwitterCredentialToUnlock(integration, cb) {
     const wait = cred.lockedUntil - new Date().getTime() + 1000;
 
     // Await unlocking
-    setTimeout(() => { cb() }, wait);  
+    setTimeout(() => { cb() }, wait);
   })
 }
 
@@ -209,7 +209,7 @@ function processIntegrationUserList(twitterIntegration, cb) {
       ];
 
       async.waterfall(pipeline, err => {
-        if (err) return cb(err); 
+        if (err) return cb(err);
         hasIntegrationBeenHalted(twitterIntegration.id, cb)
       });
     });

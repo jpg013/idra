@@ -1,7 +1,7 @@
 const express        = require('express')
-const ReportService  = require('../services/report.service');
-const TeamService    = require('../services/team.service');
-const UserService    = require('../services/user.service');
+const ReportService  = require('../services/reportService');
+const TeamService    = require('../services/teamService');
+const UserService    = require('../services/userService');
 const idra           = require('../services/idra');
 const async          = require('async');
 const AuthMiddleware = require('../middleware/auth');
@@ -105,7 +105,7 @@ function createReport(req, res, next) {
 
   const saveReportModel = cb => {
     const reportData = Object.assign({}, {
-      user: req.user, 
+      user: req.user,
       teamId,
       reportSetId,
       query,

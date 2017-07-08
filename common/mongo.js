@@ -1,6 +1,6 @@
 const mongoose  = require('mongoose');
-const user      = require('../models/user.model');
-const team      = require('../models/team.model');
+const user      = require('../models/userModel');
+const team      = require('../models/teamModel');
 
 const findUser = (query, cb) => user.findOne(query).populate('team').exec(cb);
 const findTeamById = (id, cb) => team.findById(id, cb);

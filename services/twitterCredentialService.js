@@ -1,5 +1,5 @@
-const TwitterCredentialFactory = require('../factories/twitter-credential.factory');
-const TwitterCredentialModel   = require('../models/twitter-credential.model');
+const TwitterCredentialFactory = require('../factories/twitterCredentialFactory');
+const TwitterCredentialModel   = require('../models/twitterCredentialModel');
 
 const createTwitterCredential = (data = {}, cb) => {
   const fields = TwitterCredentialFactory.scrubTwitterCredentialData(data);

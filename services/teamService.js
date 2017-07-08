@@ -1,31 +1,30 @@
-const Team                   = require('../models/team.model');
-const TwitterCredential      = require('../models/twitter-credential.model');
+const Team                   = require('../models/teamModel');
+const TwitterCredential      = require('../models/twitterCredentialModel');
 const cryptoClient           = require('../common/crypto');
 const async                  = require('async');
-const ReportFactory          = require('../factories/report.factory');
-const TeamFactory            = require('../factories/team.factory');
+const ReportFactory          = require('../factories/reportFactory');
+const TeamFactory            = require('../factories/teamFactory');
 
 /**
  * Constants
  */
 const addTeamErrMsg = 'There was an error creating the team';
 const invalidTeamDataErrMsg = 'Invalid team data';
-const invalidReportDataErrMsg = 'Invalid report data';
-const invalidReportSetDataErrMsg = 'Invalid report set data';
+const badReportDataErr = 'Bad report data.';
+const reportSaveErr = 'There was an error saving the report.';
 const teamDoesNotExistErrMsg = 'Team does not exists';
 const teamExistsErrMsg = 'Team name already exists.';
 const addReportErrMsg = 'There was an error creating the report';
-const addReportSetErrMsg = 'There was an error creating the report set';
 
 const canDeleteTeam = teamModel => {
   return teamModel.userCount === 0;
-}
+};
 
 const doesTeamNameExist = (name, cb) => {
   queryTeams({name}, (err, teams) => {
     return cb(err, teams.length > 0);
   });
-}
+};
 
 const queryTeams = (query, cb) => {
   Team
@@ -35,17 +34,17 @@ const queryTeams = (query, cb) => {
       const teams = results.map(cur => cur.clientProps);
       return cb(err, teams);
     });
-}
+};
 
 const findTeam = (id, cb) => {
   Team.findOne({_id: id}, function(err, result) {
     return cb(err, result);
   });
-}
+};
 
 const deleteTeam = (id, cb) => {
   Team.findByIdAndRemove(id, cb);
-}
+};
 
 const createTeam = (data, cb) => {
   const scrubbedTeamData = TeamFactory.scrubTeamData(data);
@@ -63,53 +62,35 @@ const createTeam = (data, cb) => {
   ];
 
   async.waterfall(pipeline, (err, teamModel) => cb(err, teamModel));
-} 
+};
 
 const updateTeam = (teamId, data, cb) => {
   const { name, neo4jAuth, neo4jConnection } = data;
   const $set = { name, neo4jAuth, neo4jConnection };
   Team.findOneAndUpdate({_id: teamId}, {$set}, {new: true}, cb);
-}
+};
 
-function createReportSet(data, cb) {
-  const scrubbedData = ReportFactory.scrubReportSetData(data);
-  if (!ReportFactory.validateReportSetFields(scrubbedData)) {
-    return cb(invalidReportSetDataErrMsg);
-  }
-
-  const reportSetModel = ReportFactory.buildReportSetModel(scrubbedData);
-
-  const $query = { '_id': reportSetModel.teamId }
-  const $update = { '$push': { 'reportSets' : reportSetModel } }
-  const $opts = {upsert: true, new: true };
-
-  Team.update($query, $update, $opts, (err) => cb(err, reportSetModel));
-}
-
-function createReport(data, cb) {
-  const scrubbedData = ReportFactory.scrubReportData(data);
+function createReport(reportData, cb) {
+  const scrubbedData = ReportFactory.scrubReportData(reportData);
   if (!ReportFactory.validateReportFields(scrubbedData)) {
-    return cb(invalidReportDataErrMsg);
-  } 
+    return cb(badReportDataErr);
+  }
   const reportModel = ReportFactory.buildReportModel(scrubbedData);
   
-  const $query = { 
-    '_id': reportModel.teamId,
-    'reportSets': { '$elemMatch': { '_id' : reportModel.reportSetId } } 
-  };
+  const $query = { '_id': reportModel.teamId };
 
-  const $update = { $push: {'reports': reportModel} }
-  const $opts = {upsert: true, new: true }
+  const $update = { $push: {'reports': reportModel} };
+  const $opts = {upsert: true, new: true };
 
   Team.findOneAndUpdate($query, $update, $opts, (err, updatedTeamModel) => {
     if (err) {
-      return cb('There was an error saving the report');   
+      return cb(reportSaveErr);
     }
-    const persistedReportModel = updatedTeamModel.findReport(reportModel.id);
-    if (!persistedReportModel) {
-      return cb('There was an error saving the report');   
+    const report = updatedTeamModel.findReport(reportModel.id);
+    if (!report) {
+      return cb(reportSaveErr);
     }
-    return cb(err, persistedReportModel);
+    return cb(err, report);
   });
 }
 
@@ -120,7 +101,7 @@ function incrementUserCount(teamId, cb) {
 
 function incrementReportDownloadCount(reportModel, cb) {
   if (!reportModel) return cb('missing required report');
-  const $inc = { '$inc': { 'reports.$.downloadCount': 1 } }
+  const $inc = { '$inc': { 'reports.$.downloadCount': 1 } };
   const $query = { '_id': reportModel.teamId, "reports._id": reportModel.id};
   Team.update($query, $inc, cb);
 }
@@ -144,7 +125,7 @@ function setLastActivityDate(teamId, cb) {
 function getReportList(cb) {
   const $query = {
     $where: "this.reportSets.length > 0"
-  }
+  };
   Team
     .find($query, {reports: 1, reportSets: 1, name: 1})
     .exec(function(err, results = []) {
@@ -164,14 +145,14 @@ function getTeamListData(cb) {
   Team
     .find({}, $projection)
     .lean()
-    .exec(cb)
+    .exec(cb);
 }
 
 function createTwitterCredential(data, cb) {
   const { consumer_key, consumer_secret, access_token_key, access_token_secret } = data;
-  if (!consumer_key || 
-      !consumer_secret || 
-      !access_token_key || 
+  if (!consumer_key ||
+      !consumer_secret ||
+      !access_token_key ||
       !access_token_secret ) {
         return cb('missing required data');
       }
@@ -188,9 +169,9 @@ function createTwitterCredential(data, cb) {
 
 function updateTwitterCredential(data, cb) {
   const { consumer_key, consumer_secret, access_token_key, access_token_secret } = data;
-  if (!consumer_key || 
-      !consumer_secret || 
-      !access_token_key || 
+  if (!consumer_key ||
+      !consumer_secret ||
+      !access_token_key ||
       !access_token_secret,
       id ) {
         return cb('missing required data');
@@ -216,7 +197,6 @@ module.exports = {
   doesTeamNameExist,
   findTeam,
   createReport,
-  createReportSet,
   incrementUserCount,
   incrementReportDownloadCount,
   setLastActivityDate,

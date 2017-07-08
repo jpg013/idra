@@ -1,9 +1,8 @@
-const Report           = require('../models/report.model');
-const ReportSet        = require('../models/report-set.model');
-const ReportRequest    = require('../models/report-request.model');
-const ReportFactory    = require('../factories/report.factory');
+const Report           = require('../models/reportModel');
+const ReportRequest    = require('../models/reportRequestModel');
+const ReportFactory    = require('../factories/reportFactory');
 const async            = require('async');
-const TeamService      = require('./team.service');
+const TeamService      = require('./teamService');
 const Idra             = require('./idra');
 
 const invalidDataErrMsg = 'Invalid report data';
