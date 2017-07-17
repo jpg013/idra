@@ -27,9 +27,6 @@ const syncTwitterUser = (user, integrationModel, cb) => {
 
     const getFriends = (updatedModel, cb) => {
       getTwitterFriends({twitterID, twitterCredential}, (err, friends=[]) => {
-        if (err) {
-          console.log(err);
-        }
         cb(undefined, friends);    
       });
     }
@@ -40,9 +37,6 @@ const syncTwitterUser = (user, integrationModel, cb) => {
 
     const getFollowers = cb => {
       getTwitterFollowers({twitterID, twitterCredential}, (err, followers=[]) => {
-        if (err) {
-          console.log(err);
-        }
         cb(undefined, followers);
       })
     }
