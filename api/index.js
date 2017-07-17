@@ -1,10 +1,10 @@
 const express               = require('express');
-const ReportsController     = require('../controllers/reports.controller');
-const TeamsController       = require('../controllers/teams.controller');
-const UsersController       = require('../controllers/users.controller');
-const AuthController        = require('../controllers/auth.controller');
-const ProfileController     = require('../controllers/profile.controller');
-const TeamProfileController = require('../controllers/team-profile.controller');
+const ReportsController     = require('../controllers/reportController');
+const TeamsController       = require('../controllers/teamController');
+const UsersController       = require('../controllers/userController');
+const AuthController        = require('../controllers/authController');
+const UserProfileController     = require('../controllers/userProfileController');
+const TeamProfileController = require('../controllers/teamProfileController');
 const AuthMiddleware    = require('../middleware/auth');
 
 const config = app => {
@@ -16,7 +16,7 @@ const config = app => {
   apiRouter.use('/teams', AuthMiddleware.isAuthenticated, TeamsController);
   apiRouter.use('/users', AuthMiddleware.isAuthenticated, UsersController);
   apiRouter.use('/reports', AuthMiddleware.isAuthenticated, ReportsController);
-  apiRouter.use('/profile', AuthMiddleware.isAuthenticated, ProfileController);
+  apiRouter.use('/userprofile', AuthMiddleware.isAuthenticated, UserProfileController);
   apiRouter.use('/teamprofile', AuthMiddleware.isAuthenticated, TeamProfileController);
   apiRouter.use('/', AuthController);
 

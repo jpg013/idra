@@ -1,137 +1,166 @@
 const express                   = require('express')
 const AuthMiddleware            = require('../middleware/auth');
-const TwitterCredentialService  = require('../services/twitterCredentialService');
 const TeamService               = require('../services/teamService');
 const IntegrationService        = require('../services/integrationService');
 const async                     = require('async');
 const Idra                      = require('../services/idra');
-const Jino                      = require('../services/jinro/index');
+const Jinro                     = require('../services/jinro/index');
 
 /**
  *  Declare Express Controller
  */
 const TeamProfileController = express.Router();
 
-const getTeam = (opts = {}, cb) => {
-  TeamService.findTeam(opts.teamId, (err, teamModel) => {
-    if (err) return cb(err);
-    if (!teamModel) return cb ('Could not find team model');
-    if (opts.results) {
-      opts.results.teamModel = teamModel.clientProps;
-    }
-    return cb(err, opts);
-  });
-}
-
-const getTwitterCredentialDetails = (opts={}, cb) => {
-  TwitterCredentialService.getTwitterCredential(opts.teamId, (err, twitterCredential={}) => {
-    if (err) return cb(err);
-    if (opts.results) {
-      opts.results.twitterCredential = twitterCredential;
-    }
-    return cb(err, opts);
-  });
-}
-
-function getAdminTeamProfile(req, res) {
-  const teamId = req.query.teamId;
-  if (!teamId) {
-    return res.status(400).send({err: 'Missing required team id'});
+function getTeamProfile(req, res, next) {
+  const name = req.query.name;
+  if (!name) {
+    req.err = 'invalid team name';
+    next();
   }
 
-  const pipelineOpts = {
-    teamId: teamId,
-    results: {}
-  };
-
-  const init = cb => cb(undefined, pipelineOpts);
-  const onDone = (err, acc={}) => {
-    const {results} = acc;
+  const onResults = (err, results) => {
     if (err) {
-      return res.status(500).send({err: 'Error getting team profile'});
+      req.err = err;
+      next();
     }
-    return res.status(200).send({results});
-  }
-
-  const pipeline = [
-    init,
-    getTeam,
-    getTwitterCredentialDetails,
-  ];
-
-  async.waterfall(pipeline, onDone);
-}
-
-function stopIntegration(req, res) {
-  if (!req.user || !req.user.isAdmin) {
-    return res.status(403).send({err: 'must have admin privileges to stop Twitter Integration'});
-  }
-  const {id} = req.body;
-  if (!id) {
-    return res.status(400).send({err: 'Missing required integration id'});
-  }
+    req.results = results;
+    next();
+  }  
   
-  const updateProps = {
-    status: 'cancelling',
-    statusMsg: 'Cancelling Integration'
-  };
-  
-  /*
-  IntegrationService.updateIntegration(id, updateProps, function(err, integrationModel) {
-    if (err) {
-      return res.status(500).send({success: false, msg: 'There was an error while stopping Twitter Integration for user team.'});
-    }
-    return res.status(200).send({data: integrationModel.clientProps});
-  });
-  */
-}
+  const getDetails = cb => {
+    TeamService.getTeamByName(name, (err, teamModel) => {
+      if (err) {
+        cb(err);
+      }
+      if (!teamModel) {
+        return cb(undefined, 'there was an error getting team profile details');
+      }
 
-function startIntegration(req, res) {
-  /*
-  if (!req.user || !req.user.isAdmin) {
-    return res.status(403).send({err: 'must have admin privileges to start Twitter Integration'});
-  }
-  const {teamId} = req.body;
-  
-  if (!teamId) {
-    return res.status(400).send({err: 'Missing required team id'});
-  }
-  
-  const checkExistingTwitterIntegration = (results, cb) => TwitterIntegrationService.getRunningTwitterIntegration(teamId, (err, twitterIntegration) => {
-    if (err) return cb(err);
-    return twitterIntegration ? cb('Twitter integration currently in progress for user team.', twitterIntegration.clientProps) : cb(err, results);
-  });
-  const getTeam = (results, cb) => TeamService.findTeam(teamId, (err, team) => {
-    if (err) return cb(err);
-    if (!team) return cb('There was an error finding user team.');
-    results.teamModel = team;
-    return cb(err, results);
-  });
-  const getTwitterCredential = (results, cb) => {
-    TwitterCredentialService.getTwitterCredential(teamId, (err, twitterCredential) => {
-      if (err) return cb(err);
-      if (!twitterCredential) return cb('No valid Twitter credentials found for user team.');
-      results.twitterCredential = twitterCredential;
-      cb(err, results);
+      return cb(undefined, Object.assign({}, teamModel.clientProps));
     });
   }
-  const getIntegrationUserList = (results, cb) => {
-    Idra.getTwitterScreenNames(results.teamModel.neo4jCredentials, function(err, userData = []) {
-      if (err) return cb(err);
-      results.userList = userData.map(cur => Object.assign({}, cur, { followers: [], friends: [] }));
+
+  const getIntegrations = (results={}, cb) => {
+    IntegrationService.getIntegrationsForTeam(results.id, (err, integrations) => {
+      if (err) {
+        return cb(err);
+      }
+      results.integrations = integrations;
+      return cb(undefined, results);
+    });
+  }
+
+  async.waterfall([getDetails, getIntegrations], onResults);
+}
+
+function createIntegration(req, res, next) {
+  if (!req.adminUser || !req.adminUser.isAdmin) {
+    req.error = 'must be an admin to run integration';
+    return next();
+  }
+
+  const {teamId, type} = req.body;
+  
+  if (!teamId || !type) {
+    req.error = 'invalid integration data'
+    return next();
+  }
+
+  const onResults = (err, integrationModel) => {
+    if (err) {
+      req.error = err;
+      return next();
+    }
+    req.results = integrationModel;
+    Jinro.runPendingIntegrations();
+    next();
+  }
+  
+  const getTeam = cb => {
+    TeamService.findTeam(teamId, function(err, teamModel) {
+      if (err) {
+        cb(err)
+      }
+      
+      if (!teamModel) {
+        return cb('could not find user team');
+      }
+      
+      const neo4jCredentials = teamModel.neo4jCredentials;
+      
+      if (!teamModel.neo4jCredentials) {
+        return cb('invalid neo4j credentials');
+      }
+
+      if (!teamModel.twitterCredential) {
+        return cb('invalid twitter credential');
+      }
+
+      return cb(undefined, {teamModel});
+    });
+  }
+
+  const checkForActiveIntegration = (results, cb) => {
+    IntegrationService.getActiveIntegrationsForTeam(results.teamModel.id, type, (err, activeIntegration) => {
+      if (err) {
+        return cb(err);
+      }
+      if (activeIntegration) {
+        return cb(`a ${type} integration is already in progress`);
+      }
+      return cb(undefined, results);
+    });
+  } 
+
+  const getIntegrationUsers = (results, cb) => {
+    Idra.getTwitterScreenNames(results.teamModel.neo4jCredentials, (err, screenNames) => {
+      if (err) {
+        return cb(err);
+      }
+      results.userList = screenNames.map(cur => {
+        const { name, id, twitterID } = cur;
+        return {
+          name,
+          id,
+          mediaId: twitterID,
+          followers: [],
+          friends: []
+        }
+      }).slice(0, 50);
       return cb(err, results);
     });
   }
-  
-  const pipeline = [
-    cb => cb(undefined, {createdBy: req.user.id}),
-    checkExistingTwitterIntegration,
-    getTeam,
-    getTwitterCredential,
-    getIntegrationUserList
-  ];
-  
-  const errorHandler = err => {
+
+  const createModel = (results, cb) => {
+    const integrationData = {
+      teamId: results.teamModel.id,
+      type,
+      createdById: req.adminUser.id,
+      createdByName: `${req.adminUser.firstName} ${req.adminUser.lastName}`,
+      userList: results.userList,
+      totalCount: results.userList.length,
+      socialMediaCredential: results.teamModel.twitterCredential.clientProps
+    };
+    IntegrationService.createIntegration(integrationData, (err, model) => cb(err, model));
+  }
+
+  async.waterfall([getTeam, checkForActiveIntegration, getIntegrationUsers, createModel], onResults);
+}
+
+function saveTwitterCredential(req, res) {
+  const twitterCredentialModel = req.body.twitterCredentialModel;
+  if (!twitterCredentialModel) {
+    return res.status(400).send({err: 'Missing twitter integration model'});
+  }
+  TeamService.saveTwitterCredential(twitterCredentialModel, (err, twitterCredential) => {
+    if (err) {
+      return res.status(500).send({err});
+    }
+    return res.status(200).send({results: twitterCredential.clientProps});
+  });
+}
+
+const errorHandler = err => {
     if (err === 'Twitter integration currently in progress for user team.' ||
         err === 'No valid Twitter credentials found for user team.') {
       return res.status(200).send({success: false, msg: err});
@@ -139,63 +168,27 @@ function startIntegration(req, res) {
       return res.status(500).send({success: false, msg: 'There was an error while starting Twitter Integration for user team.'});
     }
   }
-  
-  async.waterfall(pipeline, function(err, results) {
-    if (err) return errorHandler(err);
-    
-    TwitterIntegrationService.createIntegration(results, function(err, newTwitterIntegration) {
-      if (err) {
-        return res.status(500).send({success: false, msg: 'There was an error while starting Twitter Integration for user team.'});
-      }
-      
-      Jino.runPendingTwitterIntegrations();
-      
-      return res.status(200).send({data: newTwitterIntegration.clientProps, success: true});
-    })
-  });
-  */
+
+function errorResponseHandler(error, res) {
+  if (!res) {
+    return;    
+  }
+  return res.status(500).send({error});
 }
 
-function createTwitterCredential(req, res) {
-  const { consumer_key, consumer_secret, access_token_key, access_token_secret, teamId } = req.body;
-  if ((teamId !== req.user.team.toString()) && !req.user.isAdmin) {
-    return res.status(403).send({success: false});
+function responseHandler(req, res) {
+  const { error, results} = req;
+  if (error) {
+    return errorResponseHandler(error, res);
   }
-  
-  if (!teamId || !consumer_key || !consumer_secret || !access_token_key || !access_token_secret || !teamId) {
-    return res.status(400).send({err: 'Missing required data'});
-  }
-  
-  TwitterCredentialService.createTwitterCredential({ consumer_key, consumer_secret, access_token_key, access_token_secret, teamId }, (err) => {
-    if (err) {
-      return res.status(500).send({success: false});
-    }
-    return res.status(200).send({success: true});
-  });
-}
-
-function updateTwitterCredential(req, res) {
-  const { consumer_key, consumer_secret, access_token_key, access_token_secret, teamId } = req.body;
-  if (!teamId) return res.status(400).send({err: 'Missing required data'});
-  if ((teamId !== req.user.team.toString()) && !req.user.isAdmin) {
-    return res.status(403).send({success: false});
-  }
-  
-  TwitterCredentialService.updateTwitterCredential({ consumer_key, consumer_secret, access_token_key, access_token_secret, teamId }, (err) => {
-    if (err) {
-      return res.status(500).send({success: false});
-    }
-    return res.status(200).send({success: true});
-  });
+  return res.status(200).send({results});
 }
 
 /**
  * Controller Routes
  */
-TeamProfileController.get('/admin', AuthMiddleware.isAdmin, getAdminTeamProfile);
-TeamProfileController.put('/twittercredential', AuthMiddleware.populateUser, updateTwitterCredential);
-TeamProfileController.post('/twittercredential', AuthMiddleware.populateUser, createTwitterCredential);
-TeamProfileController.post('/integration', AuthMiddleware.populateUser, startIntegration);
-TeamProfileController.delete('/integration', AuthMiddleware.populateUser, stopIntegration);
+TeamProfileController.get('/', AuthMiddleware.isAdmin, getTeamProfile, responseHandler);
+TeamProfileController.post('/twittercredential', AuthMiddleware.populateUser, saveTwitterCredential);
+TeamProfileController.post('/integration', AuthMiddleware.isAdmin, createIntegration, responseHandler);
 
 module.exports = TeamProfileController;

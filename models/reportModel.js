@@ -12,7 +12,8 @@ const ReportSchema = new Schema({
   description: {type: String, required: true},
   query: {type: String, required: true},
   downloadCount: {type: Number, default: 0},
-  logs: [ReportLog.schema]
+  logs: [ReportLog.schema],
+  teamId: mongoose.Schema.Types.ObjectId,
 });
 
 ReportSchema.virtual('id').get(function() {

@@ -2,9 +2,7 @@ const jwt       = require('jsonwebtoken');
 const User = require('../models/userModel');
 
 const getRequestBearerToken = headers => {
-  let bearerToken = headers['authorization'];
-  if (!bearerToken) return;
-  return bearerToken .split(" ")[1];
+  return headers['authorization'];
 }
 
 const isAdmin = (req, res, next) => {
@@ -24,7 +22,6 @@ const isAdmin = (req, res, next) => {
         message: 'User does not have admin privileges.'
       })
     }
-
     req.adminUser = userModel;
     next();
   });

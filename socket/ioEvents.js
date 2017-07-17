@@ -4,7 +4,7 @@ const ioEvents = {
   identifySocket: 'SOCKET_IDENTIFY_CONNECTION',
   joinRoom: 'SOCKET_JOIN_ROOM',
   leaveRoom: 'SOCKET_LEAVE_ROOM',
-  twitterIntegrationUpdate: 'TWITTER_INTEGRATION_UPDATE',
+  integrationUpdate: 'INTEGRATION_UPDATE',
   createReport: 'SOCKET_CREATE_REPORT'
 };
 

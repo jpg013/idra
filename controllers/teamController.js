@@ -53,8 +53,6 @@ function getTeamReportSets(req, res) {
  */
 TeamsController.get('/', AuthMiddleware.isAdmin, getTeams);
 TeamsController.get('/reportsets', AuthMiddleware.isAdmin, getTeamReportSets);
-//teamsController.delete('/', authMiddleware.isAdmin, deleteTeam);
 TeamsController.post('/', AuthMiddleware.isAdmin, createTeam);
-//teamsController.put('/', authMiddleware.isAdmin, editTeam);
 
 module.exports = TeamsController;

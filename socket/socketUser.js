@@ -1,9 +1,9 @@
-const AuthTokenClient = require('../common/auth-token');
+const AuthTokenClient = require('../common/authToken');
 const async           = require('async');
-const SocketStore     = require('./socket-store');
-const UserService     = require('../services/user.service');
-const SocketWrite     = require('./socket-write');
-const ioEvents        = require('./io-events');
+const SocketStore     = require('./socketStore');
+const UserService     = require('../services/userService');
+const SocketWrite     = require('./socketWrite');
+const ioEvents        = require('./ioEvents');
 
 function identifyConnection(payload) {
   const { authToken, socket } = payload;
@@ -35,7 +35,7 @@ function onCreateReport(reportModel) {
   if (!reportModel) return;
   UserService.getUsersForTeam(reportModel.teamId, (err, results=[]) => {
     if (err || !results.length) return;
-    results.forEach(cur => onSyncUser(cur));    
+    results.forEach(cur => onSyncUser(cur));
   });
 }
 

@@ -12,7 +12,7 @@ const mongoose       = require('mongoose');
 const dotenv         = require('dotenv');
 const apiRouter      = require('./api/index');
 const socket         = require('./socket/index');
-const idra           = require('./services/idra');
+const jinro          = require('./services/jinro');
 const path           = require('path');
 
 /*
@@ -39,6 +39,7 @@ require('./config/mongo').config();
  * Create our express app and server
  */
 const app     = express();
+app.disable('etag'); //disable 304 responses
 const httpsServer = https.createServer(sslCreds, app);
 
 /**
@@ -64,6 +65,11 @@ app.get('*', function (request, response){
  * Config Sockets
  */
 socket.config(httpsServer);
+
+// ======================================================
+// Reboot Integrations
+// ======================================================
+jinro.rebootActiveIntegrations();
 
 /**
  * Listen on ports

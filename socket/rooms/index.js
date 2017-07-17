@@ -1,4 +1,4 @@
-const AdminTeamProfileRoom = require('./admin-team-profile-room.js');
+const AdminTeamProfileRoom = require('./adminTeamProfileRoom.js');
 
 const config = socketEmitter => {
   AdminTeamProfileRoom.config(socketEmitter);

@@ -1,6 +1,6 @@
 const sockEvents = require('../sock-events');
 const sockStore  = require('../sock-store');
-const authToken  = require("../../common/auth-token");
+const authToken  = require('../../common/authToken');
 const async      = require('async');
 const user       = require('../../models/userModel');
 

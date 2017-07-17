@@ -1,11 +1,10 @@
-const mongoose           = require('mongoose');
-const Schema             = mongoose.Schema;
-const Report             = require('./reportModel');
-const TwitterCredential  = require('./twitterCredentialModel');
-const Integration        = require('./integrationModel');
+const mongoose                 = require('mongoose');
+const Schema                   = mongoose.Schema;
+const Report                   = require('./reportModel');
+const TwitterCredential        = require('./twitterCredentialModel');
 
 const teamSchema = new Schema({
-  name                  : {type: String, required: true},
+  name                  : {type: String, required: true, unique: true},
   reports               : [ Report.schema ],
   createdDate           : {type: Date, default: Date.now},
   userCount             : {type: Number, default: 0},
@@ -15,8 +14,7 @@ const teamSchema = new Schema({
     connection: {type: String, required: true},
     auth: {type: String, required: true}
   },
-  twitterCredentials: [ TwitterCredential.schema ],
-  integrations: [ Integration.schema ]
+  twitterCredential: { type: TwitterCredential.schema },
 });
 
 /**
@@ -24,6 +22,10 @@ const teamSchema = new Schema({
  */
 teamSchema.methods.findReport = function(reportId) {
   return this.reports.find(cur => cur.id === reportId);
+};
+
+teamSchema.methods.findIntegrationInProgress = function(type) {
+  return this.integrations.find(cur => cur.type === type && cur.status === 'inProgress');
 };
 
 /**
@@ -40,7 +42,8 @@ teamSchema.virtual('downloadCount').get(function() {
 });
 
 teamSchema.virtual('clientProps').get(function() {
-  const { name, createdDate, userCount, lastActivityDate, imageURL, downloadCount, reports, id } = this;
+  const { name, twitterCredential, integrations, createdDate, userCount, lastActivityDate, imageURL, downloadCount, reports, id } = this;
+
   return {
     name,
     createdDate,
@@ -49,6 +52,8 @@ teamSchema.virtual('clientProps').get(function() {
     imageURL,
     downloadCount,
     reports,
+    twitterCredential: twitterCredential ? twitterCredential.clientProps : twitterCredential,
+    integrations,
     id
   };
 });

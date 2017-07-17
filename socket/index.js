@@ -1,5 +1,5 @@
-const sockjs      = require("sockjs");
-const SocketStore = require('./socket-store');
+const sockjs      = require('sockjs');
+const SocketStore = require('./socketStore');
 const io          = require('./io');
 
 /**

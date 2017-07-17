@@ -3,10 +3,10 @@ const cryptoClient = require('../common/crypto');
 
 function validateTwitterCredentialFields(fields) {
   if (!fields || typeof fields !== 'object') return false;
-  if (!fields.consumer_key ||
-      !fields.consumer_secret ||
-      !fields.access_token_key ||
-      !fields.access_token_secret ||
+  if (!fields.consumerKey ||
+      !fields.consumerSecret ||
+      !fields.accessTokenKey ||
+      !fields.accessTokenSecret ||
       !fields.teamId
      ) { return false; }
   return true;
@@ -14,27 +14,25 @@ function validateTwitterCredentialFields(fields) {
 
 function scrubTwitterCredentialData(data) {
   if (!data || typeof data !== 'object') return {};
-  const { access_token_secret, access_token_key, consumer_secret, consumer_key, teamId } = data;
+  const { accessTokenSecret, accessTokenKey, consumerSecret, consumerKey, teamId } = data;
   return {
-    access_token_secret,
-    access_token_key,
-    consumer_secret,
-    consumer_key,
+    accessTokenSecret: accessTokenSecret,
+    accessTokenKey: accessTokenKey,
+    consumerSecret: consumerSecret,
+    consumerKey: consumerKey,
     teamId
   };
 }
 
 function buildTwitterCredentialModel(fields) {
-  const { consumer_secret, consumer_key, access_token_key, access_token_secret, teamId } = fields;
-  
+  const { consumerSecret, consumerKey, accessTokenKey, accessTokenSecret, teamId } = fields;
   const props = {
-    consumer_key: cryptoClient.encrypt(consumer_key),
-    consumer_secret: cryptoClient.encrypt(consumer_secret),
-    access_token_key: cryptoClient.encrypt(access_token_key),
-    access_token_secret: cryptoClient.encrypt(access_token_secret),
+    consumerKey: cryptoClient.encrypt(consumerKey),
+    consumerSecret: cryptoClient.encrypt(consumerSecret),
+    accessTokenKey: cryptoClient.encrypt(accessTokenKey),
+    accessTokenSecret: cryptoClient.encrypt(accessTokenSecret),
     teamId
   };
-
   return new TwitterCredential(props);
 }
 

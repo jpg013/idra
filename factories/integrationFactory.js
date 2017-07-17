@@ -1,42 +1,44 @@
-const IntegrationModel = require('../models/integration.model');
+const IntegrationModel = require('../models/integrationModel');
 
 function validateIntegrationFields(fields) {
   if (!fields || typeof fields !== 'object') return false;
-  if (!fields.userList ||
-      !fields.neo4jCredentials ||
-      (typeof fields.neo4jCredentials !== 'object') ||
-      !fields.neo4jCredentials.auth ||
-      !fields.neo4jCredentials.connection ||
-      !fields.teamId ||
-      !fields.createdBy
+  if (!fields.teamId ||
+      !fields.createdById ||
+      !fields.createdByName ||
+      !fields.type ||
+      !fields.userList ||
+      !fields.socialMediaCredential ||
+      !fields.totalCount
      ) { return false; }
   return true;
 }
 
 function scrubIntegrationData(data) {
   if (!data || typeof data !== 'object') return {};
-  const { teamId, neo4jCredentials, userList, createdBy, type } = data;
+  const { teamId, createdById, createdByName, type, userList, socialMediaCredential, totalCount } = data;
   return {
-    teamId, 
-    neo4jCredentials,
+    teamId,
+    createdById,
+    createdByName,
+    type,
     userList,
-    createdBy,
-    type
-  }
+    socialMediaCredential,
+    totalCount
+  };
 }
 
 function buildIntegrationModel(fields) {
-  const { teamId, neo4jCredentials, userList, createdBy, type } = fields;
+  const { teamId, createdById, createdByName, type, userList, socialMediaCredential, totalCount } = fields;
   
   const props = {
-    neo4jCredentials,
     teamId,
-    userList,
-    createdBy,
+    createdById,
+    createdByName,
     type,
-    createdTimestamp: new Date().getTime(),
-    totalCount: userList.length
-  };  
+    userList,
+    socialMediaCredential,
+    totalCount
+  };
 
   return new IntegrationModel(props);
 }

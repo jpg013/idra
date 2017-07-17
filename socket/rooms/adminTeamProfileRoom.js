@@ -1,9 +1,9 @@
-const AuthClient  = require("../../common/auth-token");
+const AuthClient  = require('../../common/authToken');
 const async       = require('async');
 const user        = require('../../models/userModel');
-const SocketStore = require('../socket-store');
-const ioEvents    = require('../io-events');
-const SocketWrite = require('../socket-write');
+const SocketStore = require('../socketStore');
+const ioEvents    = require('../ioEvents');
+const SocketWrite = require('../socketWrite');
 
 const onJoinRoom = (params={}) => {
   const { room, teamId, socket, authToken } = params;
@@ -16,7 +16,7 @@ const onJoinRoom = (params={}) => {
     const opts = { userModel, teamId };
     SocketStore.joinRoom(room, opts);
   });
-}
+};
 
 const onLeaveRoom = (params={}) => {
   const { room, socket, authToken } = params;
@@ -34,19 +34,23 @@ const onLeaveRoom = (params={}) => {
   });
 }
 
-const onTwitterIntegrationUpdate = twitterIntegrationModel => {
-  if (!twitterIntegrationModel) return;
-  
+const onIntegrationUpdate = integrationModel => {
+  if (!integrationModel) {
+    return;
+  }
+    
   const roomConnections = SocketStore.getConnectedRoomSockets(
     'ADMIN_TEAM_PROFILE',
-    {teamId: twitterIntegrationModel.teamId}
+    {teamId: integrationModel.teamId}
   );
-  if (!roomConnections) return;
-
+  if (!roomConnections) {
+    return;
+  }
+    
   const payload = {
-    type: 'TWITTER_INTEGRATION_UPDATE',
-    teamId: twitterIntegrationModel.teamId,
-    data: twitterIntegrationModel.clientProps
+    type: 'INTEGRATION_UPDATE',
+    teamId: integrationModel.teamId,
+    data: integrationModel.clientProps
   };
   roomConnections.forEach(cur => SocketWrite(cur, ioEvents.notifyRoom, payload));
 }
@@ -54,7 +58,7 @@ const onTwitterIntegrationUpdate = twitterIntegrationModel => {
 const config = socketEmitter => {
   socketEmitter.on(ioEvents.joinRoom, onJoinRoom);
   socketEmitter.on(ioEvents.leaveRoom, onLeaveRoom);
-  socketEmitter.on(ioEvents.twitterIntegrationUpdate, onTwitterIntegrationUpdate);
+  socketEmitter.on(ioEvents.integrationUpdate, onIntegrationUpdate);
 }
 
 module.exports = {

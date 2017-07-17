@@ -7,7 +7,7 @@ const IntegrationSchema = new Schema({
     enum: ['twitter', 'facebook', 'instagram'],
     default: 'twitter'
   },
-  createdDate: { type: Date, required: true },
+  createdDate: { type: Date, required: true, default: Date.now },
   finishedDate: { type: Date },
   teamId: {type: mongoose.Schema.Types.ObjectId, required: true},
   completedCount: { type: Number, default: 0},
@@ -15,6 +15,7 @@ const IntegrationSchema = new Schema({
   userList: [{
     name: { type: String },
     id: { type: String },
+    hasBeenSynced: { type: Boolean, default: false},
     mediaId: { type: String },
     followers: [{
       mediaId: { type: String, required: true }
@@ -28,17 +29,15 @@ const IntegrationSchema = new Schema({
     enum: ['pending', 'completed', 'error', 'inProgress', 'cancelled'],
     default: 'pending'
   },
-  statusMsg: { type: String, default: 'Waiting for integration to start'},
+  statusMsg: { type: String, default: 'Waiting for integration to start.'},
   userInProgress: { 
     name: { type: String },
     id: { type: String },
     mediaId: { type: String }
   },
-  neo4jCredentials: {
-    connection: {type: String, required: true},
-    auth: {type: String, required: true}
-  },
-  createdBy: {type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
+  socialMediaCredential: { type: Object, required: true },
+  createdById: {type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  createdByName: {type: String, required: true },
 });
 
 IntegrationSchema.virtual('id').get(function() {
@@ -50,8 +49,21 @@ IntegrationSchema.virtual('team').get(function() {
 });
 
 IntegrationSchema.virtual('clientProps').get(function() {
-  const {id, teamId, completedCount, totalCount, status, statusMsg, userInProgress, createdDate, finishedDate, createdBy } = this;
-  return { id, teamId, completedCount, totalCount, status, statusMsg, userInProgress, createdDate, finishedDate, createdBy };
+  const {id, type, teamId, completedCount, totalCount, status, statusMsg, userInProgress, createdDate, finishedDate, createdById, createdByName } = this;
+  return { 
+    id, 
+    type,
+    teamId, 
+    completedCount, 
+    totalCount, 
+    status, 
+    statusMsg, 
+    userInProgress, 
+    createdDate, 
+    finishedDate, 
+    createdById,
+    createdByName 
+  };
 });
 
 // set up a mongoose model and pass it using module.exports

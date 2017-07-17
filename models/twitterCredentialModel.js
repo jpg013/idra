@@ -4,29 +4,28 @@ const Schema       = mongoose.Schema;
 const cryptoClient = require('../common/crypto');
 
 const TwitterCredentialSchema = new Schema({
-  consumer_key: { type: String, required: true },
-  consumer_secret: { type: String, required: true },
-  access_token_key: { type: String, required: true },
-  access_token_secret: { type: String, required: true },
-  lockedUntil: { type: Number }
+  consumerKey: { type: String, required: true },
+  consumerSecret: { type: String, required: true },
+  accessTokenKey: { type: String, required: true },
+  accessTokenSecret: { type: String, required: true },
+  teamId: { type: mongoose.Schema.Types.ObjectId }
 });
 
 TwitterCredentialSchema.virtual('id').get(function() {
   return this._id.toString();
 });
 
-TwitterCredentialSchema.virtual('persistProps').get(function() {
-  const { consumer_key, consumer_secret, access_token_key, access_token_secret} = this;
-  return { consumer_key, consumer_secret, access_token_key, access_token_secret };
-});
-
 TwitterCredentialSchema.virtual('clientProps').get(function() {
-  const { consumer_key, consumer_secret, access_token_key, access_token_secret} = this;
+  const { consumerKey, consumerSecret, accessTokenKey, accessTokenSecret, teamId } = this;
+  if (!consumerKey || !consumerSecret || !accessTokenKey || !accessTokenSecret) {
+    return;
+  }
   return { 
-    consumer_key: cryptoClient.decrypt(consumer_key),
-    consumer_secret: cryptoClient.decrypt(consumer_secret),
-    access_token_key: cryptoClient.decrypt(access_token_key),
-    access_token_secret: cryptoClient.decrypt(access_token_secret)
+    consumerKey: cryptoClient.decrypt(consumerKey),
+    consumerSecret: cryptoClient.decrypt(consumerSecret),
+    accessTokenKey: cryptoClient.decrypt(accessTokenKey),
+    accessTokenSecret: cryptoClient.decrypt(accessTokenSecret),
+    teamId
   };
 });
 

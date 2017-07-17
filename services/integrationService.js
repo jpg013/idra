@@ -1,9 +1,9 @@
-const IntegrationFactory = require('../factories/integration.factory');
-const IntegrationModel   = require('../models/integration.model');
+const IntegrationFactory = require('../factories/integrationFactory');
+const IntegrationModel   = require('../models/integrationModel');
 
 const defaultFields = {
-  createdTimestamp: 1,
-  finishedTimestamp: 1,
+  createdDate: 1,
+  finishedDate: 1,
   completedCount: 1,
   totalCount: 1,
   status: 1,
@@ -11,7 +11,9 @@ const defaultFields = {
   type: 1,
   statusMsg: 1,
   userInProgress: 1,
-  createdBy: 1,
+  createdByName: 1,
+  createdById: 1,
+  socialMediaCredential: 1,
   _id: 1
 };
 
@@ -22,25 +24,47 @@ function getIntegration(id, cb) {
     .exec(cb);
 }
 
-function createIntegration(params={}, cb) {
-  const {teamModel, userList, createdBy, type} = params;
-  if (!teamModel) return cb('There was an error creating the Integration.');
+function getIntegrationUserList(id, cb) {
+  const $query = {_id: id};
+  IntegrationModel
+    .findOne($query, {userList: 1})
+    .exec(cb);
+}
 
-  const modelProps = {
-    teamId: teamModel.id,
-    neo4jCredentials: teamModel.neo4jCredentials,
-    userList,
-    createdBy,
-    type
+function getActiveIntegrationsForTeam(teamId, type, cb) {
+  const $query = { 
+    teamId: teamId, 
+    status: {
+      $in : ['pending', 'inProgress']
+    }, 
+    type: {
+      $eq: type
+    } 
   };
+  const $fields = { _id: 1 }
 
-  const scrubbedFields = IntegrationFactory.scrubIntegrationData(modelProps);
+  IntegrationModel
+    .findOne($query, $fields)
+    .exec(cb);
+}
+
+function getIntegrationsForTeam(teamId, cb) {
+  const $query = { teamId };
+  IntegrationModel
+    .find($query, defaultFields)
+    .exec(cb);
+}
+
+function createIntegration(data={}, cb) {
+  const scrubbedFields = IntegrationFactory.scrubIntegrationData(data);
   if (!IntegrationFactory.validateIntegrationFields(scrubbedFields)) {
     return cb('There was an error creating the integration.');
   }
   const integrationModel = IntegrationFactory.buildIntegrationModel(scrubbedFields);
   integrationModel.save(err => {
-    if (err) return cb(err);
+    if (err) {
+      return cb(err);
+    }
     getIntegration(integrationModel.id, cb);
   });
 }
@@ -57,32 +81,49 @@ function getPendingIntegrations(cb) {
     });
 }
 
+function getPendingAndActiveIntegrations(cb) {
+  const $query = { 
+    status: {
+      $in: ['pending', 'inProgress'] 
+    } 
+  };
+  const $sort = { createdTimestamp: 1 };
+  IntegrationModel
+    .find($query)
+    .sort($sort)
+    .exec(cb);
+}
+
 function updateIntegration(id, updateFields={}, cb) {
-  const $set = buildModelSetter(updateFields);
+  const $set = makeModelSetter(updateFields);
   const $opts = {upsert: true, new: true, fields : defaultFields};
   const $query = {_id: id};
   IntegrationModel.findOneAndUpdate($query, $set, $opts, cb);
 }
 
-const buildModelSetter = (fields={}) => {
+const makeModelSetter = (fields={}) => {
   return Object.keys(fields).reduce((acc, cur) => {
     switch(cur) {
       case 'user':
-      case 'statusMsg': 
-      case 'finishedTimestamp':
+      case 'statusMsg':
+      case 'finishedDate':
       case 'status':
       case 'userInProgress':
         acc.$set[cur] = fields[cur];
         break;
+      case 'incCompletedCount':
+        acc.$inc = {
+          completedCount: fields[cur]
+        };
+        break;
       default:
         break;
-    }  
+    }
     return acc;
   }, {$set: {}});
 }
 
-/* Check the job status to make sure it's valid */
-function checkIntegrationStatus(id, cb) {
+function getIntegrationStatus(id, cb) {
   const $query = {_id: id};
   const $proj = { status: 1 };
   IntegrationModel
@@ -91,6 +132,13 @@ function checkIntegrationStatus(id, cb) {
     .exec(function(err, results={}) {
       return cb(err, results.status);
     });
+}
+
+function setUserHasBeenSynced(opts, cb) {
+  const {id, userId} = opts;
+  const $query = { _id: id, 'userList.id': userId };
+  const $update = { $set: { 'userList.$.hasBeenSynced': true}};
+  IntegrationModel.update($query, $update, err => cb(err));
 }
 
 function setUserFriendList(opts, cb) {
@@ -104,22 +152,20 @@ function setUserFollowerList(opts, cb) {
   const {id, userId, followers} = opts;
   const $query = { _id: id, 'userList.id': userId };
   const $update = { $set: { 'userList.$.followers': followers}};
-  IntegrationModel.update($query, $update, err => cb(err)); 
-}
-
-function incrementCompletedCount(id, cb) {
-  const $query = {_id : id};
-  const $update = { $inc: { completedCount: 1 }};
   IntegrationModel.update($query, $update, err => cb(err));
 }
 
 module.exports = {
   getIntegration,
+  getIntegrationUserList,
   createIntegration,
   getPendingIntegrations,
+  getPendingAndActiveIntegrations,
   updateIntegration,
-  checkIntegrationStatus,
+  getIntegrationStatus,
   setUserFollowerList,
   setUserFriendList,
-  incrementCompletedCount,
+  setUserHasBeenSynced,
+  getIntegrationsForTeam,
+  getActiveIntegrationsForTeam
 }

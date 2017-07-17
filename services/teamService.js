@@ -1,9 +1,10 @@
-const Team                   = require('../models/teamModel');
-const TwitterCredential      = require('../models/twitterCredentialModel');
-const cryptoClient           = require('../common/crypto');
-const async                  = require('async');
-const ReportFactory          = require('../factories/reportFactory');
-const TeamFactory            = require('../factories/teamFactory');
+const Team                     = require('../models/teamModel');
+const TwitterCredentialFactory = require('../factories/twitterCredentialFactory');
+const cryptoClient             = require('../common/crypto');
+const async                    = require('async');
+const ReportFactory            = require('../factories/reportFactory');
+const TeamFactory              = require('../factories/teamFactory');
+const IntegrationFactory       = require('../factories/integrationFactory');
 
 /**
  * Constants
@@ -30,7 +31,9 @@ const queryTeams = (query, cb) => {
   Team
     .find(query)
     .exec((err, results = []) => {
-      if (err) return cb(err);
+      if (err) {
+        return cb(err);
+      }
       const teams = results.map(cur => cur.clientProps);
       return cb(err, teams);
     });
@@ -76,11 +79,10 @@ function createReport(reportData, cb) {
     return cb(badReportDataErr);
   }
   const reportModel = ReportFactory.buildReportModel(scrubbedData);
-  
-  const $query = { '_id': reportModel.teamId };
 
+  const $query = { '_id': reportModel.teamId };
   const $update = { $push: {'reports': reportModel} };
-  const $opts = {upsert: true, new: true };
+  const $opts = {upsert: false, new: true };
 
   Team.findOneAndUpdate($query, $update, $opts, (err, updatedTeamModel) => {
     if (err) {
@@ -148,47 +150,41 @@ function getTeamListData(cb) {
     .exec(cb);
 }
 
-function createTwitterCredential(data, cb) {
-  const { consumer_key, consumer_secret, access_token_key, access_token_secret } = data;
-  if (!consumer_key ||
-      !consumer_secret ||
-      !access_token_key ||
-      !access_token_secret ) {
-        return cb('missing required data');
-      }
-  
-  const twitterCredentialModel = new TwitterCredential({
-    consumer_key: cryptoClient.encrypt(consumer_key),
-    consumer_secret: cryptoClient.encrypt(consumer_secret),
-    access_token_key: cryptoClient.encrypt(access_token_key),
-    access_token_secret: cryptoClient.encrypt(access_token_secret)
+function saveTwitterCredential(data, cb) {
+  const scrubbedData = TwitterCredentialFactory.scrubTwitterCredentialData(data);
+
+  if (!TwitterCredentialFactory.validateTwitterCredentialFields(scrubbedData)) {
+    return cb('invalid twitter credential fields');
+  }
+
+  const twitterCredentialModel = TwitterCredentialFactory.buildTwitterCredentialModel(scrubbedData);
+  const $query = {_id: twitterCredentialModel.teamId};
+  const $set = {'$set': { 'twitterCredential' : twitterCredentialModel }}; 
+  const $opts = { upsert: false, new: true };
+
+  Team.findOneAndUpdate($query, $set, $opts, (err, teamModel) => {
+    if (err) {
+      return cb(err);
+    }
+    if (!teamModel) {
+      return cb('there was an error updating the twitter credential');
+    }
+    return cb(undefined, teamModel.twitterCredential);
   });
-  
-  twitterCredentialModel.save(cb);
 }
 
-function updateTwitterCredential(data, cb) {
-  const { consumer_key, consumer_secret, access_token_key, access_token_secret } = data;
-  if (!consumer_key ||
-      !consumer_secret ||
-      !access_token_key ||
-      !access_token_secret,
-      id ) {
-        return cb('missing required data');
-      }
+const getTeamByName = (name, cb) => {
+  const $query = {
+    'name': name
+  };
   
-  const $query = { 'twitterCredentials.$._id': id };
-  const $update = { $set: {
-    consumer_key: cryptoClient.encrypt(consumer_key),
-    consumer_secret: cryptoClient.encrypt(consumer_secret),
-    access_token_key: cryptoClient.encrypt(access_token_key),
-    access_token_secret: cryptoClient.encrypt(access_token_secret)
-  } };
-  const $opts = { upsert: true };
-  TwitterCredentialModel.update($query, $update, $opts, cb);
+  Team.findOne($query, (err, teamModel) => {
+    return cb(err, teamModel);
+  });
 }
 
 module.exports = {
+  getTeamByName,
   canDeleteTeam,
   queryTeams,
   deleteTeam,
@@ -202,6 +198,5 @@ module.exports = {
   setLastActivityDate,
   getReportList,
   getTeamListData,
-  createTwitterCredential,
-  updateTwitterCredential
+  saveTwitterCredential
 };

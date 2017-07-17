@@ -62,7 +62,6 @@ twitterCredentials: [
         access_token_secret: 'RATtlY9OfDNr3a8mCJToa13swZ6MRzrvlCIru7s21xeLZ'
       }
     ]
-
 */
 
 const teams = [

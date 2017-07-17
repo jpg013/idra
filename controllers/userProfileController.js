@@ -1,11 +1,11 @@
-const express           = require('express')
+const express           = require('express');
 const cryptoClient      = require('../common/crypto');
-const UserService       = require('../services/user.service');
-const UserFactory       = require('../factories/user.factory');
+const UserService       = require('../services/userService');
+const UserFactory       = require('../factories/userFactory');
 const SocketIO          = require('../socket/io');
 const profileController = express.Router();
 
-const passwordChangeErrMsg = 'There was an error changing the password.'
+const passwordChangeErrMsg = 'There was an error changing the password.';
 
 function updatePassword(req, res) {
   let { userId, oldPassword, newPassword } = req.body;

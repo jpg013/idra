@@ -1,7 +1,7 @@
 const express         = require('express')
 const UsersController = express.Router();
 const AuthMiddleware  = require('../middleware/auth');
-const UserService     = require('../services/user.service');
+const UserService     = require('../services/userService');
 
 /**
  *  Error Messages
@@ -19,8 +19,8 @@ const getUsers = (req, res) => {
 
 const createUser = (req, res) => {
   const onUserCreated = (err, createdUser) => {
-    return err ? 
-      res.status(200).send({success: false, msg: err}) : 
+    return err ?
+      res.status(200).send({success: false, msg: err}) :
       res.status(200).send({success: true, data: createdUser});
   }
   UserService.createUser(req.body, onUserCreated);
@@ -36,7 +36,7 @@ const deleteUser = (req, res) => {
       return res.json({success: false});
     }
     return res.json({success: true, deletedId: deleteUser.id});
-  }); 
+  });
 }
 
 const updateUser = (req, res) => {

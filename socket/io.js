@@ -1,7 +1,7 @@
 const EventEmitter    = require('events');
-const SocketUser      = require('./socket-user');
+const SocketUser      = require('./socketUser');
 const SocketRooms     = require('./rooms/index');
-const SocketEvents    = require('./io-events')
+const SocketEvents    = require('./ioEvents')
 
 /**
  * Socket emitter instance
@@ -22,9 +22,11 @@ function handleClientMessage(event, params={}) {
   emitSocketEvent(event, params);
 }
 
-function handleTwitterIntegrationUpdate(twitterIntegrationModel) {
-  if (!twitterIntegrationModel) return;
-  emitSocketEvent(SocketEvents.twitterIntegrationUpdate, twitterIntegrationModel);
+function handleIntegrationUpdate(integrationModel) {
+  if (!integrationModel) {
+    return; 
+  }
+  emitSocketEvent(SocketEvents.integrationUpdate, integrationModel);
 }
 
 function handleCreateReport(reportModel) {
@@ -40,7 +42,7 @@ function handleSyncUser(userModel) {
 module.exports = {
   config,
   handleClientMessage,
-  handleTwitterIntegrationUpdate,
+  handleIntegrationUpdate,
   handleCreateReport,
   handleSyncUser
 };
