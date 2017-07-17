@@ -16,6 +16,7 @@ const IntegrationSchema = new Schema({
     name: { type: String },
     id: { type: String },
     hasBeenSynced: { type: Boolean, default: false},
+    screenName: { type: String },
     mediaId: { type: String },
     followers: [{
       mediaId: { type: String, required: true }

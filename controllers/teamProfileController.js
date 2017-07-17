@@ -122,11 +122,11 @@ function createIntegration(req, res, next) {
         return {
           name,
           id,
-          mediaId: twitterID,
+          screenName: twitterID,
           followers: [],
           friends: []
         }
-      }).slice(0, 50);
+      }).slice(0, 10);
       return cb(err, results);
     });
   }

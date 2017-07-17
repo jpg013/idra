@@ -1,14 +1,14 @@
 const getTwitterClient = require('./getTwitterClient');
 
 function getTwitterFriends(opts, cb) {
-  const {twitterCredential, twitterID} = opts;
-  if (!twitterCredential || !twitterID) {
-    return cb('missing twitter credential or twitter id');
+  const {twitterCredential, twitterScreenName} = opts;
+  if (!twitterCredential || !twitterScreenName) {
+    return cb('missing twitter credential or twitter screen name');
   }
 
   const twitterClient = getTwitterClient(twitterCredential);
   const params = {
-    screen_name: twitterID,
+    screen_name: twitterScreenName,
     count: 200
   };
   

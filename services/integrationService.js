@@ -155,6 +155,13 @@ function setUserFollowerList(opts, cb) {
   IntegrationModel.update($query, $update, err => cb(err));
 }
 
+function setUserProfile(opts, cb) {
+  const {id, userId, mediaId} = opts;
+  const $query = { _id: id, 'userList.id': userId };
+  const $update = { $set: { 'userList.$.mediaId': mediaId}};
+  IntegrationModel.update($query, $update, err => cb(err));
+}
+
 module.exports = {
   getIntegration,
   getIntegrationUserList,
@@ -165,6 +172,7 @@ module.exports = {
   getIntegrationStatus,
   setUserFollowerList,
   setUserFriendList,
+  setUserProfile,
   setUserHasBeenSynced,
   getIntegrationsForTeam,
   getActiveIntegrationsForTeam

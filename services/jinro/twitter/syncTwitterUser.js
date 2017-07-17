@@ -2,15 +2,17 @@ const secureTwitterCredential  = require('./secureTwitterCredential');
 const updateIntegration        = require('../updateIntegration');
 const getTwitterFriends        = require('./getTwitterFriends');
 const getTwitterFollowers      = require('./getTwitterFollowers');
+const getTwitterUserProfile    = require('./getTwitterUserProfile');
 const setTwitterFriends        = require('./setTwitterFriends');
 const setTwitterFollowers      = require('./setTwitterFollowers');
+const setTwitterUserProfile    = require('./setTwitterUserProfile');
 const setUserHasBeenSynced     = require('./setUserHasBeenSynced');
 const async                    = require('async');
 const hasIntegrationBeenHalted = require('../hasIntegrationBeenHalted');
 
 const syncTwitterUser = (user, integrationModel, cb) => {
   const userId = user.id;
-  const twitterID = user.mediaId
+  const twitterScreenName = user.screenName;
   console.log('syncing user ' + user.name);
   
   // Grab available credentials before starting
@@ -26,7 +28,7 @@ const syncTwitterUser = (user, integrationModel, cb) => {
     }
 
     const getFriends = (updatedModel, cb) => {
-      getTwitterFriends({twitterID, twitterCredential}, (err, friends=[]) => {
+      getTwitterFriends({twitterScreenName, twitterCredential}, (err, friends=[]) => {
         cb(undefined, friends);    
       });
     }
@@ -36,13 +38,23 @@ const syncTwitterUser = (user, integrationModel, cb) => {
     }
 
     const getFollowers = cb => {
-      getTwitterFollowers({twitterID, twitterCredential}, (err, followers=[]) => {
+      getTwitterFollowers({twitterScreenName, twitterCredential}, (err, followers=[]) => {
         cb(undefined, followers);
       })
     }
 
     const setFollowers = (followers=[], cb) => {
       setTwitterFollowers(integrationModel.id, userId, followers, cb);
+    }
+
+    const getUserProfile = cb => {
+      getTwitterUserProfile({twitterScreenName, twitterCredential}, (err, profile={}) => {
+        cb(undefined, profile);
+      })
+    }
+
+    const setUserProfile = (profile, cb) => {
+      setTwitterUserProfile(integrationModel.id, userId, profile, cb);
     }
     
     const incrementCompletedCount = cb => {
@@ -60,6 +72,8 @@ const syncTwitterUser = (user, integrationModel, cb) => {
       setFriends,
       getFollowers,
       setFollowers,
+      getUserProfile,
+      setUserProfile,
       incrementCompletedCount,
       setUserSynced
     ];

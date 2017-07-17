@@ -12,7 +12,7 @@ const getTwitterRateLimit = (twitterCredential, cb) => {
     if (err) {
       return cb(parseTwitterError(err));
     }
-    
+    //console.log(results.resources.users);
     const friends = {
       remaining: results.resources.friends['/friends/ids'].remaining,
       reset: results.resources.friends['/friends/ids'].reset
