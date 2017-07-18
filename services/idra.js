@@ -28,8 +28,8 @@ function Idra() {
   
   const getDevCreds = () => {
     return {
-      connection : 'http://localhost:7474/',
-      auth : 'neo4j:Innosolpro2016**'
+      connection : process.env.DEVELOPMENT_NEO4J_CONNECTION,
+      auth : process.env.DEVELOPMENT_NEO4J_CONNETION
     }
   }
 
