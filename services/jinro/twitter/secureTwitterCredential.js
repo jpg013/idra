@@ -14,7 +14,7 @@ function isRateLimitExceeded(rateLimit) {
 
 const secureTwitterCredential = (integrationModel, cb) => {
   if (!integrationModel) {
-    return cb('there was an error running the integration');
+    return cb('An Integration Model is required to secure a twitter credential.');
   }
 
   const twitterCredential = integrationModel.socialMediaCredential;
@@ -22,7 +22,7 @@ const secureTwitterCredential = (integrationModel, cb) => {
   const pipeline = [
     next => {
       if (!twitterCredential) {
-        return next('invalid twitter credential');
+        return next('The twitter credential for this integration is invalid.');
       }
       getTwitterRateLimit(twitterCredential, (err, rateLimit) => {
         next(err, rateLimit)
@@ -40,6 +40,7 @@ const secureTwitterCredential = (integrationModel, cb) => {
 
   async.waterfall(pipeline, function(err, results) {
     if (err && err !== 'rateLimited') {
+      console.log('a critical error occurred while securing a twitter credential - ', err);
       return cb(err);
     }
     if (err === 'rateLimited') {

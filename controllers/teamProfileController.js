@@ -126,7 +126,8 @@ function createIntegration(req, res, next) {
           followers: [],
           friends: []
         }
-      }).slice(0, 10);
+      })
+      
       return cb(err, results);
     });
   }

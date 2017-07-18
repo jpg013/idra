@@ -6,12 +6,12 @@ const async                    = require('async');
 
 const processTwitterUsers = (integrationModel, cb) => {
   if (!integrationModel) {
-    return cb('there was an error running the integration');
+    return cb('Missing the required integration model.');
   }
 
   IntegrationService.getIntegrationUserList(integrationModel.id, (err, results) => {
     if (err) {
-      return cb('there was an error running the integration');
+      return cb('An error occurred while fetcing the integration user list.');
     }
     const usersNeedingSynced = results.userList.filter(cur => !cur.hasBeenSynced)
       .slice(0, 30);

@@ -68,7 +68,7 @@ function runIntegration(integration, cb) {
   
   updateIntegration(integration.id, statusUpdate, (err, updatedIntegration) => {
     if (err || !updatedIntegration) {
-      return cb('there was an error running the integration');
+      return cb('Error occurred while updating the integration.');
     }
 
     const onFinished = (err) => {

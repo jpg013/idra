@@ -84,7 +84,7 @@ function getPendingIntegrations(cb) {
 function getPendingAndActiveIntegrations(cb) {
   const $query = { 
     status: {
-      $in: ['pending', 'inProgress'] 
+      $in: ['pending', 'inProgress', 'error'] 
     } 
   };
   const $sort = { createdTimestamp: 1 };
