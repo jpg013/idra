@@ -29,7 +29,7 @@ function Idra() {
   const getDevCreds = () => {
     return {
       connection : process.env.DEVELOPMENT_NEO4J_CONNECTION,
-      auth : process.env.DEVELOPMENT_NEO4J_CONNETION
+      auth : process.env.DEVELOPMENT_NEO4J_AUTH
     }
   }
 
@@ -65,7 +65,6 @@ function Idra() {
 
   const getTwitterScreenNames = (opts={}, cb) => {
     const creds = (process.env.ENV_NAME === 'PRODUCTION') ? decryptCreds({connection: opts.connection, auth: opts.auth}) : getDevCreds();
-    
     const db = new neo4j.GraphDatabase({
       url: creds.connection,
       auth: creds.auth,
