@@ -13,8 +13,8 @@ const processTwitterUsers = (integrationModel, cb) => {
     if (err) {
       return cb('An error occurred while fetcing the integration user list.');
     }
-    const usersNeedingSynced = results.userList.filter(cur => !cur.hasBeenSynced)
-      .slice(0, 30);
+    
+    const usersNeedingSynced = results.userList.filter(cur => !cur.hasBeenSynced);
     
     async.eachSeries(
       usersNeedingSynced, 
