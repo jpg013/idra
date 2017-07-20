@@ -1,5 +1,6 @@
 const IntegrationFactory = require('../factories/integrationFactory');
 const IntegrationModel   = require('../models/integrationModel');
+const json2csv           = require('json2csv');
 
 const defaultFields = {
   createdDate: 1,
@@ -53,6 +54,11 @@ function getIntegrationsForTeam(teamId, cb) {
   IntegrationModel
     .find($query, defaultFields)
     .exec(cb);
+}
+
+function deleteIntegration(id, cb) {
+  const $query = { _id: id };
+  IntegrationModel.remove($query, cb);
 }
 
 function createIntegration(data={}, cb) {
@@ -162,10 +168,73 @@ function setUserProfile(opts, cb) {
   IntegrationModel.update($query, $update, err => cb(err));
 }
 
+function downloadMediaIdReport(id, cb) {
+  const $query = { _id: id };
+  IntegrationModel.findOne($query, (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    if (!result) {
+      return cb('could not find integration');
+    }
+    const data = result.userList
+      .filter(cur => cur.hasBeenSynced)
+      .map(cur => {
+        const {id, mediaId, screenName } = cur
+        return {
+          ID: id,
+          Screen_Name: screenName,
+          MediaId: mediaId
+        }
+      });
+    
+    const fields = ['ID', 'Screen_Name', 'MediaId'];
+    const report = json2csv({ data, fields });
+    return cb(err, report)
+  });
+}
+
+function downloadFriendsAndFolowersReport(id, cb) {
+  const $query = { _id: id };
+  IntegrationModel.findOne($query, (err, result) => {
+    if (err) {
+      return cb(err);
+    }
+    if (!result) {
+      return cb('could not find integration');
+    }
+    const data = result.userList
+      .filter(cur => cur.hasBeenSynced)
+      .map(cur => {
+        const { mediaId, friends, followers } = cur
+        return friends.map(friend => {
+          return {
+            friend: friend.mediaId,
+            follower: mediaId
+          }
+        })
+        .concat(followers.map(follower => {
+          return {
+            friend: mediaId,
+            follower: follower.mediaId
+          }
+        }))
+      })
+      .reduce((acc, cur) => {
+        return acc.concat(cur);
+      }, [])
+    console.log(data);
+    const fields = ['friend', 'follower'];
+    const report = json2csv({ data, fields });
+    return cb(err, report)
+  });
+}
+
 module.exports = {
   getIntegration,
   getIntegrationUserList,
   createIntegration,
+  deleteIntegration,
   getPendingIntegrations,
   getPendingAndActiveIntegrations,
   updateIntegration,
@@ -175,5 +244,7 @@ module.exports = {
   setUserProfile,
   setUserHasBeenSynced,
   getIntegrationsForTeam,
-  getActiveIntegrationsForTeam
+  getActiveIntegrationsForTeam,
+  downloadMediaIdReport,
+  downloadFriendsAndFolowersReport
 }

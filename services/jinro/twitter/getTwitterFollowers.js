@@ -10,7 +10,7 @@ const getTwitterFollowers = (opts, cb) => {
 
   const params = {
     screen_name: twitterScreenName,
-    count: 200
+    count: 5000
   };
   
   twitterClient.get('followers/ids', params, function(err, results = []) {

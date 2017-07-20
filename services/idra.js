@@ -59,10 +59,6 @@ function Idra() {
     });
   }
 
-  const testNeo4jCredentials = () => {
-    
-  }
-
   const getTwitterScreenNames = (opts={}, cb) => {
     const creds = (process.env.ENV_NAME === 'PRODUCTION') ? decryptCreds({connection: opts.connection, auth: opts.auth}) : getDevCreds();
     const db = new neo4j.GraphDatabase({
@@ -126,7 +122,6 @@ function Idra() {
   
   return {
     runReport,
-    testNeo4jCredentials,
     getTwitterScreenNames,
     upsertManyAndFriends,
     upsertManyAndFollowers

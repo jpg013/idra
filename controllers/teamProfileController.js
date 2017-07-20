@@ -41,16 +41,39 @@ function getTeamProfile(req, res, next) {
   }
 
   const getIntegrations = (results={}, cb) => {
-    IntegrationService.getIntegrationsForTeam(results.id, (err, integrations) => {
+    IntegrationService.getIntegrationsForTeam(results.id, (err, integrations=[]) => {
       if (err) {
         return cb(err);
       }
-      results.integrations = integrations;
+      results.integrations = integrations.map(cur => cur.clientProps);
       return cb(undefined, results);
     });
   }
 
   async.waterfall([getDetails, getIntegrations], onResults);
+}
+
+function deleteIntegration(req, res, next) {
+  if (!req.adminUser || !req.adminUser.isAdmin) {
+    req.error = 'must be an admin to create integrations';
+    return next();
+  }
+
+  const { id } = req.body;
+  
+  if (!id) {
+    req.error = 'An integration model id is required to delete'
+    return next();
+  }
+
+  IntegrationService.deleteIntegration(id, (err) => {
+    if (err) {
+      req.error = 'There was an error deleting the integration.';
+    } else {
+      req.results = { success: true };
+    }
+    return next();
+  });
 }
 
 function createIntegration(req, res, next) {
@@ -148,6 +171,29 @@ function createIntegration(req, res, next) {
   async.waterfall([getTeam, checkForActiveIntegration, getIntegrationUsers, createModel], onResults);
 }
 
+function downloadIntegrationReport(req, res, next) {
+  if (!req.adminUser || !req.adminUser.isAdmin) {
+    req.error = 'must be an admin to download integration report';
+    return next();
+  }
+  if (!req.query.id) {
+    req.error = 'Integration id parameter required to download the report';
+    return next();
+  }
+
+  const onResults = (err, results) => {
+    req.error = err;
+    req.results = results;
+    next();
+  }
+
+  if (req.query.reportName === 'mediaId') {
+    IntegrationService.downloadMediaIdReport(req.query.id, onResults);
+  } else {
+    IntegrationService.downloadFriendsAndFolowersReport(req.query.id, onResults);
+  }
+}
+
 function saveTwitterCredential(req, res) {
   const twitterCredentialModel = req.body.twitterCredentialModel;
   if (!twitterCredentialModel) {
@@ -191,5 +237,7 @@ function responseHandler(req, res) {
 TeamProfileController.get('/', AuthMiddleware.isAdmin, getTeamProfile, responseHandler);
 TeamProfileController.post('/twittercredential', AuthMiddleware.populateUser, saveTwitterCredential);
 TeamProfileController.post('/integration', AuthMiddleware.isAdmin, createIntegration, responseHandler);
+TeamProfileController.get('/integration/download', AuthMiddleware.isAdmin, downloadIntegrationReport, responseHandler);
+TeamProfileController.delete('/integration', AuthMiddleware.isAdmin, deleteIntegration, responseHandler);
 
 module.exports = TeamProfileController;

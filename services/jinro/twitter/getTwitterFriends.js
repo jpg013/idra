@@ -9,7 +9,7 @@ function getTwitterFriends(opts, cb) {
   const twitterClient = getTwitterClient(twitterCredential);
   const params = {
     screen_name: twitterScreenName,
-    count: 200
+    count: 5000 
   };
   
   twitterClient.get('friends/ids', params, function(err, results = []) {
