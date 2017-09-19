@@ -1,0 +1,39 @@
+@import '../../styles/colors.scss';
+
+.sign__in__button {
+  background-color: $INNOSOL_GRAY;
+  height: 36px;
+  padding: 0 2.6rem;
+  text-transform: uppercase;
+  display: inline-block;
+  margin: 6px 0;
+  border: none;
+  border-radius: $BORDER_RADIUS;
+  cursor: pointer;
+  text-align: center;
+  line-height: 36px;
+  vertical-align: middle;
+  white-space: nowrap;
+  font-size: 1.4rem;
+  letter-spacing: .03rem;
+  position: relative;
+  overflow: hidden;
+  min-width: 88px;
+  font-weight: 400;
+  box-shadow: $BOX_SHADOW_RAISED;
+  color: $ORANGE;
+  transition: padding 200ms ease-out, background-color 200ms ease-out, font-size 150ms ease-out, width 300ms 100ms ease-out, border-radius 200ms ease-out, box-shadow 200ms ease-out;
+}
+
+.signInButton:hover {
+  background-color: $INNOSOL_GRAY;
+}
+
+.sign__in__button:active {
+  box-shadow: $BOX_SHADOW_ACTIVE;
+  background-color: $INNOSOL_GRAY;
+}
+
+.sign__in__button:focus {
+  outline: none;
+}

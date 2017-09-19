@@ -1,0 +1,34 @@
+/**
+ * Colors
+ */
+/**
+ * Colors
+ */
+/**
+ * Timings and Animation
+ */
+.sign__in__input {
+  height: 62px;
+  width: 360px;
+  position: relative; }
+
+.sign__in__input__container {
+  width: 100%;
+  position: relative;
+  height: 100%; }
+
+.sign__in__input--input {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  font-size: 2em;
+  color: #E0E0E0;
+  position: relative;
+  padding-left: .5rem;
+  border-bottom: 1px solid #E0E0E0;
+  box-sizing: border-box;
+  letter-spacing: 0.8px; }
+
+.sign__in__input--input:focus {
+  outline: none; }

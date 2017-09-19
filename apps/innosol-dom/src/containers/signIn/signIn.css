@@ -1,0 +1,59 @@
+/**
+ * Colors
+ */
+/**
+ * Colors
+ */
+/**
+ * Timings and Animation
+ */
+.signIn {
+  position: absolute;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #2F4666; }
+
+.signIn__logo__container {
+  position: relative;
+  height: 140px;
+  overflow: hidden; }
+
+.signIn__container {
+  position: absolute;
+  width: 400px;
+  top: 10.5vh;
+  left: calc(50% - 200px); }
+
+.signIn__form {
+  margin-top: 1rem;
+  position: relative;
+  border-radius: 4px;
+  transition: transform 330ms ease-out, opacity 330ms ease-out;
+  background: transparent; }
+
+.signin__form-padding {
+  padding: .5rem 0; }
+
+.signIn__form__body {
+  padding: 2rem;
+  background: transparent; }
+
+.signIn__form__actions {
+  padding: 0 2rem 2rem;
+  display: flex;
+  align-items: center; }
+
+.signIn__form__actions__msg {
+  align-self: center;
+  font-size: 1.3rem;
+  padding: 0 1rem;
+  color: #E65F00; }
+
+.signIn__form__body__inputs {
+  width: 360px;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box; }

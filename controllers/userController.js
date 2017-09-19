@@ -1,4 +1,4 @@
-const express         = require('express')
+const express         = require('express');
 const UsersController = express.Router();
 const AuthMiddleware  = require('../middleware/auth');
 const UserService     = require('../services/userService');
@@ -15,16 +15,16 @@ const getUsers = (req, res) => {
     }
     return res.status(200).send({results});
   });
-}
+};
 
 const createUser = (req, res) => {
   const onUserCreated = (err, createdUser) => {
     return err ?
       res.status(200).send({success: false, msg: err}) :
       res.status(200).send({success: true, data: createdUser});
-  }
+  };
   UserService.createUser(req.body, onUserCreated);
-}
+};
 
 const deleteUser = (req, res) => {
   const {id} = req.body;
@@ -37,11 +37,11 @@ const deleteUser = (req, res) => {
     }
     return res.json({success: true, deletedId: deleteUser.id});
   });
-}
+};
 
 const updateUser = (req, res) => {
   
-}
+};
 
 /**
  * Controller Routes

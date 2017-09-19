@@ -3,8 +3,8 @@
 
 ### Node ###
 # Logs
-logs
-*.log
+#logs
+#*.log
 npm-debug.log*
 
 # Runtime data
@@ -60,7 +60,7 @@ jspm_packages
 .DS_Store
 
 # .env
-*.env
+#*.env
 
 # .vscode
 *.vscode

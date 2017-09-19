@@ -1,0 +1,18 @@
+{
+  "extends": "react-app",
+  "rules": {
+    "no-console": [
+      "warn",
+      { allow: ["warn", "error"] }
+    ],
+    "quotes": [
+        2,
+        "single",
+        { "allowTemplateLiterals": true }
+    ],
+    "semi": [
+        "error",
+        "always"
+    ]
+  }
+}

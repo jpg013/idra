@@ -1,0 +1,33 @@
+{
+  "name": "innosol-discovery-service",
+  "version": "1.0.0",
+  "description": "Service that monitors and updates which services are available",
+  "private": true,
+  "babel": {
+    "presets": [
+      "es2015",
+      "stage-0"
+    ]
+  },
+  "dependencies": {
+    "async": "^2.1.5",
+    "cron": "^1.2.1",
+    "crypto": "^0.0.3",
+    "forever": "^0.15.3",
+    "nodemon": "^1.11.0",
+    "request": "^2.81.0"
+  },
+  "scripts": {
+    "test": "mocha test",
+    "serve:dev": "nodemon src/server.js",
+    "serve:prod": "forever src/server.js",
+    "start": "nodemon src/server.js"
+  },
+  "author": "Justin Graber",
+  "license": "ISC",
+  "devDependencies": {
+    "chai": "^4.0.2",
+    "concurrently": "^3.1.0",
+    "mocha": "^3.4.2"
+  }
+}
