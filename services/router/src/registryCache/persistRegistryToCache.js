@@ -8,46 +8,54 @@ const persistRegistryToCache = (registryData, cb) => {
   if (!containerName || !containerPort || !routes) {
     return cb('Bad request data.');
   }
-  
-  async.each(routes, (item, next) => {
+
+  async.eachSeries(routes, (item, next) => {
     const { routeUrl, originUrl, protocol, authorizedRoles } = item;
     
     const setKey = cacheKeys.makeRouteSetKey(protocol, originUrl);
     const hashMapKey = cacheKeys.makeRouteHashMapKey(protocol, containerName, containerPort, routeUrl);
-    
+
     const hashMapValue = {
       routeUrl,
       originUrl,
       protocol,
-      authorizedRoles,
+      authorizedRoles: authorizedRoles.join(','),
       containerName,
       containerPort
     };
-      
-    const commands = [
-      {
-        name: 'setAdd',
+
+    const setAddData = {
+      json: {
         key: setKey,
-        val: hashMapKey,
-        db: 'registry'
+        val: hashMapKey,  
       },
-      {
-        name: 'hashMapSet',
-        key: hashMapKey,
-        val: hashMapValue,
-        db: 'registry'
-      }
-    ];
-    
-    const dialOptions = {
-      serviceName: 'cache-access',
-      containerPort: '6970',
-      endpoint: 'cache',
-      requestMethod: 'post',
-      json: commands
+      protocol: 'http-post',
+      endpoint: 'sadd'
     };
 
-    dial(dialOptions, next);
+    const hashMapSetData = {
+      json: {
+        key: hashMapKey,
+        val: hashMapValue
+      },
+      protocol: 'http-post',
+      endpoint: 'hmset'
+    }
+
+    const pipeline = [setAddData, hashMapSetData];
+
+    async.each(pipeline, (cur, onDone) => {
+      const { protocol, json, endpoint } = cur;
+      const dialOptions = {
+        containerName: process.env.CACHE_CONTAINER_NAME,
+        containerPort: process.env.CACHE_CONTAINER_PORT,
+        endpoint,
+        protocol,
+        json
+      };
+
+      dial(dialOptions, onDone);
+    }, next);
   }, cb);
 };
 

@@ -29,8 +29,11 @@ services:
       - "/usr/src/cache/node_modules"
     environment:
       - REDIS_CONNECTION=redis://docker.for.mac.localhost:6379/0
-      - CONTAINER_PORT=${CACHE_ACCESS_CONTAINER_PORT}
-      - CONTAINER_NAME=${CACHE_ACCESS_CONTAINER_NAME}
+      - CONTAINER_PORT=${CACHE_CONTAINER_PORT}
+      - CONTAINER_NAME=${CACHE_CONTAINER_NAME}
+      - CRYPTO_ALGORITHM=${CRYPTO_ALGORITHM}
+      - CRYPTO_KEY=${CRYPTO_KEY}
+      - ACCESS_SECRET=${SERVICE_ACCESS_SECRET}
 
   router:
     build: ./services/router
@@ -47,6 +50,11 @@ services:
       - ACCESS_SECRET=${SERVICE_ACCESS_SECRET}
       - CRYPTO_ALGORITHM=${CRYPTO_ALGORITHM}
       - CRYPTO_KEY=${CRYPTO_KEY}
+      - CACHE_CONTAINER_PORT=${CACHE_CONTAINER_PORT}
+      - CACHE_CONTAINER_NAME=${CACHE_CONTAINER_NAME}
+    depends_on:
+      - "cache"
+      
 
   innosol:
     build: ./services/innosol
@@ -60,6 +68,8 @@ services:
       - MONGODB_CONNECTION=mongodb://docker.for.mac.localhost:27017/innosol
       - CONTAINER_PORT=${INNOSOL_CONTAINER_PORT}
       - CONTAINER_NAME=${INNOSOL_CONTAINER_NAME}
+      - ROUTER_CONTAINER_PORT=${ROUTER_CONTAINER_PORT}
+      - ROUTER_CONTAINER_NAME=${ROUTER_CONTAINER_NAME}
       - ACCESS_SECRET=${SERVICE_ACCESS_SECRET}
       - CRYPTO_ALGORITHM=${CRYPTO_ALGORITHM}
       - CRYPTO_KEY=${CRYPTO_KEY}
@@ -81,6 +91,8 @@ services:
       - ACCESS_SECRET=${SERVICE_ACCESS_SECRET}
       - CRYPTO_ALGORITHM=${CRYPTO_ALGORITHM}
       - CRYPTO_KEY=${CRYPTO_KEY}
+      - ROUTER_CONTAINER_PORT=${ROUTER_CONTAINER_PORT}
+      - ROUTER_CONTAINER_NAME=${ROUTER_CONTAINER_NAME}
     depends_on:
       - "router"
 

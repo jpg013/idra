@@ -11,7 +11,7 @@ const config = app => {
   // Mount the controllers to routes
   // ======================================================
   registryRouter.use('/registry', ensureAccessSecret, registryController);
-  router.use('/router', ensureAccessSecret, routerController);
+  //router.use('/router', ensureAccessSecret, routerController);
 
   // ======================================================
   // Mount the router to the app

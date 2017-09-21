@@ -15,7 +15,7 @@ const register = (registryData, cb) => {
     if (!db) {
       return cb('Could not connect to database.');
     }
-    
+
     const col = db.collection('registry');
     const $query = { containerName };
     const $set = { containerName, containerPort, routes };

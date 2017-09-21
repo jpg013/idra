@@ -1,7 +1,8 @@
 const encrypt = require('../helpers/encrypt');
 
 const makeAccessSecretQueryParam = () => {
-  return `access_secret=${encrypt(process.env.SERVICE_ACCESS_SECRET)}`;
+  const encryptedSecret = encrypt(process.env.ACCESS_SECRET)
+  return `access_secret=${encryptedSecret}`;
 };
 
 module.exports = makeAccessSecretQueryParam;

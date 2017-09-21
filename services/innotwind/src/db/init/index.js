@@ -3,7 +3,7 @@ const addCollections     = require('./addCollections');
 const addRootInstitution = require('./addRootInstitution');
 
 const initDb = cb => {
-  const initPipeline = [addCollections, addRootUser];
+  const initPipeline = [addCollections, addRootInstitution];
 
   async.series(initPipeline, cb);
 };

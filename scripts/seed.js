@@ -120,7 +120,6 @@ async.series(seedPipeline, function(err) {
     console.error('there was an error running the script! ', err);
     process.exit();
   } else {
-    console.log('success!');
     process.exit();
   }
 });

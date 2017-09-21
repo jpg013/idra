@@ -1,30 +1,25 @@
-const async       = require('async');
-const findUser    = require('../../services/users/findUser');
-const addUser     = require('../../services/users/addUser');
+const async           = require('async');
+const findInstitution = require('../../services/institutions/findInstitution');
+const addInstitution  = require('../../services/institutions/addInstitution');
 
-const rootUserData = {
-  username: 'innosol.admin',
-  password: 'password',
-  firstName: 'innosol',
-  lastName: 'admin',
-  passwordChangeRequired: false,
-  roles: ['sysAdmin']
+const rootInstitutionData = {
+  name: 'University of Central Missouri',
 };
 
-const addRootUser = cb => {
-  findUser(rootUserData.username, (findErr, user) => {
+const addRootInstitution = cb => {
+  findInstitution(rootInstitutionData.name, (findErr, institution) => {
     if (findErr) {
       return cb(findErr);
     }
 
-    if (user) {
+    if (institution) {
       return cb();
     }
 
-    addUser(rootUserData, addErr => {
+    addInstitution(rootInstitutionData, addErr => {
       return cb(addErr);
     });
   });
 };
 
-module.exports = addRootUser;
+module.exports = addRootInstitution;

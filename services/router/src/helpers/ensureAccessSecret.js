@@ -12,7 +12,7 @@ const ensureAccessSecret = (req, res, next) => {
 
   const decryptedSecret = decrypt(access_secret);
 
-  if (decryptedSecret !== process.env.SERVICE_ACCESS_SECRET) {
+  if (decryptedSecret !== process.env.ACCESS_SECRET) {
     return res.status(401).send({
       success: false,
       message: 'Invalid access key.'

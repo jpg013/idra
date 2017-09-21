@@ -1,6 +1,6 @@
 const express                 = require('express');
-const registerAPIRoutes       = require('../../services/registerAPIRoutes');
-const unregisterAPIRoutes     = require('../../services/unregisterAPIRoutes');
+const register                = require('../../services/register');
+const unregister              = require('../../services/unregister');
 const persistRegistryToCache  = require('../../registryCache/persistRegistryToCache');
 const removeRegistryFromCache = require('../../registryCache/removeRegistryFromCache');
 

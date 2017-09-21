@@ -1,4 +1,4 @@
-const decrypt = require('./decrypt');
+const decrypt = require('../helpers/decrypt');
 
 const ensureAccessSecret = (req, res, next) => {
   const { access_secret } = req.query;
@@ -12,7 +12,7 @@ const ensureAccessSecret = (req, res, next) => {
 
   const decryptedSecret = decrypt(access_secret);
 
-  if (decryptedSecret !== process.env.SERVICE_ACCESS_SECRET) {
+  if (decryptedSecret !== process.env.ACCESS_SECRET) {
     return res.status(401).send({
       success: false,
       message: 'Invalid access key.'

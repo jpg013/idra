@@ -2,8 +2,6 @@ const redis   = require('redis');
 const winston = require('winston');
 
 const onConnectionRetry = options => {
-  console.log('retrying connection!!!!');
-  console.log(options);
   if (options.error && options.error.code === 'ECONNREFUSED') {
       // End reconnecting on a specific error and flush all commands with
       // a individual error

@@ -6,6 +6,7 @@ const express   = require('express');
 const configApp = require('./app');
 const initDb    = require('./db/init');
 const chalk     = require('chalk');
+const register  = require('./registry/register');
 
 // ======================================================
 // Setup the database
@@ -30,3 +31,8 @@ const httpServer = http.createServer(app);
 // Listen on port
 // ======================================================
 httpServer.listen(process.env.CONTAINER_PORT);
+
+// ======================================================
+// Register with Router
+// ======================================================
+register();

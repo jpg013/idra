@@ -1,9 +1,9 @@
 const makeRouteSetKey = (protocol, originUrl) => {
-  return `${protocol}_${originUrl}`;
+  return `${protocol}:${originUrl}`;
 };
 
 const makeRouteHashMapKey = (protocol, containerName, containerPort, routeUrl) => {
-  return `${protocol}-${makeRouteHashMapKey}:${containerPort}/${routeUrl}`;
+  return `${protocol}:${containerName}:${containerPort}/${routeUrl}`;
 };
 
 module.exports = {
