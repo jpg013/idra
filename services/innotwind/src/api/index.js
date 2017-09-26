@@ -5,7 +5,7 @@ const ensureAccessSecret     = require('../helpers/ensureAccessSecret');
 const config = app => {
   const institutionsRouter = express.Router();
 
-  app.use('/institutions', institutionsController);
+  app.use('/institutions', ensureAccessSecret, institutionsController);
 };
 
 module.exports = config;

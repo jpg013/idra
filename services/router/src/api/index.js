@@ -1,23 +1,19 @@
 const express            = require('express');
-const registryController = require('./controllers/registryController');
-const routerController = require('./controllers/routerController');
+const routingController  = require('./controllers/routingController');
 const ensureAccessSecret = require('../helpers/ensureAccessSecret');
 
 const config = app => {
-  const registryRouter = express.Router();
-  const router         = express.Router();
+  const router = express.Router();
 
   // ======================================================
-  // Mount the controllers to routes
+  // Mount the controllers to router
   // ======================================================
-  registryRouter.use('/registry', ensureAccessSecret, registryController);
-  //router.use('/router', ensureAccessSecret, routerController);
+  router.use('/routing', ensureAccessSecret, routingController);
 
   // ======================================================
   // Mount the router to the app
   // ======================================================
   app.use(router);
-  app.use(registryRouter);
   return app;
 };
 

@@ -1,0 +1,1 @@
+module.exports = (protocol, url) => `${protocol}:${url}`;

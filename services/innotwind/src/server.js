@@ -1,12 +1,12 @@
 // ======================================================
 // Module dependencies
 // ======================================================
-const http      = require('http');
-const express   = require('express');
-const configApp = require('./app');
-const initDb    = require('./db/init');
-const chalk     = require('chalk');
-const register  = require('./registry/register');
+const http           = require('http');
+const express        = require('express');
+const configApp      = require('./app');
+const initDb         = require('./db/init');
+const chalk          = require('chalk');
+const registerRoutes = require('./routing/registerRoutes');
 
 // ======================================================
 // Setup the database
@@ -33,6 +33,6 @@ const httpServer = http.createServer(app);
 httpServer.listen(process.env.CONTAINER_PORT);
 
 // ======================================================
-// Register with Router
+// Register Routes with Router
 // ======================================================
-register();
+registerRoutes();

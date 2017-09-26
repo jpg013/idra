@@ -14,7 +14,7 @@ const unregister = (containerName, cb) => {
       return cb('Could not connect to database.');
     }
     
-    const col = db.collection('registry');
+    const col = db.collection('routing');
     const $query = { containerName };
     
     col.deleteOne($query, deleteErr => {

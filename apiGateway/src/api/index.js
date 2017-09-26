@@ -12,8 +12,7 @@ const config = app => {
   gatewayRouter.use(populateAuthenticatedUser);
   gatewayRouter.use(logGatewayRequest);
   gatewayRouter.use('/authentication', authenticationController);
-  gatewayRouter.use('/', gatewayController);
-
+  gatewayRouter.use('/', gatewayController); // add ensure user authenticated here
   app.use('/api', gatewayRouter);
 };
 

@@ -18,7 +18,15 @@ const dial = (dialOptions={}, callback) => {
     method: formatProtocol(protocol)
   });
   
-  request(requestOptions, callback);
+  request(requestOptions, (err, req, body) => {
+    if (err) {
+      return callback(err);
+    }
+    if (typeof body === 'string') {
+      return callback(err, JSON.parse(body))
+    } 
+    callback(err, body);
+  });
 };
 
 module.exports = dial;

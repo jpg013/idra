@@ -1,0 +1,1 @@
+module.exports = (protocol, containerName, containerPort, routeUrl) => `${protocol}:${containerName}:${containerPort}/${routeUrl}`;

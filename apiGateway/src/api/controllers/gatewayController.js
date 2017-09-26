@@ -1,7 +1,9 @@
-const express                   = require('express');
-const async                     = require('async');
-const getServiceRoutesforURL    = require('../../services/getServiceRoutesForURL');
-const callServiceRouteEndpoints = require('../../services/callServiceRouteEndpoints');
+const express                = require('express');
+const async                  = require('async');
+const mapOriginToRoutes      = require('../../services/mapOriginToRoutes');
+const callRoute              = require('../../services/callRoute');
+const urlUtils               = require('url');
+const ensureRoutePermissions = require('../../middleware/ensureRoutePermissions')
 
 // ======================================================
 // Define Express Controller
@@ -32,46 +34,49 @@ const responseHandler = (req, res) => {
     res.status(status).send({err});
   } else {
     const {results} = req;
-    res.status(200).send({results});
+    res.status(200).send(results);
   }
+};
+
+const proxyRoutes = (req, res, next) => {
+  if (!req.routes) {
+    return next();
+  }
+  
+  const { query: queryParams, body: json, user, routes } = req;
+  const proxyArgs = {
+    queryParams,
+    json,
+    user
+  };
+  
+  const proxy = (item, next) => callRoute(item, proxyArgs, next);
+  async.map(routes, proxy, (err, results) => {
+    if (err) {
+      req.error = err;
+      return next();
+    }
+    req.results = results;
+    next();
+  });
 };
 
 // ======================================================
 // Controller Methods
 // ======================================================
 const gatewayGetHandler = (req, res, next) => {
-  const { url, query, body } = req;
+  const { url: originUrl } = req;
 
-  return res.status(200).send({'hello': 'there'});
-  
-  getServiceRoutesforURL(url, 'http-get', (err, serviceRoutes) => {
+  mapOriginToRoutes(urlUtils.parse(originUrl).pathname, 'http-get', (err, {routes}) => {
     if (err) {
       req.error = err;
       return next();
     }
-    req.serviceRoutes = serviceRoutes;
+    req.routes = routes;
     next();
   });
 };
 
-const handleProxyPass = (req, res, next) => {
-  if (!req.serviceRoutes) {
-    return next();
-  }
-  const callOptions = {
-    queryParams: req.query,
-    json: req.body
-  };
-  
-  const proxyEndpoint = (serviceRoute, next) => {
-    callServiceRouteEndpoints(serviceRoute, callOptions, next);
-  };
-  
-  async.each(req.serviceRoutes, proxyEndpoint, err => {
-    
-  });
-};
-
-gatewayController.get('/*', gatewayGetHandler, handleProxyPass, responseHandler);
+gatewayController.get('/*', gatewayGetHandler, ensureRoutePermissions, proxyRoutes, responseHandler);
 
 module.exports = gatewayController;

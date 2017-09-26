@@ -27,15 +27,40 @@ const getErrorResponse = error => {
   }
 };
 
+const parseResults = results => {
+  if (typeof results === 'undefined') {
+    return defaultResults;
+  }
+  if (results === 'OK' || results === 0) {
+    return defaultResults
+  }
+  return JSON.stringify(results);
+}
+
 const responseHandler = (req, res) => {
   if (req.error) {
     const {status, err} = getErrorResponse(req.error);
     res.status(status).send({err});
   } else {
-    const results = req.results || defaultResults;
-    res.status(200).send(results);
+    res.status(200).send(parseResults(req.results));
   }
 };
+
+const executeCacheCommand = (req, res, next) => {
+  const { cacheCommand } = req;
+
+  if (!cacheCommand) {
+    req.error = 'Bad request.';
+    return next();
+  }
+  executeCommand(cacheCommand, (err, results) => {
+    if (err) {
+      req.error = err;
+    }
+    req.results = results;
+    return next();
+  });
+}
 
 // ======================================================
 // Controller Methods
@@ -43,45 +68,67 @@ const responseHandler = (req, res) => {
 const setAdd = (req, res, next) => {
   const { key, val } = req.body;
   const { dbIndex } = req;
-  const cacheCommand = makeCacheCommand('sadd', key, val, dbIndex);
-
-  if (!cacheCommand) {
-    req.error = 'Bad request.';
-    return next();
-  }
-
-  executeCommand(cacheCommand, err => {
-    if (err) {
-      req.error = err;
-    }
-    return next();
-  });
-}
+  const args = {
+    commandName: 'sadd',
+    key,
+    dbIndex,
+    val
+  };
+  req.cacheCommand = makeCacheCommand(args);
+  next();  
+};
 
 const hashMapSet = (req, res, next) => {
   const { key, val } = req.body;
   const { dbIndex } = req;
-  const cacheCommand = makeCacheCommand('hmset', key, val, dbIndex);
+  const args = {
+    commandName: 'hmset',
+    key,
+    dbIndex,
+    val
+  };
+  req.cacheCommand = makeCacheCommand(args);
+  next();  
+};
 
-  if (!cacheCommand) {
+const setMembers = (req, res, next) => {
+  const { key } = req.query;
+  const { dbIndex } = req;
+  
+  if (!key) {
     req.error = 'Bad request.';
     return next();
   }
+  
+  const args = {
+    commandName: 'smembers',
+    key,
+    dbIndex
+  }
+  req.cacheCommand = makeCacheCommand(args);
+  next();  
+};
 
-  executeCommand(cacheCommand, err => {
-    if (err) {
-      req.error = err;
-    }
-    return next();
-  });
+const hashMapGet = (req, res, next) => {
+  const { key } = req.query;
+  const { dbIndex } = req;
+  
+  const args = {
+    commandName: 'hgetall',
+    key,
+    dbIndex
+  }
+  req.cacheCommand = makeCacheCommand(args);
+  next();  
 }
 
 // ======================================================
 // Attach Handlers
 // ======================================================
-controller.post('/sadd', setAdd, responseHandler);
-//controller.post('/set', set, responseHandler);
-controller.post('/hmset', hashMapSet, responseHandler);
-//controller.get('/setmembers', setMembers, responseHandler);
+controller.post('/setadd', setAdd, executeCacheCommand, responseHandler);
+controller.post('/hashmapset', hashMapSet, executeCacheCommand, responseHandler);
+controller.get('/setmembers', setMembers, executeCacheCommand, responseHandler);
+controller.get('/hashmapget', hashMapGet, executeCacheCommand, responseHandler);
+
 
 module.exports = controller;

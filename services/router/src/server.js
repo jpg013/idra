@@ -6,6 +6,7 @@ const express           = require('express');
 const configApp         = require('./app');
 const chalk             = require('chalk');
 const setupDatabase     = require('./db/setup');
+const hydrateRoutes     = require('./services/hydrateRoutes');
 
 // ======================================================
 // Setup the database
@@ -30,3 +31,8 @@ const httpServer = http.createServer(app);
 // Listen on port
 // ======================================================
 httpServer.listen(process.env.CONTAINER_PORT);
+
+// ======================================================
+// Hydrate the registry cache
+// ======================================================
+hydrateRoutes();

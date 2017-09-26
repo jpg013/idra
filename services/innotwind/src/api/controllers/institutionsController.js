@@ -1,5 +1,6 @@
-const express         = require('express');
-const findInstitution = require('../../services/institutions/findInstitution');
+const express           = require('express');
+const findInstitution   = require('../../services/institutions/findInstitution');
+const queryInstitutions = require('../../services/institutions/queryInstitutions');
 
 // ======================================================
 // Define Express Controller
@@ -25,7 +26,7 @@ const responseHandler = (req, res) => {
     res.status(status).send({err});
   } else {
     const {results} = req;
-    res.status(200).send({results});
+    res.status(200).send(results);
   }
 };
 
@@ -34,19 +35,13 @@ const responseHandler = (req, res) => {
 // ======================================================
 
 const getInstitutions = (req, res, next) => {
-  const { name } = req.query;
-  
-  if (!name) {
-    req.error = 'Bad request data.';
-    return next();
-  }
-  
-  findInstitution(name, (err, results) => {
+  const $query = {};
+
+  queryInstitutions($query, (err, results) => {
     if (err) {
       req.error = err;
       return next();
     }
-
     req.results = results;
     next();
   });

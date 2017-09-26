@@ -1,3 +1,3 @@
 module.exports = {
-  'registry': 0
+  'routing': 0
 };

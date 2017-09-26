@@ -1,16 +1,16 @@
 const dial         = require('../dial');
 const registryData = require('./registryData');
 
-const register = () => {
+const unregister = () => {
   const dialOptions = {
     containerName: process.env.ROUTER_CONTAINER_NAME,
     containerPort: process.env.ROUTER_CONTAINER_PORT,
-    endpoint: 'registry',
-    protocol: 'post',
-    json: Object.assign({}, registryData)
+    endpoint: 'routing',
+    protocol: 'delete',
+    json: Object.assign({}, apiRegistryData)
   };
   
   dial(dialOptions);
 };
 
-module.exports = register;
+module.exports = unregister;

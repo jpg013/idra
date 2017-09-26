@@ -2,7 +2,7 @@ const async   = require('async');
 const winston = require('winston');
 
 const colInfos = {
-  'registry': {}
+  'routes': {}
 };
 
 const getCollectionsNeedAdded = colList => Object.keys(colInfos).filter(cur => colList.indexOf(cur) < 0);

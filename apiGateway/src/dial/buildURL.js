@@ -5,7 +5,7 @@ const buildURL = (serviceName, port, endpoint, queryParams={}) => {
   let url = `http://${serviceName}:${port}/${endpoint}?${makeAccessSecretQueryParam()}`;
   
   if (queryParams) {
-    url += buildQueryParams(queryParams);
+    url = `${url}&${buildQueryParams(queryParams)}`;
   }
   return url;
 };
