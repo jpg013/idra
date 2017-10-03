@@ -223,8 +223,8 @@ function downloadFriendsAndFolowersReport(id, cb) {
       .reduce((acc, cur) => {
         return acc.concat(cur);
       }, [])
-    console.log(data);
-    const fields = ['friend', 'follower'];
+
+      const fields = ['friend', 'follower'];
     const report = json2csv({ data, fields });
     return cb(err, report)
   });

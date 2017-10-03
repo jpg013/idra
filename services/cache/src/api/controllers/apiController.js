@@ -48,11 +48,12 @@ const responseHandler = (req, res) => {
 
 const executeCacheCommand = (req, res, next) => {
   const { cacheCommand } = req;
-
+  
   if (!cacheCommand) {
     req.error = 'Bad request.';
     return next();
   }
+
   executeCommand(cacheCommand, (err, results) => {
     if (err) {
       req.error = err;

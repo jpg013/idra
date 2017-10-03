@@ -1,7 +1,7 @@
 {
-  "name": "innosol-api-gateway",
+  "name": "api-router-service",
   "version": "1.0.0",
-  "description": "Innosol Api Gateway",
+  "description": "API Router Service",
   "private": true,
   "babel": {
     "presets": [
@@ -15,16 +15,15 @@
     "chalk": "^1.1.3",
     "express": "^4.14.0",
     "forever": "^0.15.3",
-    "jsonwebtoken": "^7.2.1",
     "mongodb": "^2.2.31",
     "morgan": "^1.7.0",
     "nodemon": "^1.11.0",
     "request": "^2.81.0",
-    "simple-oauth2": "^1.3.0"
+    "winston": "^2.3.1"
   },
   "scripts": {
     "test": "mocha test",
-    "serve:dev": "forever src/server.js",
+    "serve:dev": "nodemon src/server.js",
     "serve:prod": "forever src/server.js",
     "start": "nodemon src/server.js"
   },

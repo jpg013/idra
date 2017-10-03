@@ -16,18 +16,16 @@ const authenticateUser = (username, password, cb) => {
     queryParams,
   };
 
-  dial(dialOptions, (err, resp, body) => {
+  dial(dialOptions, (err, resp) => {
     if (err) {
       return cb(signInErrorMsg);
     }
-
-    body = JSON.parse(body);
-
-    if (resp.statusCode !== 200 || body.error) {
-      return cb(body.error || signInErrorMsg);
+    console.log(resp);
+    if (resp.statusCode !== 200 || resp.error) {
+      return cb(resp.error || signInErrorMsg);
     }
 
-    const { results: user } = body;
+    const { results: user } = resp;
 
     if (!user) {
       return cb(undefined, {success: false, msg: signInFailedMsg});

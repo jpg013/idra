@@ -1,18 +1,17 @@
 // ======================================================
 // Module dependencies
 // ======================================================
-const http           = require('http');
-const express        = require('express');
-const configApp      = require('./app');
-const initDb         = require('./db/init');
-const chalk          = require('chalk');
-const registerRoutes = require('./routing/registerRoutes');
-const authenticate   = require('./services/blackbaud/auth');
+const http              = require('http');
+const express           = require('express');
+const configApp         = require('./app');
+const chalk             = require('chalk');
+const setupDatabase     = require('./db/setup');
+const hydrateRoutes     = require('./services/hydrateRoutes');
 
 // ======================================================
 // Setup the database
 // ======================================================
-initDb(err => {
+setupDatabase(err => {
   if (err) {
     chalk.red('%s There was an error setting up the data store. ', err);
   }
@@ -34,6 +33,6 @@ const httpServer = http.createServer(app);
 httpServer.listen(process.env.CONTAINER_PORT);
 
 // ======================================================
-// Register Routes with Router
+// Hydrate the registry cache
 // ======================================================
-registerRoutes();
+hydrateRoutes();

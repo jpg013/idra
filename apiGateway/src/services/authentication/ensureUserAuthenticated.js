@@ -21,29 +21,26 @@ const ensureUserAuthenticated = (req, res, next) => {
     queryParams,
   };
 
-  dial(dialOptions, (err, resp, body) => {
+  dial(dialOptions, (err, resp) => {
     if (err) {
-      return res.status(401).send({
+      return res.status(500).send({
         success: false,
-        msg: 'An error occurred while ensure user authenticated.'
+        msg: 'An error occurred.'
       });
     }
 
-    body = JSON.parse(body);
-
-    if (resp.statusCode !== 200 || body.error) {
+    if (resp.statusCode !== 200 || resp.error) {
       return res.status(401).send({
         success: false,
-        msg: 'An error occurred while ensure user authenticated.'
+        msg: 'An error occurred.'
       });
     }
 
-    const { results: user } = body;
+    const { results: user } = resp;
 
     if (!user) {
       return res.status(401).send({
         success: false,
-        msg: 'An error occurred while ensure user authenticated.'
       });
     }
 
