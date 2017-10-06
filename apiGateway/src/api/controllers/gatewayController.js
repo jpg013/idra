@@ -1,7 +1,7 @@
 const express                = require('express');
 const async                  = require('async');
 const mapOriginToRoutes      = require('../../services/mapOriginToRoutes');
-const callRoute              = require('../../services/callRoute');
+const proxyEndpoint          = require('../../services/proxyEndpoint');
 const urlUtils               = require('url');
 const ensureRoutePermissions = require('../../middleware/ensureRoutePermissions')
 
@@ -13,6 +13,8 @@ const gatewayController = express.Router();
 // ======================================================
 // Response Handlers
 // ======================================================
+const defaultSuccessResponse = { success: true };
+
 const getErrorResponse = error => {
   switch(error) {
     case 'Bad request data.':
@@ -33,29 +35,59 @@ const responseHandler = (req, res) => {
     const {status, err} = getErrorResponse(req.error);
     res.status(status).send({err});
   } else {
-    const {results} = req;
-    res.status(200).send(results);
+    const results = req.results || defaultSuccessResponse;
+    res.status(200).send({results});
   }
 };
 
-const proxyRoutes = (req, res, next) => {
+const makeProxyArgs = (req, res, next) => {
+  const { url, method } = req;
+  
+  const args = {
+    originUrl: urlUtils.parse(url).pathname,
+    protocol: ''
+  };
+
+  switch(method) {
+    case 'POST':
+      args.protocol = 'http-post';
+      break;
+    case 'GET':
+      args.protocol = 'http-get';
+      break;
+    case 'DELETE':
+      args.protocol = 'http-delete';
+      break;
+    case 'PUT':
+      args.protocol = 'http-put';
+      break;
+  }
+  
+  req.proxyArgs = args;
+  next();
+}
+
+const proxy = (req, res, next) => {
   if (!req.routes) {
     return next();
   }
   
   const { query: queryParams, body: json, user, routes } = req;
-  const proxyArgs = {
+  
+  const args = {
     queryParams,
     json,
     user
   };
   
-  const proxy = (item, next) => callRoute(item, proxyArgs, next);
-  async.map(routes, proxy, (err, results) => {
+  const call = (item, next) => proxyEndpoint(item, args, next);
+  
+  async.map(routes, call, (err, results) => {
     if (err) {
       req.error = err;
       return next();
     }
+    
     req.results = results;
     next();
   });
@@ -64,10 +96,10 @@ const proxyRoutes = (req, res, next) => {
 // ======================================================
 // Controller Methods
 // ======================================================
-const gatewayGetHandler = (req, res, next) => {
-  const { url: originUrl } = req;
+const mapRoutes = (req, res, next) => {
+  const { originUrl, protocol } = req.proxyArgs;
 
-  mapOriginToRoutes(urlUtils.parse(originUrl).pathname, 'http-get', (err, {routes}) => {
+  mapOriginToRoutes(originUrl, protocol, (err, {routes}) => {
     if (err) {
       req.error = err;
       return next();
@@ -77,6 +109,7 @@ const gatewayGetHandler = (req, res, next) => {
   });
 };
 
-gatewayController.get('/*', gatewayGetHandler, ensureRoutePermissions, proxyRoutes, responseHandler);
+gatewayController.post('/*', makeProxyArgs, mapRoutes, ensureRoutePermissions, proxy, responseHandler);
+gatewayController.get('/*', makeProxyArgs, mapRoutes, ensureRoutePermissions, proxy, responseHandler);
 
 module.exports = gatewayController;

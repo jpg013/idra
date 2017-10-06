@@ -7,7 +7,6 @@ const configApp      = require('./app');
 const initDb         = require('./db/init');
 const chalk          = require('chalk');
 const registerRoutes = require('./routing/registerRoutes');
-const authenticate   = require('./services/blackbaud/auth');
 
 // ======================================================
 // Setup the database

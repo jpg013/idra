@@ -20,7 +20,7 @@ const authenticateUser = (username, password, cb) => {
     if (err) {
       return cb(signInErrorMsg);
     }
-    console.log(resp);
+    
     if (resp.statusCode !== 200 || resp.error) {
       return cb(resp.error || signInErrorMsg);
     }

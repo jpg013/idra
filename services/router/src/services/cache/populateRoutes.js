@@ -10,19 +10,19 @@ const populateRoutes = (routingData, cb) => {
     return cb('Bad request data.');
   }
 
-  async.eachSeries(endpoints, (item, next) => {
-    const { endpoint, url, protocol, authorizedRoles } = item;
+  async.each(endpoints, (item, next) => {
+    const { endpoint, protocol, authorizedRoles, originUrl } = item;
     const cacheData = {
       containerName,
       containerPort,
       endpoint,
-      url,
+      originUrl,
       protocol,
       authorizedRoles
     };
 
     const pipeline = [makeRouteSetAddCommand(cacheData), makeRouteHashMapSetCommand(cacheData)];
-    async.each(pipeline, dialCache, cb);
+    async.each(pipeline, dialCache, next);
   }, cb);
 };
 

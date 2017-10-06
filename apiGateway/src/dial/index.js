@@ -24,10 +24,10 @@ const dial = (dialOptions={}, callback) => {
     }
     
     const { statusCode } = req;
-    
-    const results = Object.assign({statusCode}, 
+    const results = Object.assign({ statusCode }, 
       (typeof body === 'string') ? JSON.parse(body) : body  
     );
+    
     callback(err, results);
   });
 };

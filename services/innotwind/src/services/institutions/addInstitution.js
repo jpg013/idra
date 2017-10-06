@@ -12,7 +12,6 @@ const addInstitution = (institutionData={}, cb) => {
     }
 
     const institutionCollection = db.collection('institutions');
-
     const $insert = makeInstitutionInsert(institutionData);
     
     institutionCollection.insertOne($insert, (insertErr, result) => {
@@ -20,7 +19,7 @@ const addInstitution = (institutionData={}, cb) => {
         return cb(insertErr);
       }
       if (result.insertedCount !== 1) {
-        return cb('There was an error inserting the institution.');
+        return cb('There was an error creating the institution.');
       }
       cb();
     });

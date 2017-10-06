@@ -5,6 +5,7 @@ const mapOriginToRoutes = (url, protocol, cb) => {
     url,
     protocol
   };
+  
   const dialOptions = {
     containerName: process.env.ROUTER_CONTAINER_NAME,
     containerPort: process.env.ROUTER_CONTAINER_PORT,

@@ -1,9 +1,8 @@
 const async              = require('async');
 const addCollections     = require('./addCollections');
-const addRootInstitution = require('./addRootInstitution');
 
 const initDb = cb => {
-  const initPipeline = [addCollections, addRootInstitution];
+  const initPipeline = [addCollections];
 
   async.series(initPipeline, cb);
 };
