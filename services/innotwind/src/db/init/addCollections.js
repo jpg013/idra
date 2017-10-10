@@ -3,8 +3,7 @@ const winston     = require('winston');
 const dbConnector = require('../connector');
 
 const colInfos = {
-  'institutions': {},
-  'imports': {}
+  'institutions': {}
 };
 
 const getCollectionsNeedAdded = colList => Object.keys(colInfos).filter(cur => colList.indexOf(cur) < 0);

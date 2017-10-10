@@ -22,12 +22,19 @@ const dial = (dialOptions={}, callback) => {
     if (err) {
       return callback(err);
     }
-    
+
     const { statusCode } = req;
-    const results = Object.assign({ statusCode }, 
-      (typeof body === 'string') ? JSON.parse(body) : body  
-    );
     
+    let resp = body;
+    if (typeof body === 'string') {
+      try {
+        resp = JSON.parse(body);
+      } catch (e) {
+        // fall through
+      }
+    }
+    
+    const results = Object.assign({ statusCode }, resp);
     callback(err, results);
   });
 };

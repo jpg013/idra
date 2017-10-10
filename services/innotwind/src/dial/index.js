@@ -2,7 +2,9 @@ const request        = require('request');
 const buildURL       = require('./buildURL');
 const formatProtocol = require('./formatProtocol');
 
-const dial = (dialOptions={}, callback) => {
+const defaultCallback = () => undefined;
+
+const dial = (dialOptions={}, callback = defaultCallback) => {
   const { containerName, containerPort, endpoint, protocol, json, queryParams} = dialOptions;
   
   const headers = {
@@ -18,7 +20,18 @@ const dial = (dialOptions={}, callback) => {
     method: formatProtocol(protocol)
   });
   
-  request(requestOptions, callback);
+  request(requestOptions, (err, req, body) => {
+    if (err) {
+      return callback(err);
+    }
+    
+    const { statusCode } = req;
+    const results = Object.assign({ statusCode }, 
+      (typeof body === 'string') ? JSON.parse(body) : body  
+    );
+    
+    callback(err, results);
+  });
 };
 
 module.exports = dial;

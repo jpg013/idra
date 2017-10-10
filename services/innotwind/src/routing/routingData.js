@@ -19,18 +19,25 @@ const httpGetInstitutionDetails = {
   originUrl: '/institutions/details'
 }
 
-const httpGetInstitutionAuth = {
+const httpGetBlackbaudAuthUrl = {
   protocol: 'http-get',
-  endpoint: 'institutions/auth',
+  endpoint: 'blackbaud/auth/url',
   authorizedRoles: ['sysAdmin'],
-  originUrl: '/institutions/auth'
+  originUrl: '/blackbaud/auth/url'
 }
 
-const httpPostInstitutionAuthCallback = {
+const httpPostBlackbaudAuthCode = {
   protocol: 'http-post',
-  endpoint: 'institutions/auth/callback',
+  endpoint: 'blackbaud/auth/code',
   authorizedRoles: ['sysAdmin'],
-  originUrl: '/institutions/auth/callback'
+  originUrl: '/blackbaud/auth/code'
+}
+
+const httpPostAlumniImportJob = {
+  protocol: 'http-post',
+  endpoint: 'alumniimportjobs',
+  authorizedRoles: ['sysAdmin'],
+  originUrl: '/alumniimportjobs'
 }
 
 const routingData = {
@@ -40,8 +47,10 @@ const routingData = {
     httpGetInstitutions, 
     httpPostInstitution, 
     httpGetInstitutionDetails, 
-    httpGetInstitutionAuth,
-    httpPostInstitutionAuthCallback ]
+    httpGetBlackbaudAuthUrl,
+    httpPostBlackbaudAuthCode,
+    httpPostAlumniImportJob
+  ]
 };
 
 module.exports = routingData;

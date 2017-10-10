@@ -1,20 +1,20 @@
-const dbConnector         = require('../../db/connector');
-const mapInstitutionProps = require('./mapInstitutionProps');
+const dbConnector      = require('../connector');
 
-const queryInstitutions = ($query, cb) => {
+const find = ($query, cb) => {
   dbConnector.getConnection((conErr, db) => {
     if (conErr) {
       return cb(conErr);
     }
 
     const institutionCollection = db.collection('institutions');
+
     institutionCollection.find($query).toArray((err, results=[]) => {
       if (err) {
         return cb(err);
       }
-      return cb(err, results.map(mapInstitutionProps));
-    });  
+      return cb(err, results);
+    });
   });
 };
 
-module.exports = queryInstitutions;
+module.exports = find;

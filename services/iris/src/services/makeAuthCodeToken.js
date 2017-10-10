@@ -1,14 +1,9 @@
-const getOauth2Client = require('../oauth2/getClient');
+const getOauth2Client = require('./getOauth2Client');
 
-const getAuthTicket = (code, creds, cb) => {
-  const { 
-    blackbaudClientId, 
-    blackbaudClientSecret, 
-  } = creds;
-  
+const makeAuthCodeToken = (code, blackbaudClientId, blackbaudClientSecret, cb) => {
   const ticketConfig = {
     code,
-    redirect_uri: 'http://localhost:3000/blackbaud/auth/callback',
+    redirect_uri: process.env.BLACKBAUD_AUTH_REDIRECT_URL, // 'http://localhost:3000/blackbaud/auth/callback',
   };
 
   const oauth2 = getOauth2Client(blackbaudClientId, blackbaudClientSecret);
@@ -23,4 +18,4 @@ const getAuthTicket = (code, creds, cb) => {
   });
 }
 
-module.exports = getAuthTicket;
+module.exports = makeAuthCodeToken;

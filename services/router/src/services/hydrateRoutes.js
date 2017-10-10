@@ -1,6 +1,7 @@
-const findRoutes       = require('./routing/findRoutes');
-const async            = require('async');
-const populateRoutes    = require('./cache/populateRoutes');
+const findRoutes     = require('./routing/findRoutes');
+const async          = require('async');
+const populateRoutes = require('./cache/populateRoutes');
+const winston        = require('winston');
 
 const hydrateRoutes = () => {
   findRoutes({}, (err, routes=[]) => {

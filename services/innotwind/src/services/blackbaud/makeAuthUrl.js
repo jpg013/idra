@@ -1,4 +1,3 @@
-
 //login - jim.morgan@innosolpro.com
 //password - Devaccess2017**
 //const AUTH_CLIENT_SECRET="bZhXvvisxvJrcWJEGWrdvuOMPvmyQn3liNnr51Q/xFk=";
@@ -6,23 +5,16 @@
 //const AUTH_CLIENT_ID="d57a55fb-cbfd-4c65-affa-537ae5756d31";
 //const AUTH_SUBSCRIPTION_KEY="8c590a0498e84e86a5ac722b4a192d9c";
 
-const getOauth2Client = require('../oauth2/getClient');
+const getOauth2Client = require('./getOauth2Client');
 
-const getAuthUrl = creds => {
-  const { 
-    blackbaudClientId, 
-    blackbaudClientSecret, 
-    state 
-  } = creds;
+const makeAuthCodeUrl = (clientId, clientSecret, state) => {
+  const oauthClient = getOauth2Client(clientId, clientSecret);
 
-  const oauthClient = getOauth2Client(blackbaudClientId, blackbaudClientSecret);
-    
   return oauthClient.authorizationCode.authorizeURL({
-    redirect_uri: 'http://localhost:3000/blackbaud/auth/callback',
+    redirect_uri: process.env.BLACKBAUD_AUTH_REDIRECT_URL || 'http://localhost:3000/blackbaud/auth/callback',
     state
   });
 }
-
 
   /*
 oauth2 = require('simple-oauth2')({
@@ -34,4 +26,4 @@ oauth2 = require('simple-oauth2')({
 });
 */
 
-module.exports = getAuthUrl;
+module.exports = makeAuthCodeUrl;

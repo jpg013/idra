@@ -56,7 +56,6 @@ services:
       - CACHE_CONTAINER_NAME=${CACHE_CONTAINER_NAME}
     depends_on:
       - "cache"
-      
 
   innosol:
     build: ./services/innosol
@@ -95,6 +94,7 @@ services:
       - CRYPTO_KEY=${CRYPTO_KEY}
       - ROUTER_CONTAINER_PORT=${ROUTER_CONTAINER_PORT}
       - ROUTER_CONTAINER_NAME=${ROUTER_CONTAINER_NAME}
+      - BLACKBAUD_AUTH_REDIRECT_URL=http://localhost:3000/blackbaud/auth/callback
     depends_on:
       - "router"
 
