@@ -1,5 +1,6 @@
 const express               = require('express');
 const createAlumniImportJob = require('../../services/alumniImportJobs/createAlumniImportJob');
+const firePendingJob        = require('../../services/alumniImportJobs/firePendingJob');
 
 // ======================================================
 // Define Express Controller
@@ -47,6 +48,10 @@ const postAlumniImportJob = (req, res, next) => {
       req.error = err;
       return next();
     }
+
+    // fire pending job
+    firePendingJob(institutionId);
+    
     req.results = { alumniImportJob }
     next();
   });  

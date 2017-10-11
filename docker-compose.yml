@@ -95,8 +95,26 @@ services:
       - ROUTER_CONTAINER_PORT=${ROUTER_CONTAINER_PORT}
       - ROUTER_CONTAINER_NAME=${ROUTER_CONTAINER_NAME}
       - BLACKBAUD_AUTH_REDIRECT_URL=http://localhost:3000/blackbaud/auth/callback
+      - RABBITMQ_CONNECTION=amqp://docker.for.mac.localhost:5672
     depends_on:
       - "router"
+
+  iris:
+    build: ./services/iris
+    container_name: "iris"
+    volumes:
+      - "./services/iris:/usr/src/iris"
+      - "/usr/src/iris/node_modules"
+    ports:
+      - "3032:3032"
+    environment:
+      - MONGODB_CONNECTION=mongodb://docker.for.mac.localhost:27017/iris
+      - CONTAINER_PORT=${IRIS_CONTAINER_PORT}
+      - CONTAINER_NAME=${IRIS_CONTAINER_NAME}
+      - ACCESS_SECRET=${SERVICE_ACCESS_SECRET}
+      - CRYPTO_ALGORITHM=${CRYPTO_ALGORITHM}
+      - CRYPTO_KEY=${CRYPTO_KEY}
+      - RABBITMQ_CONNECTION=amqp://docker.for.mac.localhost:5672
 
   nginx:
     build: ./nginx

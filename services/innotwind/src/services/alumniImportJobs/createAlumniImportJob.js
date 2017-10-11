@@ -1,5 +1,6 @@
 const findOneAndUpdate = require('../../db/institutions/findOneAndUpdate');
 const findRunningJob   = require('./findRunningJob');
+const makeObjectId     = require('../../db/makeObjectId');
 
 const createAlumniImportJob = (institutionId, cb) => {
   findRunningJob(institutionId, (err, result) => {
@@ -13,10 +14,11 @@ const createAlumniImportJob = (institutionId, cb) => {
 
     const alumniImportJob = {
       createdDate: new Date(),
-      error: '',
+      msg: '',
       status: 'pending',
       totalCount: 0,
-      completedCount: 0
+      completedCount: 0,
+      jobID: makeObjectId()
     };
     
     const $update = { '$push': { 'alumniImportJobs': alumniImportJob }}
