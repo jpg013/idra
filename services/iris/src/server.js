@@ -6,7 +6,8 @@ const express        = require('express');
 const configApp      = require('./app');
 const initDb         = require('./db/init');
 const chalk          = require('chalk');
-const run            = require('./services/subscribeToJobQueue');
+const receiveJobs    = require('./services/mq/actions/receiveJobs');
+const rebootJobs     = require('./services/jobs/rebootJobs');
 
 // ======================================================
 // Setup the database
@@ -32,4 +33,12 @@ const httpServer = http.createServer(app);
 // ======================================================
 httpServer.listen(process.env.CONTAINER_PORT);
 
-run();
+// ======================================================
+// Begin receiving new jobs from mq
+// ======================================================
+receiveJobs();
+
+// ======================================================
+// Reboot pending / in-progress jobs
+// ======================================================
+rebootJobs();

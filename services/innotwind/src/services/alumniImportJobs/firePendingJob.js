@@ -1,5 +1,5 @@
 const getById        = require('../institutions/getById');
-const sendToQueue = require('../messageQueue/sendToQueue');
+const publisher      = require('../mq/publisher');
 
 const firePendingJob = institutionId => {
   getById(institutionId, (err, institution) => {
@@ -13,15 +13,27 @@ const firePendingJob = institutionId => {
     }
 
     const { jobID } = pendingJob;
-    const { ticket, subscriptionKey } = institution.blackBaudCredentials;
+    const { blackBaudCredentials } = institution;
     
     const msg = {
-      ticket,
-      subscriptionKey,
+      ...blackBaudCredentials,
       jobID: jobID.toString()
     };
 
-    sendToQueue('new_alumni_import_jobs', msg);
+    const publishOpts = {
+      q: 'new_alumni_import_jobs',
+      assertOpts: { durable: true },
+      sendOpts: { persistent: true },
+      msg
+    };
+    
+    const onDone = (err, ok) => {
+      console.log('fuck ya');
+      console.log(err);
+      console.log(ok);
+    }
+    
+    publisher(publishOpts, onDone);
   });
 };
 

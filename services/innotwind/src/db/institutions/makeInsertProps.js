@@ -15,7 +15,6 @@ const makeInsertProps = data => {
     blackBaudCredentials: {
       ticket: undefined,
       state: encrypt(name),
-      expires: undefined,
       clientId: encrypt(blackbaudClientId),
       clientSecret: encrypt(blackbaudClientSecret),
       subscriptionKey: encrypt(blackbaudSubscriptionKey)

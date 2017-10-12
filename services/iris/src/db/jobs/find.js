@@ -1,6 +1,6 @@
 const dbConnector      = require('../connector');
 
-const find = ($query, cb) => {
+const find = ($query, $proj, cb) => {
   dbConnector.getConnection((conErr, db) => {
     if (conErr) {
       return cb(conErr);
@@ -8,7 +8,7 @@ const find = ($query, cb) => {
 
     const collection = db.collection('jobs');
 
-    collection.find($query).toArray((err, results=[]) => {
+    collection.find($query, $proj).toArray((err, results=[]) => {
       if (err) {
         return cb(err);
       }

@@ -1,4 +1,3 @@
-const encrypt = require('../../helpers/encrypt');
 const decrypt = require('../../helpers/decrypt');
 
 const baseProps = {
@@ -8,7 +7,7 @@ const baseProps = {
   totalCount: 0,
   completedCount: 0,
   errors: [],
-  cursor: 0
+  nextLink: ''
 };
 
 const mapClientProps = data => {
@@ -16,17 +15,20 @@ const mapClientProps = data => {
     return {};
   }
 
-  const { ticket, subscriptionKey, status, totalCount, completedCount, errors, cursor, jobID } = data;
+  const { ticket, subscriptionKey, status, totalCount, completedCount, errors, jobID, nextLink, clientId, clientSecret, _id } = data;
 
   return {
-    ticket: decrypt(ticket),
+    ticket: JSON.parse(decrypt(ticket)),
     subscriptionKey: decrypt(subscriptionKey),
+    clientId: decrypt(clientId),
+    clientSecret: decrypt(clientSecret),
     status,
     totalCount,
     completedCount,
     errors,
-    cursor,
-    jobID
+    jobID: jobID.toString(),
+    nextLink,
+    id: _id.toString()
   }
 };
 

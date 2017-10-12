@@ -8,7 +8,6 @@ const baseProps = {
   blackBaudCredentials: {
     ticket: undefined,
     state: undefined,
-    expires: undefined,
     clientId: undefined,
     clientSecret: undefined,
     subscriptionKey: undefined
@@ -45,7 +44,6 @@ const mapClientProps = data => {
     blackBaudCredentials: {
       ticket: blackBaudCredentials ? blackBaudCredentials.ticket : baseProps.blackBaudCredentials.ticket,
       state: blackBaudCredentials ? blackBaudCredentials.state : baseProps.blackBaudCredentials.state,
-      expires: blackBaudCredentials ? blackBaudCredentials.expires : baseProps.blackBaudCredentials.expires,
       clientId: (blackBaudCredentials && blackBaudCredentials.clientId) ? decrypt(blackBaudCredentials.clientId) : baseProps.blackBaudCredentials.clientId,
       clientSecret: (blackBaudCredentials && blackBaudCredentials.clientSecret) ? decrypt(blackBaudCredentials.clientSecret) : baseProps.blackBaudCredentials.clientSecret,
       subscriptionKey: (blackBaudCredentials && blackBaudCredentials.subscriptionKey) ? decrypt(blackBaudCredentials.subscriptionKey) : baseProps.blackBaudCredentials.subscriptionKey

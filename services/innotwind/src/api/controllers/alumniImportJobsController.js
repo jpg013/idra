@@ -1,6 +1,6 @@
-const express               = require('express');
-const createAlumniImportJob = require('../../services/alumniImportJobs/createAlumniImportJob');
-const firePendingJob        = require('../../services/alumniImportJobs/firePendingJob');
+const express                  = require('express');
+const createAlumniImportJob    = require('../../services/alumniImportJobs/createAlumniImportJob');
+const emitConstituentImportJob = require('../../services/mq/actions/emitConstituentImportJob');
 
 // ======================================================
 // Define Express Controller
@@ -49,8 +49,8 @@ const postAlumniImportJob = (req, res, next) => {
       return next();
     }
 
-    // fire pending job
-    firePendingJob(institutionId);
+    // emit job
+    emitConstituentImportJob(institutionId);
     
     req.results = { alumniImportJob }
     next();

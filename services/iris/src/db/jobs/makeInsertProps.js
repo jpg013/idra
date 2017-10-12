@@ -1,18 +1,20 @@
-const encrypt = require('../../helpers/encrypt');
+const encrypt      = require('../../helpers/encrypt');
+const makeObjectId = require('../makeObjectId');
 
 const makeInsertProps = data => {
-  console.log(data);
-  const { ticket, subscriptionKey, JobID } = data;
+  const { ticket, subscriptionKey, jobID, clientId, clientSecret } = data;
 
   return {
     ticket: encrypt(JSON.stringify(ticket)),
     subscriptionKey: encrypt(subscriptionKey),
+    clientId: encrypt(clientId),
+    clientSecret: encrypt(clientSecret),
     status: 'pending',
     totalCount: 0,
     completedCount: 0,
     errors: [],
-    cursor: 0,
-    jobID
+    jobID: makeObjectId(jobID),
+    nextLink: 'https://api.sky.blackbaud.com/constituent/v1/constituents'
   };
 }
 
