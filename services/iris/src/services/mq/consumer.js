@@ -19,7 +19,7 @@ const consumer = (opts, onMessage) => {
         return;
       }
       ch.bindQueue(queue, exchange, routingKey);
-      ch.consume(queue, onMessage, consumeOpts);
+      ch.consume(queue, msg => onMessage(msg, ch), consumeOpts);
     })
   });
 }

@@ -1,5 +1,6 @@
 const getById    = require('../../institutions/getById');
-const getChannel = require('../publisher');
+const publisher  = require('../publisher');
+
 
 const emitConstituentImportJob = (institutionId) => {
   getById(institutionId, (err, institution) => {

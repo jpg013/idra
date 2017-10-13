@@ -3,9 +3,6 @@ const createJob      = require('../../jobs/createJob');
 const runPendingJobs = require('../../jobs/runPendingJobs');
 
 const onJobReceive = (msg, ch) => {
-  console.log(JSON.parse(msg.content.toString()))
-  console.log(msg.fields.routingKey);
-  return;
   let jobData;
 
   try {
@@ -20,8 +17,6 @@ const onJobReceive = (msg, ch) => {
 
   createJob(jobData, err => {
     if (!err) {
-      // Do not ack msg if err
-      ch.ack(msg);
       runPendingJobs()
     }
   });
