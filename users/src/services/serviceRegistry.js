@@ -8,11 +8,7 @@ const serviceRegistry = container => {
     const url = `http://${process.env.SERVICE_REGISTRY_CONTAINER_NAME}:${process.env.SERVICE_REGISTRY_CONTAINER_PORT}/registry`;
     const opts = { json: { service: registry } }
 
-    dial(url, 'put', opts, (err, resp) => {
-      console.log('dialed registry')
-      console.log(err)
-      console.log(resp)
-    })
+    dial(url, 'put', opts)
   }
 
   return Object.create({

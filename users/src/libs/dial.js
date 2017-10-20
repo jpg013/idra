@@ -37,6 +37,9 @@ const dial = (endpoint, method, opts={}, callback) => {
   const { json, queryParams } = opts;
   const headers = Object.assign(baseHeaders, opts.headers);
   const url = makeUrl(endpoint, queryParams);
+
+  callback = callback ? callback : () => undefined
+
   const requestOptions = Object.assign({}, {
     headers,
     url,
@@ -48,7 +51,7 @@ const dial = (endpoint, method, opts={}, callback) => {
     if (err) {
       return callback(err);
     }
-    callback(err, parseResponseBody(body));
+    return callback(err, parseResponseBody(body));
   });
 };
 

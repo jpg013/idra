@@ -33,9 +33,9 @@ const serviceRepository = container => {
         return models.validate(data, 'serviceRegistry')
       })
 
-      const models = yield Promise.all(promises)
+      const modelsResp = yield Promise.all(modelPromises)
 
-      const udpatePromises = models.map(cur => {
+      const updatePromises = modelsResp.map(cur => {
         const $opts = { upsert: true, w: 1 }
         const $update = { $set: { ...cur } }
         const $query = {serviceKey: cur.serviceKey}

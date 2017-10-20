@@ -40,13 +40,7 @@ const APIController = serviceRepository => {
   }
 
   const registerService = (req, res, next) => {
-    console.log('holy shit balls!')
-    
     const { service } = req.body
-
-    console.log(service)
-    
-    return
 
     if (!service) {
       req.error = 'Bad request data.'
@@ -54,11 +48,13 @@ const APIController = serviceRepository => {
     }
 
     serviceRepository
-      .register(service)
-      .then(resp => {
-
+      .registerService(service)
+      .then(() => {
+        req.results = { success: true }
+        next()
       })
       .catch(e => {
+        console.log(e)
         req.error = e
       })
   }
