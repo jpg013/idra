@@ -27,6 +27,9 @@ mediator.on('di.ready', (container) => {
     .then(app => {
       console.log(`Server started succesfully, running on port: ${container.cradle.serverSettings.port}.`)
 
+      const { serviceRegistry } = container.resolve('services')
+      serviceRegistry.register()
+
       app.on('close', () => {
         container.resolve('userRepository').disconnect()
       })

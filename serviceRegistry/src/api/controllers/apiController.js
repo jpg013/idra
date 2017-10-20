@@ -40,7 +40,13 @@ const APIController = serviceRepository => {
   }
 
   const registerService = (req, res, next) => {
+    console.log('holy shit balls!')
+    
     const { service } = req.body
+
+    console.log(service)
+    
+    return
 
     if (!service) {
       req.error = 'Bad request data.'

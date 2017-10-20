@@ -14,6 +14,6 @@ RUN npm install
 
 COPY . $HOME/serviceRegistry
 
-EXPOSE 3030
+EXPOSE 6969
 
 CMD ["npm", "start"]
