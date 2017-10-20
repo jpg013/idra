@@ -9,7 +9,9 @@ const userRepository = container => {
   const findByUsername = userName => {
     return co(function *() {
       const resp = yield usersCollection.findOne({userName})
-      return yield models.fromDocument(resp, 'user')
+      if (resp) {
+        return yield models.fromDocument(resp, 'user')
+      }
     })
   }
 

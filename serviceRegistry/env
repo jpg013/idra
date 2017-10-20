@@ -1,0 +1,6 @@
+MONGODB_CONNECTION=mongodb://docker.for.mac.localhost:27017/innosol
+CONTAINER_PORT=3030
+CONTAINER_NAME=innosol
+SERVICE_ACCESS_SECRET=red&curry!chicken%hot@
+CRYPTO_ALGORITHM=aes-256-cbc
+CRYPTO_KEY=b7a3p!8BZ$vtaK9TzYzSjHQv_4gwVi_D

@@ -1,5 +1,6 @@
-const encrypt = require('../../helpers/encrypt');
+const encrypt          = require('../../helpers/encrypt');
 const findOneAndUpdate = require('../../db/jobs/findOneAndUpdate');
+const findById         = require('../../db/jobs/findById');
 
 // Setters
 const makeUpdateSetter = (setter={}, key, val) => {

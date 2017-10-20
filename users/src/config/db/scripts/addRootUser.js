@@ -1,11 +1,10 @@
 const encrypt = require('../../../helpers/encrypt')
 
 const rootUserData = {
-  userName: 'innosol.admin',
+  userName: 'dev@innosolpro.com',
   password: encrypt('password'),
   firstName: 'innosol',
   lastName: 'admin',
-  email: 'jpg013@gmail.com',
   passwordChangeRequired: false,
   roles: ['sysAdmin'],
   createdDate: new Date()

@@ -82,7 +82,6 @@ const executeBatch = () => {
     processConstituentList,
     updateJobOnBatchExecuted
   ];
-
   async.waterfall(pipeline, cb);
 }
 

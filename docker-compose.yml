@@ -17,3 +17,23 @@ services:
       - CRYPTO_KEY=${CRYPTO_KEY}
       - DB_SERVER=docker.for.mac.localhost:27017
       - DB_NAME=users
+    depends_on:
+      - "service-registry"
+
+
+  service-registry:
+    build: ./serviceRegistry
+    container_name: "service-registry"
+    volumes:
+      - "./serviceRegistry:/home/app/serviceRegistry"
+      - "/home/app/serviceRegistry/node_modules"
+    ports:
+      - "6969:6969"
+    environment:
+      - CONTAINER_PORT=${SERVICE_REGISTRY_CONTAINER_PORT}
+      - CONTAINER_NAME=${SERVICE_REGISTRY_CONTAINER_NAME}
+      - ACCESS_SECRET=${SERVICE_ACCESS_SECRET}
+      - CRYPTO_ALGORITHM=${CRYPTO_ALGORITHM}
+      - CRYPTO_KEY=${CRYPTO_KEY}
+      - DB_SERVER=docker.for.mac.localhost:27017
+      - DB_NAME=service_registry
