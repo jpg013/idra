@@ -1,6 +1,28 @@
 version: '3.2'
 
 services:
+  api-gateway:
+    container_name: "api-gateway"
+    build: ./apiGateway
+    ports:
+      - "8080:8080"
+    volumes:
+      - "./apiGateway:/home/app/apiGateway"
+      - "/home/app/apiGateway/node_modules"
+    environment:
+      - CONTAINER_PORT=${API_GATEWAY_CONTAINER_PORT}
+      - CONTAINER_NAME=${API_GATEWAY_CONTAINER_NAME}
+      - SERVICE_REGISTRY_CONTAINER_PORT=${SERVICE_REGISTRY_CONTAINER_PORT}
+      - SERVICE_REGISTRY_CONTAINER_NAME=${SERVICE_REGISTRY_CONTAINER_NAME}
+      - USERS_CONTAINER_PORT=${USERS_CONTAINER_PORT}
+      - USERS_CONTAINER_NAME=${USERS_CONTAINER_NAME}
+      - ACCESS_SECRET=${SERVICE_ACCESS_SECRET}
+      - CRYPTO_ALGORITHM=${CRYPTO_ALGORITHM}
+      - CRYPTO_KEY=${CRYPTO_KEY}
+    depends_on:
+      - "service-registry"
+      - "users"
+
   users:
     build: ./users
     container_name: "users"
@@ -21,7 +43,6 @@ services:
       - DB_NAME=users
     depends_on:
       - "service-registry"
-
 
   service-registry:
     build: ./serviceRegistry

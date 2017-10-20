@@ -10,6 +10,7 @@ const express    = require('express');
 /**
  * App Configuration
  */
+
 const handleUnknownRoutes = (req, res) => {
   res.status(404).send();
 };

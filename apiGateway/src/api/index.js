@@ -1,19 +1,20 @@
-const express                   = require('express');
-const gatewayController         = require('./controllers/gatewayController');
-const authenticationController  = require('./controllers/authenticationController');
-const populateAuthenticatedUser = require('../services/authentication/populateAuthenticatedUser');
-const logGatewayRequest         = require('../services/logging/logGatewayRequest');
-const parseRequestBearerToken   = require('../services/authentication/parseRequestBearerToken');
+const express            = require('express')
+const apiController      = require('./controllers/apiController')
+const ensureAccessSecret = require('../helpers/ensureAccessSecret')
 
-const config = app => {
-  const apiGatewayRouter = express.Router();
+const config = (app, serviceRepository) => {
+  const apiRouter = express.Router();
 
-  apiGatewayRouter.use(parseRequestBearerToken);
-  apiGatewayRouter.use(populateAuthenticatedUser);
-  apiGatewayRouter.use(logGatewayRequest);
-  apiGatewayRouter.use('/authentication', authenticationController);
-  apiGatewayRouter.use('/', gatewayController); // add ensure user authenticated here
-  app.use('/api', apiGatewayRouter);
+  // ======================================================
+  // Mount the controllers to routes
+  // ======================================================
+  apiRouter.use('/', /*ensureAccessSecret,*/ apiController(serviceRepository));
+
+  // ======================================================
+  // Mount the router to the app and return app
+  // ======================================================
+  app.use(apiRouter);
+  return app;
 };
 
 module.exports = config;

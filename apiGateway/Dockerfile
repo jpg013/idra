@@ -1,12 +1,19 @@
 FROM node:latest
 
-WORKDIR /usr/src/apiGateway
+RUN useradd --user-group --create-home --shell /bin/false app
 
-# Create app directory
-COPY package.json /usr/src/apiGateway
+ENV HOME=/home/app
+
+WORKDIR $HOME/apiGateway
+
+COPY package.json $HOME/apiGateway/
+
+RUN chown -R app:app $HOME/*
 
 RUN npm install
 
-COPY . /usr/src/apiGateway
+COPY . $HOME/apiGateway
 
-CMD [ "npm", "start" ]
+EXPOSE 8080
+
+CMD ["npm", "start"]

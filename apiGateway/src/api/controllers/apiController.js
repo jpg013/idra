@@ -36,16 +36,7 @@ const APIController = serviceRepository => {
   // Controller Methods
   // ======================================================
   const getServices = (req, res, next) => {
-    serviceRepository
-      .getRegisteredServices()
-      .then(registeredServices => {
-        req.results = { registeredServices }
-        next()
-      })
-      .catch(e => {
-        req.error = e
-      })
-
+    //serviceRepository.get()
   }
 
   const registerService = (req, res, next) => {
@@ -63,6 +54,7 @@ const APIController = serviceRepository => {
         next()
       })
       .catch(e => {
+        console.log(e)
         req.error = e
       })
   }

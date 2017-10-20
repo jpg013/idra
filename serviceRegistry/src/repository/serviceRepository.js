@@ -8,7 +8,7 @@ const serviceRepository = container => {
 
   const getRegisteredServices = ($query={}) => {
     return co(function *() {
-      const resp = yield registryCollection.find($query).toArray()
+      const resp = yield servicesCollection.find($query).toArray()
       if (resp) {
         return yield Promise.all(resp.map(cur => models.fromDocument(cur, 'serviceRegistry')))
       }
