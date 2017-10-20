@@ -1,7 +1,6 @@
 const jwt     = require('jsonwebtoken');
 const decrypt = require('../../helpers/decrypt');
 const dial    = require('../../dial');
-
 const signInErrorMsg  = 'An error occurred while signing in.';
 const signInFailedMsg = 'Invalid username or password.';
 

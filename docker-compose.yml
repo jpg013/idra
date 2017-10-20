@@ -1,125 +1,19 @@
 version: '3.2'
 
 services:
-  api-gateway:
-    container_name: "api-gateway"
-    build: ./apiGateway
-    ports:
-      - "8080:8080"
+  users:
+    build: ./users
+    container_name: "users"
     volumes:
-      - "./apiGateway:/usr/src/apiGateway"
-      - "/usr/src/apiGateway/node_modules"
-    environment:
-      - MONGODB_CONNECTION=mongodb://docker.for.mac.localhost:27017/api_gateway
-      - CONTAINER_PORT=${API_GATEWAY_CONTAINER_PORT}
-      - CONTAINER_NAME=${API_GATEWAY_CONTAINER_NAME}
-      - ACCESS_SECRET=${SERVICE_ACCESS_SECRET}
-      - CRYPTO_ALGORITHM=${CRYPTO_ALGORITHM}
-      - CRYPTO_KEY=${CRYPTO_KEY}
-      - INNOSOL_CONTAINER_PORT=${INNOSOL_CONTAINER_PORT}
-      - INNOSOL_CONTAINER_NAME=${INNOSOL_CONTAINER_NAME}
-      - ROUTER_CONTAINER_PORT=${ROUTER_CONTAINER_PORT}
-      - ROUTER_CONTAINER_NAME=${ROUTER_CONTAINER_NAME}
-
-  cache:
-    container_name: "cache"
-    build: ./services/cache
-    ports:
-      - "6970:6970"
-    volumes:
-      - "./services/cache:/usr/src/cache"
-      - "/usr/src/cache/node_modules"
-    environment:
-      - REDIS_CONNECTION=redis://docker.for.mac.localhost:6379/0
-      - CONTAINER_PORT=${CACHE_CONTAINER_PORT}
-      - CONTAINER_NAME=${CACHE_CONTAINER_NAME}
-      - CRYPTO_ALGORITHM=${CRYPTO_ALGORITHM}
-      - CRYPTO_KEY=${CRYPTO_KEY}
-      - ACCESS_SECRET=${SERVICE_ACCESS_SECRET}
-
-  router:
-    build: ./services/router
-    container_name: "router"
-    volumes:
-      - "./services/router:/usr/src/router"
-      - "/usr/src/router/node_modules"
-    ports:
-      - "6969:6969"
-    environment:
-      - MONGODB_CONNECTION=mongodb://docker.for.mac.localhost:27017/router
-      - CONTAINER_PORT=${ROUTER_CONTAINER_PORT}
-      - CONTAINER_NAME=${ROUTER_CONTAINER_NAME}
-      - ACCESS_SECRET=${SERVICE_ACCESS_SECRET}
-      - CRYPTO_ALGORITHM=${CRYPTO_ALGORITHM}
-      - CRYPTO_KEY=${CRYPTO_KEY}
-      - CACHE_CONTAINER_PORT=${CACHE_CONTAINER_PORT}
-      - CACHE_CONTAINER_NAME=${CACHE_CONTAINER_NAME}
-    depends_on:
-      - "cache"
-
-  innosol:
-    build: ./services/innosol
-    container_name: "innosol"
-    volumes:
-      - "./services/innosol:/usr/src/innosol"
-      - "/usr/src/innosol/node_modules"
+      - "./users:/home/app/users"
+      - "/home/app/users/node_modules"
     ports:
       - "3030:3030"
     environment:
-      - MONGODB_CONNECTION=mongodb://docker.for.mac.localhost:27017/innosol
-      - CONTAINER_PORT=${INNOSOL_CONTAINER_PORT}
-      - CONTAINER_NAME=${INNOSOL_CONTAINER_NAME}
-      - ROUTER_CONTAINER_PORT=${ROUTER_CONTAINER_PORT}
-      - ROUTER_CONTAINER_NAME=${ROUTER_CONTAINER_NAME}
+      - CONTAINER_PORT=${USERS_CONTAINER_PORT}
+      - CONTAINER_NAME=${USERS_CONTAINER_NAME}
       - ACCESS_SECRET=${SERVICE_ACCESS_SECRET}
       - CRYPTO_ALGORITHM=${CRYPTO_ALGORITHM}
       - CRYPTO_KEY=${CRYPTO_KEY}
-    depends_on:
-      - "router"
-
-  innotwind:
-    build: ./services/innotwind
-    container_name: "innotwind"
-    volumes:
-      - "./services/innotwind:/usr/src/innotwind"
-      - "/usr/src/innotwind/node_modules"
-    ports:
-      - "3031:3031"
-    environment:
-      - MONGODB_CONNECTION=mongodb://docker.for.mac.localhost:27017/innotwind
-      - CONTAINER_PORT=${INNOTWIND_CONTAINER_PORT}
-      - CONTAINER_NAME=${INNOTWIND_CONTAINER_NAME}
-      - ACCESS_SECRET=${SERVICE_ACCESS_SECRET}
-      - CRYPTO_ALGORITHM=${CRYPTO_ALGORITHM}
-      - CRYPTO_KEY=${CRYPTO_KEY}
-      - ROUTER_CONTAINER_PORT=${ROUTER_CONTAINER_PORT}
-      - ROUTER_CONTAINER_NAME=${ROUTER_CONTAINER_NAME}
-      - BLACKBAUD_AUTH_REDIRECT_URL=http://localhost:3000/blackbaud/auth/callback
-      - RABBITMQ_CONNECTION=amqp://docker.for.mac.localhost:5672
-    depends_on:
-      - "router"
-
-  iris:
-    build: ./services/iris
-    container_name: "iris"
-    volumes:
-      - "./services/iris:/usr/src/iris"
-      - "/usr/src/iris/node_modules"
-    ports:
-      - "3032:3032"
-    environment:
-      - MONGODB_CONNECTION=mongodb://docker.for.mac.localhost:27017/iris
-      - CONTAINER_PORT=${IRIS_CONTAINER_PORT}
-      - CONTAINER_NAME=${IRIS_CONTAINER_NAME}
-      - ACCESS_SECRET=${SERVICE_ACCESS_SECRET}
-      - CRYPTO_ALGORITHM=${CRYPTO_ALGORITHM}
-      - CRYPTO_KEY=${CRYPTO_KEY}
-      - RABBITMQ_CONNECTION=amqp://docker.for.mac.localhost:5672
-
-  nginx:
-    build: ./nginx
-    container_name: "nginx"
-    ports:
-      - "80:80" #expose ports - HOST:CONTAINER
-    depends_on:
-      - "api-gateway"
+      - DB_SERVER=docker.for.mac.localhost:27017
+      - DB_NAME=users
