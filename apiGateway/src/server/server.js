@@ -40,11 +40,15 @@ const start = (container) => {
     for (let id of Reflect.ownKeys(routes)) {
       const { route, target } = routes[id]
 
-      console.log(target)
+      const pathRewrite = {}
+      const rewriteKey = `^${route}`
+      pathRewrite[rewriteKey] = ''
+
       app.use(route, proxy({
         target,
         changeOrigin: true,
-        logLevel: 'debug'
+        logLevel: 'debug',
+        pathRewrite
       }))
     }
 
