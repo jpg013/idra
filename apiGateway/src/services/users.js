@@ -1,19 +1,17 @@
 const dial = require('../libs/dial')
 
 const users = container => {
-  const registry = container.resolve('registry')
+  const serviceEndpoints = container.resolve('serviceEndpoints')
 
-
-  const register = () => {
-    const url = `http://${process.env.SERVICE_REGISTRY_CONTAINER_NAME}:${process.env.SERVICE_REGISTRY_CONTAINER_PORT}/registry`;
-    const opts = { json: { service: registry } }
-
-    dial(url, 'put', opts)
+  const getUserByUsername = userName => {
+    const url = `${serviceEndpoints.usersService}/users/username`
+    const opts = { queryParams: { userName } }
+    return dial(url, 'get', opts).then((resp={}) => resp.user)
   }
 
   return Object.create({
-    register
+    getUserByUsername
   })
 }
 
-module.exports = serviceRegistry;
+module.exports = users;

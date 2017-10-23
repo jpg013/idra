@@ -6,7 +6,7 @@ const serviceRegistryModel = (joi, encrypt) => {
     containerPort: joi.string().required(),
     method: joi.string().required(),
     endpoint: joi.string().required(),
-    authorizedRoles: joi.array().default([]),
+    rolePermissions: joi.array().default([]),
     originUrl: joi.string().required(),
     id: joi.string().optional(),
     _id: joi.any().optional(),

@@ -1,19 +1,46 @@
-const express            = require('express')
-const apiController      = require('./controllers/apiController')
-const ensureAccessSecret = require('../helpers/ensureAccessSecret')
+const express                  = require('express')
+const authenticationController = require('./controllers/authenticationController')
 
-const config = (app, serviceRepository) => {
-  const apiRouter = express.Router();
+const config = (app, container) => {
+  const gatewayRouter = express.Router()
+
+  const { routes } = container.cradle
+  
+  if (!routes) {
+    return reject(new Error('The server must be started with registered routes'))
+  }
+
+  const {
+    parseRequestBearerToken,
+    populateAuthenticatedUser,
+    logGatewayRequest,
+    ensureUserAuthenticated,
+    makeApiProxy
+   } = container.resolve('middleware')
+
+  gatewayRouter.use(parseRequestBearerToken, populateAuthenticatedUser, logGatewayRequest)
 
   // ======================================================
   // Mount the controllers to routes
   // ======================================================
-  apiRouter.use('/', /*ensureAccessSecret,*/ apiController(serviceRepository));
+  gatewayRouter.use('/authentication', authenticationController(container))
 
   // ======================================================
   // Mount the router to the app and return app
   // ======================================================
-  app.use(apiRouter);
+  app.use('/api', gatewayRouter);
+   
+  // ======================================================
+  // Everything else requires user to be authenticated
+  // ======================================================
+  app.use(ensureUserAuthenticated)
+
+  for (let id of Reflect.ownKeys(routes)) {
+    const { route, target, routePermissions } = routes[id]
+    const apiProxy = makeApiProxy(route, target, routePermissions)
+
+    app.use(`api/${route}`, apiProxy)
+  }
   return app;
 };
 

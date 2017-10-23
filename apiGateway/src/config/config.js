@@ -40,7 +40,7 @@ const dbSettings = {
 
 const serviceEndpoints = {
   serviceRegistry: `http://${process.env.SERVICE_REGISTRY_CONTAINER_NAME}:${process.env.SERVICE_REGISTRY_CONTAINER_PORT}`,
-  users: `http://${process.env.USERS_CONTAINER_NAME}:${process.env.USERS_CONTAINER_PORT}`
+  usersService: `http://${process.env.USERS_CONTAINER_NAME}:${process.env.USERS_CONTAINER_PORT}`
 }
 
 const encryptedAccessSecret = encrypt(process.env.ACCESS_SECRET)

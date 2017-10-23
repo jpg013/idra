@@ -1,6 +1,6 @@
 const { createContainer, asValue } = require('awilix')
 
-function initDI ({serverSettings, serviceEndpoints, encryptedAccessSecret, services}, mediator) {
+function initDI ({serverSettings, serviceEndpoints, encryptedAccessSecret, services, middleware}, mediator) {
   mediator.once('init', () => {
     mediator.on('boot.ready', (db) => {
       const container = createContainer()
@@ -12,6 +12,7 @@ function initDI ({serverSettings, serviceEndpoints, encryptedAccessSecret, servi
       })
 
       container.register('services', asValue(services(container)))
+      container.register('middleware', asValue(middleware(container)))
 
       mediator.emit('di.ready', container)
     })

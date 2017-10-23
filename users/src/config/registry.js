@@ -1,7 +1,7 @@
 const httpGetUserByUsername = {
   method: 'http-post',
   endpoint: 'users/username',
-  authorizedRoles: ['sysAdmin'],
+  rolePermissions: ['sysAdmin'],
   originUrl: '/users/username'
 }
 

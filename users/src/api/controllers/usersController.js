@@ -50,7 +50,6 @@ const UsersController = userRepository => {
         next()
       })
       .catch(e => {
-        console.log(e)
         req.error = e
         next()
       })

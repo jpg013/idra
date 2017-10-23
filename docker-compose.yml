@@ -44,6 +44,14 @@ services:
     depends_on:
       - "service-registry"
 
+  nginx:
+    build: ./nginx
+    container_name: "nginx"
+    ports:
+      - "80:80" #expose ports - HOST:CONTAINER
+    depends_on:
+      - "api-gateway"
+
   service-registry:
     build: ./serviceRegistry
     container_name: "service-registry"

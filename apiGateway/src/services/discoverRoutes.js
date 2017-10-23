@@ -14,10 +14,11 @@ const makeRoutes = ({ registeredServices }) => {
   })
 
   registeredServices.forEach(cur => {
-    const { containerName, containerPort, endpoint, originUrl, serviceKey } = cur
+    const { containerName, containerPort, endpoint, originUrl, serviceKey, routePermissions } = cur
     const details = {
       target: `http://${containerName}:${containerPort}/${endpoint}`,
-      route: originUrl
+      route: originUrl,
+      routePermissions
     }
     routes[serviceKey] = details
   })
