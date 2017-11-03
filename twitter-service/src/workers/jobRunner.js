@@ -44,10 +44,10 @@ const connect = container => {
       try {
 
 
-        const [friends, followers] = [
+        const [friends, followers] = Promise.all([
           await getTwitterUserFriends(twitterUser.screenName, twitterCredentials),
           await getTwitterUserFollowers(twitterUser.screenName, twitterCredentials)
-        ]
+        ])
 
         await createTwitterUserConnections(twitterUser, friends, followers)
       } catch(err) {

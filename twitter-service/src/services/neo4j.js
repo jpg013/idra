@@ -31,6 +31,10 @@ const neo4jService = container => {
           return reject(err);
         }
 
+        results = results.slice(0, 10)
+
+        console.log(results)
+
         return resolve(results.map(cur => {
           const { name, id, twitterID } = cur
 
