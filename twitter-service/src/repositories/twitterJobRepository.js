@@ -1,6 +1,4 @@
 'use strict'
-const makeObjectId = require('../helpers/makeObjectId')
-
 const twitterJobRespository = container => {
   const { database: db, models } = container.cradle
   const collection = db.collection('twitter_jobs')
@@ -8,7 +6,7 @@ const twitterJobRespository = container => {
   const disconnect = () => db.close()
 
   async function updateJob(job) {
-    const $query = { _id: makeObjectId(job._id) }
+    const $query = { _id: job._id }
     const updateValue = await models.toDocument(job, 'twitterJob')
     const $update = { $set: updateValue }
     await collection.updateOne($query, $update)
@@ -17,7 +15,7 @@ const twitterJobRespository = container => {
   }
 
   async function getJobById(id) {
-    const $query = { _id: makeObjectId(id) }
+    const $query = { _id: id }
     const $proj = { twitterUsers: 0 }
     const result = await collection.findOne($query, $proj)
     return result ? await models.fromDocument(result, 'twitterJob') : result
@@ -35,7 +33,7 @@ const twitterJobRespository = container => {
   }
 
   async function getNextUserToProcess(twitterJob) {
-    const $query = { _id : makeObjectId(twitterJob._id) }
+    const $query = { _id : twitterJob._id }
     const $proj = { twitterUsers: {$slice: [twitterJob.cursor, 1] } }
 
     const results = await collection.findOne($query, $proj)
@@ -43,7 +41,7 @@ const twitterJobRespository = container => {
   }
 
   async function isJobRunning(twitterJob) {
-    const $query = { _id : makeObjectId(twitterJob._id) }
+    const $query = { _id : twitterJob._id }
     const $proj = { status: 1, totalCount: 1, cursor: 1}
 
     const { status, totalCount, cursor } = await collection.findOne($query, $proj)
@@ -60,7 +58,8 @@ const twitterJobRespository = container => {
     updateJob,
     isJobRunning,
     getPendingOrInProgressJobs,
-    getNextUserToProcess
+    getNextUserToProcess,
+    getJobById
   })
 }
 

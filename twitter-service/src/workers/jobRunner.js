@@ -42,13 +42,14 @@ const connect = container => {
       await refreshRateLimit(twitterCredentials)
 
       try {
-        const friends = await getTwitterUserFriends(twitterUser.screenName, twitterCredentials, [])
 
-        //const [friends, followers] = await Promise.all([
-          //getTwitterUserFriends(twitterUser.screenName, twitterCredentials, []),
-          //getTwitterUserFollowers(twitterUser.screenName, twitterCredentials, [])
-        //])
-        //await createTwitterUserConnections(twitterUser, friends, followers)
+
+        const [friends, followers] = [
+          await getTwitterUserFriends(twitterUser.screenName, twitterCredentials),
+          await getTwitterUserFollowers(twitterUser.screenName, twitterCredentials)
+        ]
+
+        await createTwitterUserConnections(twitterUser, friends, followers)
       } catch(err) {
         winston.log('error', err)
       } finally {

@@ -1,16 +1,22 @@
 const CronJob   = require('cron').CronJob
+const winston   = require('winston')
 
 const connect = container => {
   const { repositories, services } = container.cradle
-  const { setupJob, jobRunner } = container.resolve('workers')
+  const { setupJob, jobRunner, cleanupJob } = container.resolve('workers')
   const { twitterJobRepository } = repositories
 
   function scheduleJob(twitterJob) {
     const startTime = new Date();
     startTime.setSeconds(startTime.getSeconds() + 1);
 
-    function onJobFinished(err) {
-      console.log('we are freaking finished!!', err)
+    async function onJobFinished(err) {
+      if (err) {
+        winston.log('info', 'Job completed with error, ', err);
+      } else {
+        winston.log('info', 'Job completed successfully');
+      }
+      cleanupJob(twitterJob._id, err)
     }
 
     async function onJobStart(cb) {

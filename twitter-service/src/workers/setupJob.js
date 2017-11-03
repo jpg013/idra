@@ -2,7 +2,7 @@ const connect = container => {
   const { twitterJobRepository } = container.cradle.repositories
   const { neo4j } = container.cradle.services
 
-  async function setupJob(twitterJob, cb) {
+  async function setupJob(twitterJob) {
     const twitterUsers = await neo4j.getTwitterScreenNames()
     twitterUsers.sort((a, b) => b.screenName - a.screenName)
 

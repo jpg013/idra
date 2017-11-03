@@ -11,10 +11,8 @@ const connect = (options, mediator) => {
       ...options.dbParameters,
       ...options.serverParameters,
     }
-    console.log('attempting to connect to mongo client with options, ',options)
-    console.log(getMongoURL(options))
+
     MongoClient.connect(getMongoURL(options), mongoOptions, (err, db) => {
-      console.log(err)
       if (err) {
         return mediator.emit('db.error', err)
       }
@@ -23,7 +21,6 @@ const connect = (options, mediator) => {
         if (err) {
           return mediator.emit('db.error', err)
         }
-
         insertRootTwitterCredentials(db, (err) => {
           if (err) {
             return mediator.emit('db.error', err)

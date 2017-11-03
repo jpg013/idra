@@ -1,5 +1,6 @@
-const neo4j = require('neo4j');
+const neo4j = require('neo4j')
 
+//const twitterScreenNameQuery = `MATCH (n) WHERE n.Twitter_ID IS NOT NULL RETURN n.name as name, n.id as id, n.Twitter_ID as TwitterID`
 const twitterScreenNameQuery = `MATCH (n:Alumni) WHERE n.screen_name IS NOT NULL RETURN n.name as name, n.id as id, n.screen_name as twitterID`;
 
 const parseNeo4jError = err => {
@@ -13,7 +14,6 @@ const parseNeo4jError = err => {
 
 const neo4jService = container => {
   const { url, auth } = container.resolve('neo4jCredentials')
-
   const db = new neo4j.GraphDatabase({
       url,
       auth,
@@ -30,6 +30,7 @@ const neo4jService = container => {
         if (err) {
           return reject(err);
         }
+
         return resolve(results.map(cur => {
           const { name, id, twitterID } = cur
 
