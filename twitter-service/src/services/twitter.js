@@ -11,7 +11,7 @@ const twitterService = container => {
     })
   }
 
-  async function getRateLimit(twitterCreds) {
+  const getRateLimit = twitterCreds => {
     const twitterAPI = getTwitterAPI(twitterCreds)
 
     return new Promise((resolve, reject) => {
@@ -24,7 +24,7 @@ const twitterService = container => {
     })
   }
 
-  async function getTwitterUserFriends(twitterCreds, options) {
+  const getTwitterUserFriends = (twitterCreds, options) => {
     const args = Object.assign({}, options, {
       count: 200
     })
@@ -40,7 +40,7 @@ const twitterService = container => {
     })
   }
 
-  async function getTwitterUserFollowers(twitterCreds, options) {
+  const getTwitterUserFollowers = (twitterCreds, options) => {
     const args = Object.assign({}, options, {
       count: 200
     })
@@ -56,7 +56,7 @@ const twitterService = container => {
     })
   }
 
-  async function getTwitterUserProfile(screenName) {
+  const getTwitterUserProfile = screenName =>  {
     const args = {
       screen_name: screenName,
     }
