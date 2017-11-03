@@ -11,6 +11,23 @@ const twitterService = container => {
     })
   }
 
+  const mapTwitterUsers = users => {
+    return users.map(cur => ({
+      id: cur.id,
+    	name: cur.name,
+    	screen_name: cur.screen_name,
+    	location: cur.location,
+    	description: cur.description,
+    	followers_count: cur.followers_count,
+    	friends_count: cur.friends_count,
+    	created_at: cur.created_at,
+    	following: cur.following,
+    	follow_request_sent: cur.follow_request_sent,
+    	muting: cur.muting,
+    	blocking: cur.blocking
+    }))
+  }
+
   const getRateLimit = twitterCreds => {
     const twitterAPI = getTwitterAPI(twitterCreds)
 
@@ -35,7 +52,13 @@ const twitterService = container => {
         if (err) {
           return reject(err)
         }
-        return resolve(results)
+        const data = {
+          users: mapTwitterUsers(results.users),
+          next_cursor: results.next_cursor,
+          previous_cursor: results.previous_cursor
+        }
+
+        return resolve(data)
       })
     })
   }
@@ -51,7 +74,14 @@ const twitterService = container => {
         if (err) {
           return reject(err)
         }
-        return resolve(results)
+
+        const data = {
+          users: mapTwitterUsers(results.users),
+          next_cursor: results.next_cursor,
+          previous_cursor: results.previous_cursor
+        }
+
+        return resolve(data)
       })
     })
   }
