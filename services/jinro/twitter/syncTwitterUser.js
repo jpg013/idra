@@ -13,7 +13,6 @@ const hasIntegrationBeenHalted = require('../hasIntegrationBeenHalted');
 const syncTwitterUser = (user, integrationModel, cb) => {
   const userId = user.id;
   const twitterScreenName = user.screenName;
-  console.log('syncing user ' + user.name);
   
   // Grab available credentials before starting
   secureTwitterCredential(integrationModel, function(err, twitterCredential) {

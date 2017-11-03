@@ -1,7 +1,7 @@
 const getTwitterClient = require('./getTwitterClient');
 
 function getTwitterUserProfile(opts, cb) {
-  const {twitterCredential, twitterScreenName} = opts;
+  const { twitterCredential, twitterScreenName } = opts;
   if (!twitterCredential || !twitterScreenName) {
     return cb('missing twitter credential or twitter screen name');
   }

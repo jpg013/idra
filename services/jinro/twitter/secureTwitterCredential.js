@@ -6,9 +6,9 @@ const MAX_RATE_LIMIT_WINDOW = 900000; // 15 minutes
 
 function isRateLimitExceeded(rateLimit) {
   return (
-    rateLimit.friends.remaining <= 1 || 
-    rateLimit.followers.remaining <= 1 || 
-    rateLimit.application.remaining <= 1
+    rateLimit.friends.remaining < 1 || 
+    rateLimit.followers.remaining < 1 || 
+    rateLimit.application.remaining < 1
   );
 }
 
