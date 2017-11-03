@@ -42,11 +42,9 @@ const connect = container => {
       await refreshRateLimit(twitterCredentials)
 
       try {
-
-
-        const [friends, followers] = Promise.all([
-          await getTwitterUserFriends(twitterUser.screenName, twitterCredentials),
-          await getTwitterUserFollowers(twitterUser.screenName, twitterCredentials)
+        const [friends, followers] = await Promise.all([
+          getTwitterUserFriends(twitterUser.screenName, twitterCredentials),
+          getTwitterUserFollowers(twitterUser.screenName, twitterCredentials)
         ])
 
         await createTwitterUserConnections(twitterUser, friends, followers)

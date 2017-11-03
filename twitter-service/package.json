@@ -34,7 +34,7 @@
     "test": "mocha test",
     "serve:dev": "nodemon src/server.js",
     "serve:prod": "forever src/server.js",
-    "start": "nodemon src/index.js"
+    "start": "node src/index.js"
   },
   "author": "Justin Graber",
   "license": "ISC",
