@@ -1,7 +1,7 @@
 const neo4j = require('neo4j')
 
-//const twitterScreenNameQuery = `MATCH (n) WHERE n.Twitter_ID IS NOT NULL RETURN n.name as name, n.id as id, n.Twitter_ID as TwitterID`
-const twitterScreenNameQuery = `MATCH (n:Alumni) WHERE n.screen_name IS NOT NULL RETURN n.name as name, n.id as id, n.screen_name as twitterID`;
+const twitterScreenNameQuery = `MATCH (n) WHERE n.Twitter_ID IS NOT NULL RETURN n.name as name, n.id as id, n.Twitter_ID as TwitterID`
+//const twitterScreenNameQuery = `MATCH (n:Alumni) WHERE n.screen_name IS NOT NULL RETURN n.name as name, n.id as id, n.screen_name as twitterID`;
 
 const parseNeo4jError = err => {
   switch(err.neo4j.code) {
